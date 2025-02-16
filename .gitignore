@@ -1,0 +1,54 @@
+HELP.md
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### 절대 삭제하면 안됨 ###
+**/application.yml
+
+### DB ###
+**/*.db
+
+### 기타 ###
+**/naver-intellij-formatter.xml
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+
+### Profile Image ###
+src/main/resources/image/*
+# 특정 파일은 포함
+!src/main/resources/image/iconmonstr-user-circle-thin-240.png
+
+### Kotlin ###
+.kotlin
