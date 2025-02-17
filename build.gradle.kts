@@ -1,8 +1,13 @@
 plugins {
     kotlin("jvm") version "1.9.25"
     kotlin("plugin.spring") version "1.9.25"
+    kotlin("plugin.jpa") version "1.7.22"
     id("org.springframework.boot") version "3.4.2"
     id("io.spring.dependency-management") version "1.1.7"
+}
+
+noArg { // @Entity 어노테이션이 붙은 클래스 자동으로 기본 생성자 생성
+    annotation("jakarta.persistence.Entity")
 }
 
 group = "org.team14"

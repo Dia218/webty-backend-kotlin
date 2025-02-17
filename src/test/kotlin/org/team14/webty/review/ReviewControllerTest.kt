@@ -101,45 +101,48 @@ internal class ReviewControllerTest {
             // 유저 1번이 여러 개의 리뷰 작성 (5개)
             for (i in 1..5) {
                 reviewRepository!!.save(
-                    Review.builder()
-                        .user(users[0]) // 유저 1번
-                        .webtoon(popularWebtoon) // 인기 웹툰에 몰아주기
-                        .title("Review by User 1 - $i")
-                        .content("This is a review written by user 1.")
-                        .viewCount(i * 10)
-                        .createdAt(LocalDateTime.now().minusDays(i.toLong()))
-                        .updatedAt(LocalDateTime.now())
-                        .build()
+                    Review(
+                        user = users[0], // 유저 1번
+                        webtoon = popularWebtoon, // 인기 웹툰
+                        title = "Review by User 1 - $i",
+                        content = "This is a review written by user 1.",
+                        viewCount = i * 10,
+                        createdAt = LocalDateTime.now().minusDays(i.toLong()),
+                        updatedAt = LocalDateTime.now(),
+                        isSpoiler = SpoilerStatus.FALSE
+                    )
                 )
             }
 
             // 나머지 유저(2~30)는 각각 한 개의 리뷰만 작성
-            for (i in 1..<users.size) {
+            for (i in 1 until users.size) {
                 reviewRepository!!.save(
-                    Review.builder()
-                        .user(users[i])
-                        .webtoon(webtoons[i % webtoons.size]) // 웹툰 분배
-                        .title("Review by User " + (i + 1))
-                        .content("This is a test review content by user " + (i + 1))
-                        .viewCount((i + 1) * 5)
-                        .createdAt(LocalDateTime.now().minusDays((i + 1).toLong()))
-                        .updatedAt(LocalDateTime.now())
-                        .build()
+                    Review(
+                        user = users[i],
+                        webtoon = webtoons[i % webtoons.size], // 웹툰 분배
+                        title = "Review by User ${i + 1}",
+                        content = "This is a test review content by user ${i + 1}",
+                        viewCount = (i + 1) * 5,
+                        createdAt = LocalDateTime.now().minusDays((i + 1).toLong()),
+                        updatedAt = LocalDateTime.now(),
+                        isSpoiler = SpoilerStatus.FALSE
+                    )
                 )
             }
 
             // 검색 테스트를 위한 리뷰 추가 (제목에 "Search" 포함)
             for (i in 1..3) {
                 reviewRepository!!.save(
-                    Review.builder()
-                        .user(users[i % users.size])
-                        .webtoon(webtoons[i % webtoons.size])
-                        .title("Search Review $i")
-                        .content("This review should appear in search results.")
-                        .viewCount(50 * i)
-                        .createdAt(LocalDateTime.now().minusDays(i.toLong()))
-                        .updatedAt(LocalDateTime.now())
-                        .build()
+                    Review(
+                        user = users[i % users.size],
+                        webtoon = webtoons[i % webtoons.size],
+                        title = "Search Review $i",
+                        content = "This review should appear in search results.",
+                        viewCount = 50 * i,
+                        createdAt = LocalDateTime.now().minusDays(i.toLong()),
+                        updatedAt = LocalDateTime.now(),
+                        isSpoiler = SpoilerStatus.FALSE
+                    )
                 )
             }
         }
@@ -185,13 +188,12 @@ internal class ReviewControllerTest {
     @DisplayName("리뷰 생성")
     @kotlin.Throws(Exception::class)
     fun t4() {
-        // JSON 데이터로 변환된 ReviewRequest
-        val request = ReviewRequest.builder()
-            .webtoonId(1L)
-            .title("New Review Title")
-            .content("This is a new review content.")
-            .spoilerStatus(SpoilerStatus.FALSE)
-            .build()
+        val request = ReviewRequest(
+            webtoonId = 1L,
+            title = "New Review Title",
+            content = "This is a new review content.",
+            spoilerStatus = SpoilerStatus.FALSE
+        )
 
         val reviewRequestPart = MockMultipartFile(
             "reviewRequest",
@@ -223,13 +225,12 @@ internal class ReviewControllerTest {
     @DisplayName("리뷰 생성 Error 존재하지 않는 웹툰")
     @kotlin.Throws(Exception::class)
     fun t5() {
-        // JSON 데이터로 변환된 ReviewRequest
-        val request = ReviewRequest.builder()
-            .webtoonId(12233131213L)
-            .title("New Review Title")
-            .content("This is a new review content.")
-            .spoilerStatus(SpoilerStatus.FALSE)
-            .build()
+        val request = ReviewRequest(
+            webtoonId = 12233131213L,
+            title = "New Review Title",
+            content = "This is a new review content.",
+            spoilerStatus = SpoilerStatus.FALSE
+        )
 
         val reviewRequestPart = MockMultipartFile(
             "reviewRequest",
@@ -294,13 +295,12 @@ internal class ReviewControllerTest {
     @DisplayName("리뷰 수정")
     @kotlin.Throws(Exception::class)
     fun t9() {
-        // JSON 데이터로 변환된 ReviewRequest
-        val request = ReviewRequest.builder()
-            .webtoonId(1L)
-            .title("Updated Review Title")
-            .content("This is an updated review content.")
-            .spoilerStatus(SpoilerStatus.TRUE)
-            .build()
+        val request = ReviewRequest(
+            webtoonId = 1L,
+            title = "Updated Review Title",
+            content = "This is an updated review content.",
+            spoilerStatus = SpoilerStatus.TRUE
+        )
 
         val reviewRequestPart = MockMultipartFile(
             "reviewRequest",
@@ -335,13 +335,12 @@ internal class ReviewControllerTest {
     @DisplayName("리뷰 수정 Error 존재하지 않는 리뷰")
     @kotlin.Throws(Exception::class)
     fun t10() {
-        // JSON 데이터로 변환된 ReviewRequest
-        val request = ReviewRequest.builder()
-            .webtoonId(1L)
-            .title("Updated Review Title")
-            .content("This is an updated review content.")
-            .spoilerStatus(SpoilerStatus.TRUE)
-            .build()
+        val request = ReviewRequest(
+            webtoonId = 1L,
+            title = "Updated Review Title",
+            content = "This is an updated review content.",
+            spoilerStatus = SpoilerStatus.TRUE
+        )
 
         val reviewRequestPart = MockMultipartFile(
             "reviewRequest",
@@ -369,13 +368,12 @@ internal class ReviewControllerTest {
     @DisplayName("리뷰 수정 Error 존재하지 않는 웹툰")
     @kotlin.Throws(Exception::class)
     fun t11() {
-        // JSON 데이터로 변환된 ReviewRequest
-        val request = ReviewRequest.builder()
-            .webtoonId(132142412421L)
-            .title("Updated Review Title")
-            .content("This is an updated review content.")
-            .spoilerStatus(SpoilerStatus.TRUE)
-            .build()
+        val request = ReviewRequest(
+            webtoonId = 132142412421L,
+            title = "Updated Review Title",
+            content = "This is an updated review content.",
+            spoilerStatus = SpoilerStatus.TRUE
+        )
 
         val reviewRequestPart = MockMultipartFile(
             "reviewRequest",
@@ -403,13 +401,12 @@ internal class ReviewControllerTest {
     @DisplayName("리뷰 수정 Error 권한 없음")
     @kotlin.Throws(Exception::class)
     fun t12() {
-        // JSON 데이터로 변환된 ReviewRequest
-        val request = ReviewRequest.builder()
-            .webtoonId(1L)
-            .title("Updated Review Title")
-            .content("This is an updated review content.")
-            .spoilerStatus(SpoilerStatus.TRUE)
-            .build()
+        val request = ReviewRequest(
+            webtoonId = 1L,
+            title = "Updated Review Title",
+            content = "This is an updated review content.",
+            spoilerStatus = SpoilerStatus.TRUE
+        )
 
         val reviewRequestPart = MockMultipartFile(
             "reviewRequest",
