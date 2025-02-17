@@ -1,5 +1,6 @@
 package org.team14.webty.recommend
 
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -52,12 +53,7 @@ internal class RecommendControllerTestKotlin {
 
     @BeforeEach
     fun beforeEach() {
-        recommendRepository!!.deleteAll()
-        reviewRepository!!.deleteAll()
-        webtoonRepository!!.deleteAll()
-        userRepository!!.deleteAll()
-
-        testUser = userRepository.save(
+        testUser = userRepository?.save(
             WebtyUser.builder()
                 .nickname("테스트유저")
                 .profileImage("dasdsa")
@@ -70,7 +66,7 @@ internal class RecommendControllerTestKotlin {
                 .build()
         )
 
-        val testWebtoon = webtoonRepository.save(
+        val testWebtoon = webtoonRepository?.save(
             Webtoon.builder()
                 .webtoonName("테스트 웹툰")
                 .platform(Platform.KAKAO_PAGE)
@@ -80,7 +76,7 @@ internal class RecommendControllerTestKotlin {
                 .finished(true)
                 .build()
         )
-        testReview = reviewRepository.save(
+        testReview = reviewRepository?.save(
             Review.builder()
                 .user(testUser)
                 .content("테스트 리뷰")
@@ -91,6 +87,14 @@ internal class RecommendControllerTestKotlin {
                 .createdAt(LocalDateTime.now())
                 .build()
         )
+    }
+
+    @AfterEach
+    fun afterEach() {
+        recommendRepository!!.deleteAll()
+        reviewRepository!!.deleteAll()
+        webtoonRepository!!.deleteAll()
+        userRepository!!.deleteAll()
     }
 
     @Test
