@@ -2,6 +2,8 @@ package org.team14.webty.common.dto;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,5 +20,6 @@ public class PageDto<T> {
 	private long totalElements;
 	private boolean hasNext;
 	private boolean hasPrevious;
+	@JsonProperty("isLast")
 	private boolean isLast;
 }

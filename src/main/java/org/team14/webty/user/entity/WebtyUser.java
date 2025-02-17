@@ -26,7 +26,7 @@ public class WebtyUser {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
-	private Long userId;
+	public Long userId;
 
 	@Column(name = "nickname", nullable = false, unique = true)
 	private String nickname;
