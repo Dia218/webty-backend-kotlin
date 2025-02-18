@@ -308,8 +308,8 @@ class ReviewService(
             .boxed()
             .collect(
                 Collectors.toMap(
-                    { index: Int? -> reviewIds[index!!] },  // key: reviewId
-                    { index: Int? -> counts[index!!] } // value: count
+                    { index: Int -> reviewIds[index] },  // key: reviewId
+                    { index: Int -> counts[index] } // value: count
                 ))
     }
 

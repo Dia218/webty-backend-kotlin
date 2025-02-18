@@ -77,15 +77,14 @@ internal class RecommendControllerTestKotlin {
                 .build()
         )
         testReview = reviewRepository?.save(
-            Review.builder()
-                .user(testUser)
-                .content("테스트 리뷰")
-                .title("테스트 리뷰 제목")
-                .viewCount(0)
-                .isSpoiler(SpoilerStatus.FALSE)
-                .webtoon(testWebtoon)
-                .createdAt(LocalDateTime.now())
-                .build()
+            Review(
+                user = testUser!!,
+                content = "테스트 리뷰",
+                title = "테스트 리뷰 제목",
+                viewCount = 0,
+                isSpoiler = SpoilerStatus.FALSE,
+                webtoon = testWebtoon!!,
+                createdAt = LocalDateTime.now())
         )
     }
 
