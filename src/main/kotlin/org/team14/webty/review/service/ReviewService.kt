@@ -66,30 +66,9 @@ class ReviewService(
     @Transactional(readOnly = true)
     fun getAllFeedReviews(page: Int, size: Int): Page<ReviewItemResponse> {
         val pageable: Pageable = PageRequest.of(page, size)
-
         // 모든 리뷰 조회
         val reviews = reviewRepository.findAllByOrderByReviewIdDesc(pageable)
-
-        // 모든 리뷰 ID 리스트 추출
-        val reviewIds = reviews.mapNotNull { it.reviewId }
-
-        // 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
-        val commentMap = getReviewMap(reviewIds)
-
-        // 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
-        val reviewImageMap = getReviewImageMap(reviewIds)
-
-        // 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
-        val likeCounts = getLikesMap(reviewIds)
-
-        return reviews.map { review ->
-            ReviewMapper.toResponse(
-                review,
-                commentMap[review.reviewId] ?: emptyList(),
-                reviewImageMap[review.reviewId] ?: emptyList(),
-                likeCounts[review.reviewId]!!
-            )
-        }
+        return mapReviewResponse(reviews)
     }
 
 
@@ -169,44 +148,15 @@ class ReviewService(
         val webtyUser = getAuthenticatedUser(webtyUserDetails)
         val pageable: Pageable = PageRequest.of(page, size)
         val reviews = reviewRepository.findReviewByWebtyUser(webtyUser, pageable)
-        val reviewIds = reviews.mapNotNull { it.reviewId }
-        val commentMap = getReviewMap(reviewIds)
-        val reviewImageMap = getReviewImageMap(reviewIds)
-        val likeCounts = getLikesMap(reviewIds)
-
-        return reviews.map { review: Review ->
-            ReviewMapper.toResponse(
-                review,
-                commentMap.getOrDefault(review.reviewId, emptyList()),
-                reviewImageMap.getOrDefault(review.reviewId, emptyList()),
-                likeCounts[review.reviewId]!!
-            )
-        }
+        return mapReviewResponse(reviews)
     }
 
     // 조회수 내림차순으로 모든 리뷰 조회
     @Transactional(readOnly = true)
     fun getAllReviewsOrderByViewCountDesc(page: Int, size: Int): Page<ReviewItemResponse> {
         val pageable: Pageable = PageRequest.of(page, size)
-
         val reviews = reviewRepository.findAllByOrderByViewCountDesc(pageable)
-
-        val reviewIds = reviews.mapNotNull { it.reviewId }
-
-        val commentMap = getReviewMap(reviewIds)
-
-        val reviewImageMap = getReviewImageMap(reviewIds)
-
-        val likeCounts = getLikesMap(reviewIds)
-
-        return reviews.map { review: Review ->
-            ReviewMapper.toResponse(
-                review,
-                commentMap.getOrDefault(review.reviewId, emptyList()),
-                reviewImageMap.getOrDefault(review.reviewId, emptyList()),
-                likeCounts[review.reviewId]!!
-            )
-        }
+        return mapReviewResponse(reviews)
     }
 
     // 특정 사용자의 리뷰 개수 조회
@@ -263,43 +213,17 @@ class ReviewService(
         return authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
     }
 
-    fun searchFeedReviewByTitle(page: Int, size: Int, title: String?): Page<ReviewItemResponse?> {
+    fun searchFeedReviewByTitle(page: Int, size: Int, title: String?): Page<ReviewItemResponse> {
         val pageable: Pageable = PageRequest.of(page, size)
-
         val reviews = reviewRepository.findByTitleContainingIgnoreCaseOrderByReviewIdDesc(title, pageable)
-
-        val reviewIds = reviews.mapNotNull { it.reviewId }
-
-        val commentMap = getReviewMap(reviewIds)
-        val reviewImageMap = getReviewImageMap(reviewIds)
-        val likeCounts = getLikesMap(reviewIds)
-
-        return reviews.map { review: Review ->
-            ReviewMapper.toResponse(
-                review,
-                commentMap.getOrDefault(review.reviewId, emptyList()),
-                reviewImageMap.getOrDefault(review.reviewId, emptyList()),
-                likeCounts[review.reviewId]!!
-            )
-        }
+        return mapReviewResponse(reviews)
     }
 
     @Transactional
     fun getUserRecommendedReviews(userId: Long, page: Int, size: Int): Page<ReviewItemResponse> {
         val pageable: Pageable = PageRequest.of(page, size)
         val reviews = recommendRepository.getUserRecommendReview(userId, pageable)
-        val reviewIds = reviews.mapNotNull { it.reviewId }
-        val commentMap = getReviewMap(reviewIds)
-        val reviewImageMap = getReviewImageMap(reviewIds)
-        val likeCounts = getLikesMap(reviewIds)
-        return reviews.map { review: Review ->
-            ReviewMapper.toResponse(
-                review,
-                commentMap.getOrDefault(review.reviewId, emptyList()),
-                reviewImageMap.getOrDefault(review.reviewId, emptyList()),
-                likeCounts[review.reviewId]!!
-            )
-        }
+        return mapReviewResponse(reviews)
     }
 
     private fun getLikesMap(reviewIds: List<Long>): Map<Long, Long> {
@@ -313,12 +237,28 @@ class ReviewService(
                 ))
     }
 
-    fun searchReviewByWebtoonId(webtoonId: Long, page: Int, size: Int): Page<ReviewItemResponse?> {
+    fun searchReviewByWebtoonId(webtoonId: Long, page: Int, size: Int): Page<ReviewItemResponse> {
         val pageable: Pageable = PageRequest.of(page, size)
         val reviews = reviewRepository.findReviewByWebtoonId(webtoonId, pageable)
+        return mapReviewResponse(reviews)
+    }
+
+    @Transactional
+    fun patchReviewIsSpoiler(id: Long) {
+        val review = reviewRepository.findById(id)
+            .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
+        review.patchIsSpoiler()
+        reviewRepository.save(review)
+    }
+
+    private fun mapReviewResponse(reviews :Page<Review>) : Page<ReviewItemResponse>{
+        // 모든 리뷰 ID 리스트 추출
         val reviewIds = reviews.mapNotNull { it.reviewId }
+        // 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
         val commentMap = getReviewMap(reviewIds)
+        // 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
         val reviewImageMap = getReviewImageMap(reviewIds)
+        // 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
         val likeCounts = getLikesMap(reviewIds)
         return reviews.map { review: Review ->
             ReviewMapper.toResponse(
@@ -328,13 +268,5 @@ class ReviewService(
                 likeCounts[review.reviewId]!!
             )
         }
-    }
-
-    @Transactional
-    fun patchReviewIsSpoiler(id: Long) {
-        val review = reviewRepository.findById(id)
-            .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
-        review.patchIsSpoiler()
-        reviewRepository.save(review)
     }
 }
