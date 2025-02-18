@@ -1,9 +1,6 @@
 package org.team14.webty.voting.dto;
 
-import lombok.Getter;
+import jakarta.validation.constraints.NotNull;
 
-@Getter
-public class SimilarRequest {
-	private Long webtoonId;
-	private String similarWebtoonName;
+public record SimilarRequest(@NotNull Long targetWebtoonId, @NotNull Long choiceWebtoonId) {
 }

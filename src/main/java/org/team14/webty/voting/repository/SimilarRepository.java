@@ -11,9 +11,9 @@ import org.team14.webty.webtoon.entity.Webtoon;
 
 @Repository
 public interface SimilarRepository extends JpaRepository<Similar, Long> {
-	Boolean existsByWebtoonAndSimilarWebtoonName(Webtoon webtoon, String similarWebtoonName);
+	Boolean existsByTargetWebtoonAndSimilarWebtoonId(Webtoon targetWebtoon, Long similarWebtoonId);
 
 	Optional<Similar> findByUserIdAndSimilarId(Long userId, Long similarId);
 
-	Page<Similar> findAllByWebtoon(Webtoon webtoon, Pageable pageable);
+	Page<Similar> findAllByTargetWebtoon(Webtoon targetWebtoon, Pageable pageable);
 }

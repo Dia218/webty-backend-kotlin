@@ -5,20 +5,21 @@ import org.team14.webty.voting.entity.Similar;
 import org.team14.webty.webtoon.entity.Webtoon;
 
 public class SimilarMapper {
-	public static Similar toEntity(Long userId, String similarWebtoonName, Webtoon webtoon) {
+	public static Similar toEntity(Long userId, Long choiceWebtoonId, Webtoon targetWebtoon) {
 		return Similar.builder()
-			.userId(userId)
-			.similarWebtoonName(similarWebtoonName)
+			.similarWebtoonId(choiceWebtoonId)
 			.similarResult(0L)
-			.webtoon(webtoon)
+			.userId(userId)
+			.targetWebtoon(targetWebtoon)
 			.build();
 	}
 
-	public static SimilarResponse toResponse(Similar similar) {
+	public static SimilarResponse toResponse(Similar similar, Webtoon similarWebtoon) {
 		return SimilarResponse.builder()
 			.similarId(similar.getSimilarId())
-			.thumbnailUrl(similar.getWebtoon().getThumbnailUrl())
+			.similarThumbnailUrl(similarWebtoon.getThumbnailUrl())
 			.similarResult(similar.getSimilarResult())
+			.similarWebtoonId(similarWebtoon.getWebtoonId())
 			.build();
 	}
 }

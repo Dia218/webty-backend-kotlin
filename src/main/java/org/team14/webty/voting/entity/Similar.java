@@ -23,18 +23,18 @@ import lombok.NoArgsConstructor;
 @Builder
 @Table(
 	name = "similar",
-	uniqueConstraints = @UniqueConstraint(columnNames = {"webtoonId", "similarWebtoonName"})
+	uniqueConstraints = @UniqueConstraint(columnNames = {"targetWebtoonId", "similarWebtoonId"})
 )
 public class Similar {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long similarId;
-	private String similarWebtoonName;
+	private Long similarWebtoonId;
 	private Long similarResult;
 	private Long userId;
 	@ManyToOne
-	@JoinColumn(name = "webtoonId")
-	private Webtoon webtoon;
+	@JoinColumn(name = "targetWebtoonId")
+	private Webtoon targetWebtoon;
 
 	public void updateSimilarResult(Long similarResult) {
 		this.similarResult = similarResult;

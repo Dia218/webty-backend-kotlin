@@ -17,7 +17,7 @@ import org.team14.webty.voting.mapper.SimilarMapper;
 import org.team14.webty.voting.repository.SimilarRepository;
 import org.team14.webty.voting.repository.VoteRepository;
 import org.team14.webty.webtoon.entity.Webtoon;
-import org.team14.webty.webtoon.repository.WebtoonRepository;
+import org.team14.webty.webtoon.service.WebtoonService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,31 +25,31 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SimilarService {
 	private final SimilarRepository similarRepository;
-	private final WebtoonRepository webtoonRepository;
+	private final WebtoonService webtoonService;
 	private final AuthWebtyUserProvider authWebtyUserProvider;
 	private final VoteRepository voteRepository;
 
 	// 유사 웹툰 등록
 	@Transactional
-	public Long createSimilar(WebtyUserDetails webtyUserDetails, Long webtoonId, String similarWebtoonName) {
+	public SimilarResponse createSimilar(WebtyUserDetails webtyUserDetails, Long targetWebtoonId,
+		Long choiceWebtoonId) {
 		WebtyUser webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails);
-		Webtoon webtoon = webtoonRepository.findById(webtoonId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
-		if (similarWebtoonName == null || similarWebtoonName.trim().isEmpty()) {
-			throw new BusinessException(ErrorCode.INVALID_SIMILAR_NAME);
-		}
+		Webtoon targetWebtoon = webtoonService.findWebtoon(targetWebtoonId);
+		Webtoon choiceWebtoon = webtoonService.findWebtoon(choiceWebtoonId);
+
 		// 이미 등록된 유사 웹툰인지 확인
-		if (similarRepository.existsByWebtoonAndSimilarWebtoonName(webtoon, similarWebtoonName)) {
+		if (similarRepository.existsByTargetWebtoonAndSimilarWebtoonId(targetWebtoon, choiceWebtoon.getWebtoonId())) {
 			throw new BusinessException(ErrorCode.SIMILAR_DUPLICATION_ERROR);
 		}
-		Similar similar = SimilarMapper.toEntity(webtyUser.getUserId(), similarWebtoonName, webtoon);
+
+		Similar similar = SimilarMapper.toEntity(webtyUser.getUserId(), choiceWebtoon.getWebtoonId(), targetWebtoon);
 		try {
 			similarRepository.save(similar);
 		} catch (DataIntegrityViolationException e) {
 			// 데이터베이스에서 UNIQUE 제약 조건 위반 발생 시 처리
 			throw new BusinessException(ErrorCode.SIMILAR_DUPLICATION_ERROR);
 		}
-		return similar.getSimilarId();
+		return SimilarMapper.toResponse(similar, choiceWebtoon);
 	}
 
 	// 유사 웹툰 삭제
@@ -65,18 +65,12 @@ public class SimilarService {
 
 	// 유사 리스트 By Webtoon
 	@Transactional(readOnly = true)
-	public Page<SimilarResponse> findAll(Long webtoonId, int page, int size) {
+	public Page<SimilarResponse> findAll(Long targetWebtoonId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
-		Webtoon webtoon = webtoonRepository.findById(webtoonId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.WEBTOON_NOT_FOUND));
-		Page<Similar> similars = similarRepository.findAllByWebtoon(webtoon, pageable);
-		return similars.map(SimilarMapper::toResponse);
-	}
+		Webtoon targetWebtoon = webtoonService.findWebtoon(targetWebtoonId);
+		Page<Similar> similars = similarRepository.findAllByTargetWebtoon(targetWebtoon, pageable);
 
-	@Transactional(readOnly = true)
-	public SimilarResponse getSimilar(Long similarId) {
-		Similar similar = similarRepository.findById(similarId)
-			.orElseThrow(() -> new BusinessException(ErrorCode.SIMILAR_NOT_FOUND));
-		return SimilarMapper.toResponse(similar);
+		return similars.map(
+			similar -> SimilarMapper.toResponse(similar, webtoonService.findWebtoon(similar.getSimilarWebtoonId())));
 	}
 }
