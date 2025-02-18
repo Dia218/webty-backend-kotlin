@@ -51,7 +51,7 @@ class RecommendController(
     // 로그인한 사용자 기준) 추천한 리뷰 목록 조회
     @GetMapping("/user/{userId}")
     fun getUserRecommendReviews(
-        @PathVariable(value = "userId") userId: Long?,
+        @PathVariable(value = "userId") userId: Long,
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int
     ): ResponseEntity<PageDto<ReviewItemResponse>> {

@@ -10,7 +10,7 @@ import org.team14.webty.review.entity.Review
 import org.team14.webty.user.entity.WebtyUser
 
 @Repository
-interface ReviewRepository : JpaRepository<Review?, Long?> {
+interface ReviewRepository : JpaRepository<Review, Long> {
     @Query("SELECT r FROM Review r WHERE r.user = :webtyUser")
     fun findReviewByWebtyUser(@Param("webtyUser") webtyUser: WebtyUser?): List<Review> // 특정 사용자의 리뷰 목록 조회
 
