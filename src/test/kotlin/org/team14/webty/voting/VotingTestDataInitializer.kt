@@ -54,34 +54,34 @@ class VotingTestDataInitializer {
 
     fun newTestTargetWebtoon(number: Int): Webtoon {
         return webtoonRepository!!.save(
-            Webtoon.builder()
-                .webtoonName("테스트 투표 대상 웹툰$number")
-                .platform(Platform.KAKAO_PAGE)
-                .webtoonLink("www.testTargetWebtoon$number")
-                .thumbnailUrl("testTargetWebtoon.jpg$number")
-                .authors("testTargetWebtoonAuthor$number")
-                .finished(true)
-                .build()
+            Webtoon(
+                webtoonName = "테스트 투표 대상 웹툰$number",
+                platform = Platform.KAKAO_PAGE,
+                webtoonLink = "www.testTargetWebtoon$number",
+                thumbnailUrl = "testTargetWebtoon.jpg$number",
+                authors = "testTargetWebtoonAuthor$number",
+                finished = true
+            )
         )
     }
 
     fun newTestChoiceWebtoon(number: Int): Webtoon {
         return webtoonRepository!!.save(
-            Webtoon.builder()
-                .webtoonName("테스트 선택 대상 웹툰$number")
-                .platform(Platform.KAKAO_PAGE)
-                .webtoonLink("www.testChoiceWebtoon$number")
-                .thumbnailUrl("testChoiceWebtoon.jpg$number")
-                .authors("testChoiceWebtoonAuthor$number")
-                .finished(true)
-                .build()
+            Webtoon(
+                webtoonName = "테스트 선택 대상 웹툰$number",
+                platform = Platform.KAKAO_PAGE,
+                webtoonLink = "www.testChoiceWebtoon$number",
+                thumbnailUrl = "testChoiceWebtoon.jpg$number",
+                authors = "testChoiceWebtoonAuthor$number",
+                finished = true
+            )
         )
     }
 
     fun newTestSimilar(testUser: WebtyUser, testTargetWebtoon: Webtoon, testChoiceWebtoon: Webtoon): Similar {
         return similarRepository!!.save(
             Similar(
-                similarWebtoonId = testChoiceWebtoon.webtoonId,
+                similarWebtoonId = testChoiceWebtoon.webtoonId!!,
                 similarResult = 0L,
                 userId = testUser.getUserId(),
                 targetWebtoon = testTargetWebtoon

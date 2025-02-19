@@ -38,7 +38,7 @@ class SimilarService(
         val choiceWebtoon = webtoonService.findWebtoon(choiceWebtoonId)
 
         // 이미 등록된 유사 웹툰인지 확인
-        if (similarRepository.existsByTargetWebtoonAndSimilarWebtoonId(targetWebtoon, choiceWebtoon.webtoonId)) {
+        if (similarRepository.existsByTargetWebtoonAndSimilarWebtoonId(targetWebtoon, choiceWebtoon.webtoonId!!)) {
             throw BusinessException(ErrorCode.SIMILAR_DUPLICATION_ERROR)
         }
 

@@ -70,8 +70,8 @@ internal class SimilarControllerTest {
         val objectMapper = ObjectMapper()
 
         val requestBody: MutableMap<String, Long> = HashMap()
-        requestBody["targetWebtoonId"] = testTargetWebtoonId
-        requestBody["choiceWebtoonId"] = testChoiceWebtoonId
+        requestBody["targetWebtoonId"] = testTargetWebtoonId!!
+        requestBody["choiceWebtoonId"] = testChoiceWebtoonId!!
         val jsonRequest = objectMapper.writeValueAsString(requestBody)
 
         mockMvc!!.perform(

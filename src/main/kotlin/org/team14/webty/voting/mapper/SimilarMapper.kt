@@ -19,7 +19,7 @@ object SimilarMapper {
             similarId = similar.similarId!!,
             similarThumbnailUrl = similarWebtoon.thumbnailUrl,
             similarResult = similar.similarResult,
-            similarWebtoonId = similarWebtoon.webtoonId
+            similarWebtoonId = similarWebtoon.webtoonId!!
         )
     }
 }

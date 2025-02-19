@@ -69,9 +69,10 @@ public class SecurityConfig {
 				"h2-console/**", "/error",
 				"/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
 				"/reviews/search", "/reviews/webtoon/{id:\\d+}",
-				"/reviews/spoiler/{id:\\d+}", "/reviews/{reviewId}/comments"
+				"/reviews/spoiler/{id:\\d+}"
 			)
 			.requestMatchers(HttpMethod.GET, "/similar")
+			.requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments")
 			.requestMatchers(PathRequest.toH2Console());
 	}
 

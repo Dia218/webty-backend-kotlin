@@ -61,6 +61,8 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    // mockito-kotlin (test)
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
 kotlin {
