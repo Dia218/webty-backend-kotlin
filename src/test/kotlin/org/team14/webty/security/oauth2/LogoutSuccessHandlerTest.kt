@@ -7,8 +7,9 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.ValueOperations
 import org.springframework.security.core.Authentication
@@ -46,7 +47,7 @@ class LogoutSuccessHandlerTest {
 
     @BeforeEach
     fun setUp() {
-        Mockito.`when`(redisTemplate.opsForValue()).thenReturn(valueOperations)
+        whenever(redisTemplate.opsForValue()).thenReturn(valueOperations)
     }
 
     @Test
@@ -61,16 +62,16 @@ class LogoutSuccessHandlerTest {
         val refreshToken = "mockRefreshToken"
         val expirationTime = 1000L
 
-        Mockito.`when`(cookieManager.getCookieByTokenType(TokenType.REFRESH_TOKEN)).thenReturn(refreshToken)
-        Mockito.`when`(jwtManager.getExpirationTime(refreshToken)).thenReturn(expirationTime)
+        whenever(cookieManager.getCookieByTokenType(TokenType.REFRESH_TOKEN)).thenReturn(refreshToken)
+        whenever(jwtManager.getExpirationTime(refreshToken)).thenReturn(expirationTime)
 
         // When
         logoutSuccessHandler.logout(request, response, authentication)
 
         // Then
-        Mockito.verify(cookieManager).removeCookie(TokenType.ACCESS_TOKEN)
-        Mockito.verify(cookieManager).removeCookie(TokenType.REFRESH_TOKEN)
-        Mockito.verify(cookieManager).removeCookie(TokenType.JSESSIONID)
-        Mockito.verify(valueOperations).set(refreshToken, "logout", expirationTime, TimeUnit.MILLISECONDS)
+        verify(cookieManager).removeCookie(TokenType.ACCESS_TOKEN)
+        verify(cookieManager).removeCookie(TokenType.REFRESH_TOKEN)
+        verify(cookieManager).removeCookie(TokenType.JSESSIONID)
+        verify(valueOperations).set(refreshToken, "logout", expirationTime, TimeUnit.MILLISECONDS)
     }
 }

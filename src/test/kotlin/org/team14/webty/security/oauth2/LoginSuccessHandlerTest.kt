@@ -7,8 +7,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.kotlin.*
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
@@ -67,17 +67,17 @@ internal class LoginSuccessHandlerTest {
         val accessToken = "mockAccessToken"
         val refreshToken = "mockRefreshToken"
 
-        Mockito.`when`(userService.existSocialProvider("123456789")).thenReturn(Optional.of(userId))
-        Mockito.`when`(jwtManager.createAccessToken(userId)).thenReturn(accessToken)
-        Mockito.`when`(jwtManager.createRefreshToken(userId)).thenReturn(refreshToken)
+        whenever(userService.existSocialProvider("123456789")).thenReturn(Optional.of(userId))
+        whenever(jwtManager.createAccessToken(userId)).thenReturn(accessToken)
+        whenever(jwtManager.createRefreshToken(userId)).thenReturn(refreshToken)
 
         loginSuccessHandler.onAuthenticationSuccess(request, response, authenticationToken)
 
-        Mockito.verify(userService).existSocialProvider("123456789")
-        Mockito.verify(jwtManager).createAccessToken(userId)
-        Mockito.verify(jwtManager).createRefreshToken(userId)
-        Mockito.verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        Mockito.verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(userService).existSocialProvider("123456789")
+        verify(jwtManager).createAccessToken(userId)
+        verify(jwtManager).createRefreshToken(userId)
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
     }
 
     @Test
@@ -87,18 +87,18 @@ internal class LoginSuccessHandlerTest {
         val accessToken = "mockAccessTokenNew"
         val refreshToken = "mockRefreshTokenNew"
 
-        Mockito.`when`(userService.existSocialProvider("123456789")).thenReturn(Optional.empty())
-        Mockito.`when`(userService.createUser(SocialProviderType.KAKAO, "123456789")).thenReturn(newUserId)
-        Mockito.`when`(jwtManager.createAccessToken(newUserId)).thenReturn(accessToken)
-        Mockito.`when`(jwtManager.createRefreshToken(newUserId)).thenReturn(refreshToken)
+        whenever(userService.existSocialProvider("123456789")).thenReturn(Optional.empty())
+        whenever(userService.createUser(SocialProviderType.KAKAO, "123456789")).thenReturn(newUserId)
+        whenever(jwtManager.createAccessToken(newUserId)).thenReturn(accessToken)
+        whenever(jwtManager.createRefreshToken(newUserId)).thenReturn(refreshToken)
 
         loginSuccessHandler.onAuthenticationSuccess(request, response, authenticationToken)
 
-        Mockito.verify(userService).existSocialProvider("123456789")
-        Mockito.verify(userService).createUser(SocialProviderType.KAKAO, "123456789")
-        Mockito.verify(jwtManager).createAccessToken(newUserId)
-        Mockito.verify(jwtManager).createRefreshToken(newUserId)
-        Mockito.verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        Mockito.verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(userService).existSocialProvider("123456789")
+        verify(userService).createUser(SocialProviderType.KAKAO, "123456789")
+        verify(jwtManager).createAccessToken(newUserId)
+        verify(jwtManager).createRefreshToken(newUserId)
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
     }
 }
