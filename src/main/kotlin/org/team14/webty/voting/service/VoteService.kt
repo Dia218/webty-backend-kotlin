@@ -28,7 +28,7 @@ class VoteService(
         val similar = similarRepository.findById(voteRequest.similarId)
             .orElseThrow<BusinessException> { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!
         // 중복 투표 방지
-        if (voteRepository.existsByUserIdAndSimilar(webtyUser.getUserId(), similar)) {
+        if (voteRepository.existsByUserIdAndSimilar(webtyUser.userId, similar)) {
             throw BusinessException(ErrorCode.VOTE_ALREADY_EXISTS)
         }
         val vote = toEntity(webtyUser, similar, voteRequest.voteType)
