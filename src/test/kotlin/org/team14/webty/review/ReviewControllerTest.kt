@@ -73,27 +73,27 @@ internal class ReviewControllerTest {
             // "Popular Webtoon" (1번 웹툰)
             val webtoons: MutableList<Webtoon> = ArrayList()
             val popularWebtoon = webtoonRepository!!.save(
-                Webtoon.builder()
-                    .webtoonName("Popular Webtoon")
-                    .platform(Platform.NAVER_WEBTOON)
-                    .webtoonLink("https://example.com/popular-webtoon")
-                    .thumbnailUrl("https://example.com/popular-thumbnail.jpg")
-                    .authors("Famous Author")
-                    .finished(false)
-                    .build()
+                Webtoon(
+                    webtoonName = "Popular Webtoon",
+                    platform = Platform.NAVER_WEBTOON,
+                    webtoonLink = "https://example.com/popular-webtoon",
+                    thumbnailUrl = "https://example.com/popular-thumbnail.jpg",
+                    authors = "Famous Author",
+                    finished = false
+                )
             )
             webtoons.add(popularWebtoon)
 
             for (i in 2..10) {
                 val testWebtoon = webtoonRepository.save(
-                    Webtoon.builder()
-                        .webtoonName("Test Webtoon $i")
-                        .platform(Platform.NAVER_WEBTOON)
-                        .webtoonLink("https://example.com/webtoon$i")
-                        .thumbnailUrl("https://example.com/thumbnail$i.jpg")
-                        .authors("Test Author $i")
-                        .finished(i % 2 == 0)
-                        .build()
+                    Webtoon(
+                        webtoonName = "Test Webtoon $i",
+                        platform = Platform.NAVER_WEBTOON,
+                        webtoonLink = "https://example.com/webtoon$i",
+                        thumbnailUrl = "https://example.com/thumbnail$i.jpg",
+                        authors = "Test Author $i",
+                        finished = (i % 2 == 0)
+                    )
                 )
                 webtoons.add(testWebtoon)
             }

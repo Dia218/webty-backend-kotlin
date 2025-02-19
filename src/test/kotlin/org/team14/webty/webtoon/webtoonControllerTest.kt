@@ -1,4 +1,4 @@
-package org.team14.webty
+package org.team14.webty.webtoon
 
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -11,19 +11,20 @@ import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
-import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
+import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.enumerate.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
 
+
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
-class WebtoonControllerTestKotlin {
+class WebtoonControllerTest {
 
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -65,9 +66,10 @@ class WebtoonControllerTestKotlin {
                 platform = Platform.KAKAO_PAGE,
                 webtoonLink = "www.abc",
                 thumbnailUrl = "www.bcd",
-                authors = "testtest",
+                authors = "Author1",
                 finished = true
-         ))
+            )
+        )
 
     }
 
@@ -92,7 +94,7 @@ class WebtoonControllerTestKotlin {
     }
 
     @Test
-    @DisplayName("웹툰 검색 테스트- 파라미터(page,size)")
+    @DisplayName("웹툰 전체조회 테스트")
     fun t2() {
         val page = 0
         val size = 10
@@ -106,27 +108,26 @@ class WebtoonControllerTestKotlin {
         )
             .andExpect(MockMvcResultMatchers.status().isOk())
             .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(2))
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1))
     }
 
     @Test
-    @DisplayName("웹툰 검색 테스트- 작가 검색")
+    @DisplayName("웹툰 검색 테스트 - 작가이름으로 조회")
     fun t3() {
-//        val page = 0
-//        val size = 10
-//        val authors = "Author1"
-//        val accessToken = jwtManager.createAccessToken(testUser.userId)
-//
-//        mockMvc.perform(
-//            get("/webtoons")
-//                .header("Authorization", "Bearer $accessToken")
-//                .param("authors", authors)
-//                .param("page", page.toString())
-//                .param("size", size.toString())
-//                .with(csrf())
-//        )
-//            .andExpect(status().isOk)
-//            .andExpect(jsonPath("$.content").isArray)
-//            .andExpect(jsonPath("$.content.length()").value(2))
+        val page = 0
+        val size = 10
+        val authors = "Author1"
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+
+        mockMvc!!.perform(
+            MockMvcRequestBuilders.get("/webtoons")
+                .header("Authorization", "Bearer $accessToken")
+                .param("authors", authors)
+                .param("page", page.toString())
+                .param("size", size.toString())
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk())
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray)
+            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1))
     }
 }

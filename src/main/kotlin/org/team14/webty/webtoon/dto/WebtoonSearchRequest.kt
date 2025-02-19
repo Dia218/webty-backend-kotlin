@@ -8,12 +8,12 @@ data class WebtoonSearchRequest(
     val webtoonName: String? = null,
 
     @field:Pattern(regexp = "^(NAVER|KAKAO_PAGE)?$", message = "Platform must be either NAVER or KAKAO_PAGE")
-    val platform: String,
+    val platform: String?,
 
     @field:Size(max = 100)
-    val authors: String,
+    val authors: String?,
 
-    val finished: Boolean,
+    val finished: Boolean?,
 
     @field:Min(0)
     val page: Int = 0,
