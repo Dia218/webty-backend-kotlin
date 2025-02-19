@@ -51,14 +51,14 @@ public class ReviewComment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
-    private Review review;
+    public Review review;
 
     @Column(name = "content", nullable = false)
     private String content;
 
     // Adjacency List 방식으로 변경
     @Column(name = "parent_id")
-    private Long parentId;  // 부모 댓글의 ID를 직접 저장
+    public Long parentId;  // 부모 댓글의 ID를 직접 저장
 
     @Column(name = "depth")
     @Builder.Default
