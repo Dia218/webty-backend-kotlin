@@ -6,6 +6,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -38,13 +39,6 @@ public class SecurityConfig {
 		http.addFilterBefore(customAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
 			.authorizeHttpRequests(authorizeRequests ->
 				authorizeRequests
-					// .requestMatchers(HttpMethod.GET, "/webtoons/{id:\\d+}").permitAll()
-					// .requestMatchers(HttpMethod.GET, "/reviews/{id:\\d+}}").permitAll()
-					// .requestMatchers(HttpMethod.GET, "/webtoons/search").permitAll()
-					// .requestMatchers("/reviews/**").permitAll()
-					// .requestMatchers("/logout/kakao", "/user-profile", "/user/**",
-					// 	"/favorite/**") // 로그인 해야 접속 가능한 페이지 목록
-					// .authenticated()
 					.anyRequest() // 나머지
 					.authenticated())
 			.sessionManagement(sessionManagement ->
@@ -71,12 +65,15 @@ public class SecurityConfig {
 	@Bean
 	public WebSecurityCustomizer webSecurityCustomizer() { // 스프링 시큐리티를 무시할 페이지 목록 ( = 로그인이 필요없는 페이지 목록)
 		return web -> web.ignoring().requestMatchers(
-			"/v3/**", "/swagger-ui/**", "/api/logistics",
-			"h2-console/**", "/error", // 테스트 이후 제거할 목록
-			"/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
-			"/reviews/search", "/similar", "/similar/{id:\\d+}", "/reviews/webtoon/{id:\\d+}",
-			"/reviews/spoiler/{id:\\d+}"
-		).requestMatchers(PathRequest.toH2Console());
+				"/v3/**", "/swagger-ui/**", "/api/logistics",
+				"h2-console/**", "/error",
+				"/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
+				"/reviews/search", "/reviews/webtoon/{id:\\d+}",
+				"/reviews/spoiler/{id:\\d+}"
+			)
+			.requestMatchers(HttpMethod.GET, "/similar")
+			.requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments")
+			.requestMatchers(PathRequest.toH2Console());
 	}
 
 	@Bean
