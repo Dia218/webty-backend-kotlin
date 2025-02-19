@@ -24,7 +24,6 @@ import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
-import java.time.LocalDateTime
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -83,9 +82,8 @@ internal class RecommendControllerTestKotlin {
                 title = "테스트 리뷰 제목",
                 viewCount = 0,
                 isSpoiler = SpoilerStatus.FALSE,
-                webtoon = testWebtoon!!,
-                createdAt = LocalDateTime.now())
-        )
+                webtoon = testWebtoon!!
+        ))
     }
 
     @AfterEach
