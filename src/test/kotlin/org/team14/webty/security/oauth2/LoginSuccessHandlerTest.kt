@@ -48,7 +48,7 @@ internal class LoginSuccessHandlerTest {
 
     @BeforeEach
     fun setUp() {
-        ReflectionTestUtils.setField(loginSuccessHandler, "REDIRECT_URI", "callbackURI")
+        ReflectionTestUtils.setField(loginSuccessHandler, "redirectUri", "callbackURI")
 
         val attributes = mapOf("id" to "123456789")
         val oAuth2User: OAuth2User = DefaultOAuth2User(
