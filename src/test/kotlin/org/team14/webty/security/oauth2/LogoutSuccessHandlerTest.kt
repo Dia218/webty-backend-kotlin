@@ -51,7 +51,7 @@ class LogoutSuccessHandlerTest {
     }
 
     @Test
-    fun `should handle logout successfully`() {
+    fun `OAuth2 로그아웃`() {
         /*
          * 로그아웃을 호출했을 때 정상적으로 작동하는 지 테스트
          * 1. 쿠키 삭제 확인
