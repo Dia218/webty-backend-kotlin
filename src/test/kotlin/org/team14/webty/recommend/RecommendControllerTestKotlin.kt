@@ -67,14 +67,14 @@ internal class RecommendControllerTestKotlin {
         )
 
         val testWebtoon = webtoonRepository?.save(
-            Webtoon.builder()
-                .webtoonName("테스트 웹툰")
-                .platform(Platform.KAKAO_PAGE)
-                .webtoonLink("www.abc")
-                .thumbnailUrl("www.bcd")
-                .authors("testtest")
-                .finished(true)
-                .build()
+            Webtoon(
+                webtoonName="테스트 웹툰",
+                platform = Platform.KAKAO_PAGE,
+                webtoonLink="www.abc",
+                thumbnailUrl = "www.bcd",
+                authors = "testtest",
+                finished = true,
+            )
         )
         testReview = reviewRepository?.save(
             Review(
