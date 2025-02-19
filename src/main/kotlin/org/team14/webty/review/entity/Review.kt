@@ -1,10 +1,10 @@
 package org.team14.webty.review.entity
 
 import jakarta.persistence.*
+import org.team14.webty.common.entity.BaseEntity
 import org.team14.webty.review.enumrate.SpoilerStatus
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.webtoon.entity.Webtoon
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "review")
@@ -33,10 +33,7 @@ data class Review(
     @Column(columnDefinition = "integer default 0", nullable = false)
     var viewCount: Int = 0,
 
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-
-    var updatedAt: LocalDateTime? = null
-) {
+) : BaseEntity() {
     fun plusViewCount() {
         viewCount++
     }
@@ -46,7 +43,6 @@ data class Review(
         this.content = content
         this.isSpoiler = isSpoiler
         this.webtoon = webtoon
-        this.updatedAt = LocalDateTime.now()
     }
 
     fun patchIsSpoiler() {

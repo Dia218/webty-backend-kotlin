@@ -26,7 +26,6 @@ import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
-import java.time.LocalDateTime
 import java.util.*
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -107,8 +106,6 @@ internal class ReviewControllerTest {
                         title = "Review by User 1 - $i",
                         content = "This is a review written by user 1.",
                         viewCount = i * 10,
-                        createdAt = LocalDateTime.now().minusDays(i.toLong()),
-                        updatedAt = LocalDateTime.now(),
                         isSpoiler = SpoilerStatus.FALSE
                     )
                 )
@@ -123,8 +120,6 @@ internal class ReviewControllerTest {
                         title = "Review by User ${i + 1}",
                         content = "This is a test review content by user ${i + 1}",
                         viewCount = (i + 1) * 5,
-                        createdAt = LocalDateTime.now().minusDays((i + 1).toLong()),
-                        updatedAt = LocalDateTime.now(),
                         isSpoiler = SpoilerStatus.FALSE
                     )
                 )
@@ -139,8 +134,6 @@ internal class ReviewControllerTest {
                         title = "Search Review $i",
                         content = "This review should appear in search results.",
                         viewCount = 50 * i,
-                        createdAt = LocalDateTime.now().minusDays(i.toLong()),
-                        updatedAt = LocalDateTime.now(),
                         isSpoiler = SpoilerStatus.FALSE
                     )
                 )

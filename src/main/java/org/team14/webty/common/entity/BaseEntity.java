@@ -16,13 +16,13 @@ import lombok.Setter;
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
-public class BaseEntity {
+public class BaseEntity { // Review.kt에서 접근하기 위해 public으로 변경
 	@CreatedDate
 	@Setter(AccessLevel.PRIVATE)
-	private LocalDateTime createdAt;
+	public LocalDateTime createdAt;
 
 	@LastModifiedDate
 	@Column(insertable = false)  // 업데이트할 때만 변경
 	@Setter(AccessLevel.PRIVATE)
-	private LocalDateTime modifiedAt;
+	public LocalDateTime modifiedAt;
 }
