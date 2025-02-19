@@ -12,9 +12,8 @@ import lombok.Getter;
 @Getter
 public class WebtyUserDetails implements UserDetails {
 
+	public final WebtyUser webtyUser;
 	final String USER_ROLE = "ROLE_USER";
-
-	private final WebtyUser webtyUser;
 
 	public WebtyUserDetails(WebtyUser webtyUser) {
 		this.webtyUser = webtyUser;

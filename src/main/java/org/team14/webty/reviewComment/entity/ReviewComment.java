@@ -48,7 +48,7 @@ public class ReviewComment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "review_id")
-    private Review review;
+    public Review review;
 
     @Column(name = "content", nullable = false)
     private String content;
@@ -61,7 +61,7 @@ public class ReviewComment {
 
     // Adjacency List 방식으로 변경
     @Column(name = "parent_id")
-    private Long parentId;  // 부모 댓글의 ID를 직접 저장
+    public Long parentId;  // 부모 댓글의 ID를 직접 저장
 
     @Column(name = "depth")
     private Integer depth;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글, 2: 대대댓글...)
