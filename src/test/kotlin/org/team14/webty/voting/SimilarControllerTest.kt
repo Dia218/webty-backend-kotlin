@@ -91,7 +91,7 @@ internal class SimilarControllerTest {
     @Throws(Exception::class)
     fun deleteSimilar_test() {
         val testSimilar = votingTestDataInitializer!!.newTestSimilar(
-            testUser!!, testTargetWebtoon,
+            testUser!!, testTargetWebtoon!!,
             testChoiceWebtoon!!
         )
 
@@ -109,8 +109,8 @@ internal class SimilarControllerTest {
     @Throws(java.lang.Exception::class)
     fun similarList_test() {
         val testChoiceWebtoon2 = votingTestDataInitializer!!.newTestChoiceWebtoon(2)
-        votingTestDataInitializer.newTestSimilar(testUser!!, testTargetWebtoon, testChoiceWebtoon!!)
-        votingTestDataInitializer.newTestSimilar(testUser!!, testTargetWebtoon, testChoiceWebtoon2)
+        votingTestDataInitializer.newTestSimilar(testUser!!, testTargetWebtoon!!, testChoiceWebtoon!!)
+        votingTestDataInitializer.newTestSimilar(testUser!!, testTargetWebtoon!!, testChoiceWebtoon2)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.get(similarPath)

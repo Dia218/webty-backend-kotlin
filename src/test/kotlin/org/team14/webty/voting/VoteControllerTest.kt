@@ -21,7 +21,7 @@ import org.springframework.web.context.WebApplicationContext
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.voting.entity.Similar
-import org.team14.webty.voting.enumerate.VoteType
+import org.team14.webty.voting.enums.VoteType
 
 
 @SpringBootTest
@@ -86,7 +86,7 @@ internal class VoteControllerTest {
     @DisplayName("투표 취소 테스트")
     @Throws(Exception::class)
     fun cancel_test() {
-        val testVote = votingTestDataInitializer!!.newTestVote(testUser!!, testSimilar, VoteType.AGREE)
+        val testVote = votingTestDataInitializer!!.newTestVote(testUser!!, testSimilar!!, VoteType.AGREE)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.delete(votePath + "/" + testVote.voteId)

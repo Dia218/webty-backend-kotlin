@@ -8,7 +8,7 @@ import org.team14.webty.user.enumerate.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.voting.entity.Similar
 import org.team14.webty.voting.entity.Vote
-import org.team14.webty.voting.enumerate.VoteType
+import org.team14.webty.voting.enums.VoteType
 import org.team14.webty.voting.repository.SimilarRepository
 import org.team14.webty.voting.repository.VoteRepository
 import org.team14.webty.webtoon.entity.Webtoon
@@ -31,10 +31,10 @@ class VotingTestDataInitializer {
     private val voteRepository: VoteRepository? = null
 
     fun deleteAllData() {
-        voteRepository!!.deleteAll()
-        similarRepository!!.deleteAll()
-        webtoonRepository!!.deleteAll()
-        userRepository!!.deleteAll()
+        voteRepository?.deleteAll()
+        similarRepository?.deleteAll()
+        webtoonRepository?.deleteAll()
+        userRepository?.deleteAll()
     }
 
     fun initTestUser(): WebtyUser {
@@ -78,24 +78,24 @@ class VotingTestDataInitializer {
         )
     }
 
-    fun newTestSimilar(testUser: WebtyUser, testTargetWebtoon: Webtoon?, testChoiceWebtoon: Webtoon): Similar {
+    fun newTestSimilar(testUser: WebtyUser, testTargetWebtoon: Webtoon, testChoiceWebtoon: Webtoon): Similar {
         return similarRepository!!.save(
-            Similar.builder()
-                .similarWebtoonId(testChoiceWebtoon.webtoonId)
-                .similarResult(0L)
-                .userId(testUser.getUserId())
-                .targetWebtoon(testTargetWebtoon)
-                .build()
+            Similar(
+                similarWebtoonId = testChoiceWebtoon.webtoonId,
+                similarResult = 0L,
+                userId = testUser.getUserId(),
+                targetWebtoon = testTargetWebtoon
+            )
         )
     }
 
-    fun newTestVote(testUser: WebtyUser, testSimilar: Similar?, voteType: VoteType?): Vote {
+    fun newTestVote(testUser: WebtyUser, testSimilar: Similar, voteType: VoteType): Vote {
         return voteRepository!!.save(
-            Vote.builder()
-                .userId(testUser.getUserId())
-                .similar(testSimilar)
-                .voteType(voteType)
-                .build()
+            Vote(
+                userId = testUser.getUserId(),
+                similar = testSimilar,
+                voteType = voteType
+            )
         )
     }
 }
