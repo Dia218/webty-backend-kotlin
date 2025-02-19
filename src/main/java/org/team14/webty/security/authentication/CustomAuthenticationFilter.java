@@ -117,11 +117,11 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
 		String newRefreshToken = tokens[1];
 
 		cookieManager.setCookie(TokenType.ACCESS_TOKEN, newAccessToken,
-			ExpirationPolicy.getAccessTokenExpirationTime());
+			ExpirationPolicy.accessTokenExpirationTime);
 		log.debug("새로운 엑세스 토큰 발급 완료");
 
 		cookieManager.setCookie(TokenType.REFRESH_TOKEN, newRefreshToken,
-			ExpirationPolicy.getRefreshTokenExpirationTime());
+			ExpirationPolicy.refreshTokenExpirationTime);
 		log.debug("새로운 리프레쉬 토큰 발급 완료");
 
 		return newAccessToken;

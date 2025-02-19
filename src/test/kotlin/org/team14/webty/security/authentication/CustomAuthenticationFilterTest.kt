@@ -86,8 +86,8 @@ class CustomAuthenticationFilterTest {
 
         // Then
         assertEquals(authentication, SecurityContextHolder.getContext().authentication)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.refreshTokenExpirationTime)
         verify(filterChain).doFilter(request, response)
     }
 
@@ -108,8 +108,8 @@ class CustomAuthenticationFilterTest {
 
         // Then
         assertEquals(authentication, SecurityContextHolder.getContext().authentication)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.refreshTokenExpirationTime)
         verify(filterChain).doFilter(request, response)
     }
 

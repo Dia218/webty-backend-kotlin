@@ -47,9 +47,9 @@ public class LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 		String accessToken = jwtManager.createAccessToken(userId);
 
 		cookieManager.setCookie(TokenType.ACCESS_TOKEN, accessToken,
-			ExpirationPolicy.getAccessTokenExpirationTime());
+			ExpirationPolicy.accessTokenExpirationTime);
 		cookieManager.setCookie(TokenType.REFRESH_TOKEN, refreshToken,
-			ExpirationPolicy.getRefreshTokenExpirationTime());
+			ExpirationPolicy.refreshTokenExpirationTime);
 
 		getRedirectStrategy().sendRedirect(request, response, String.format(REDIRECT_URI));
 	}

@@ -37,13 +37,13 @@ class JwtManager(
         return Jwts.builder().apply {
             claim("userId", userId)
             issuedAt(Date.from(Instant.now()))
-            expiration(Date.from(Instant.now().plusMillis(ExpirationPolicy.getAccessTokenExpirationTime())))
+            expiration(Date.from(Instant.now().plusMillis(ExpirationPolicy.accessTokenExpirationTime)))
             signWith(secretKey)
         }.compact()
     }
 
     fun createRefreshToken(userId: Long): String {
-        val expirationTime = ExpirationPolicy.getRefreshTokenExpirationTime()
+        val expirationTime = ExpirationPolicy.refreshTokenExpirationTime
         val refreshToken = Jwts.builder().apply {
             claim("userId", userId)
             issuedAt(Date(System.currentTimeMillis()))

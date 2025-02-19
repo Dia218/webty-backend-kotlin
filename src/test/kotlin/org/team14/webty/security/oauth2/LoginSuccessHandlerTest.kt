@@ -76,8 +76,8 @@ internal class LoginSuccessHandlerTest {
         verify(userService).existSocialProvider("123456789")
         verify(jwtManager).createAccessToken(userId)
         verify(jwtManager).createRefreshToken(userId)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.refreshTokenExpirationTime)
     }
 
     @Test
@@ -98,7 +98,7 @@ internal class LoginSuccessHandlerTest {
         verify(userService).createUser(SocialProviderType.KAKAO, "123456789")
         verify(jwtManager).createAccessToken(newUserId)
         verify(jwtManager).createRefreshToken(newUserId)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.refreshTokenExpirationTime)
     }
 }
