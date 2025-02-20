@@ -8,7 +8,7 @@ import org.team14.webty.webtoon.entity.Webtoon
 
 @Entity
 @Table(name = "review")
-data class Review(
+class Review(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
