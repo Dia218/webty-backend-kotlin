@@ -10,8 +10,8 @@ import org.team14.webty.recommend.enumerate.LikeType
 import org.team14.webty.review.entity.Review
 
 interface RecommendRepository : JpaRepository<Recommend, Long> {
-    fun existsByReviewAndUserIdAndLikeType(review: Review?, userId: Long?, likeType: LikeType?): Boolean
-    fun findByReviewAndUserIdAndLikeType(review: Review?, userId: Long?, likeType: LikeType?): Recommend?
+    fun existsByReviewAndUserIdAndLikeType(review: Review, userId: Long, likeType: LikeType): Boolean
+    fun findByReviewAndUserIdAndLikeType(review: Review, userId: Long, likeType: LikeType): Recommend?
 
     @Query(
         ("SELECT new map( " +

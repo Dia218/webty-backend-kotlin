@@ -18,12 +18,12 @@ class RecommendService(
 ) {
 
     @Transactional
-    fun createRecommend(webtyUserDetails: WebtyUserDetails, reviewId: Long, type: String?): Long? {
+    fun createRecommend(webtyUserDetails: WebtyUserDetails, reviewId: Long, type: String): Long? {
         val webtyUser = webtyUserDetails.webtyUser
         val review = reviewIdToReview(reviewId)
 
         recommendRepository.existsByReviewAndUserIdAndLikeType(
-            review, webtyUser.userId, LikeType.fromString(type!!)
+            review, webtyUser.userId, LikeType.fromString(type)
         ).takeIf { it }?.let { // true 이면 Exception 던짐
             throw BusinessException(ErrorCode.RECOMMEND_DUPLICATION_ERROR)
         }
