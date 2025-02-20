@@ -49,16 +49,33 @@ data class Review(
         return newReview
     }
 
-    fun updateReview(title: String, content: String, isSpoiler: SpoilerStatus, webtoon: Webtoon): Review {
-        return this.copy(
-            title = title,
+    fun updatedReview(title: String, content: String, isSpoiler: SpoilerStatus, webtoon: Webtoon): Review {
+        val newReview = Review(
+            reviewId = this.reviewId,
+            user = this.user,
+            webtoon = webtoon,
             content = content,
+            title = title,
             isSpoiler = isSpoiler,
-            webtoon = webtoon
+            viewCount = this.viewCount
         )
+        newReview.createdAt = this.createdAt
+        newReview.modifiedAt = this.modifiedAt
+        return newReview
     }
 
-    fun patchIsSpoiler(): Review {
-        return this.copy(isSpoiler = SpoilerStatus.TRUE)
+    fun patchedIsSpoiler(): Review {
+        val newReview = Review(
+            reviewId = this.reviewId,
+            user = this.user,
+            webtoon = this.webtoon,
+            content = this.content,
+            title = this.title,
+            isSpoiler = SpoilerStatus.TRUE,
+            viewCount = this.viewCount
+        )
+        newReview.createdAt = this.createdAt
+        newReview.modifiedAt = this.modifiedAt
+        return newReview
     }
 }

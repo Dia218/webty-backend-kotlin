@@ -135,10 +135,10 @@ class ReviewService(
             uploadReviewImage(review, reviewRequest.images!!)
         }
 
-        review.updateReview(
+        val updatedReview = review.updatedReview(
             reviewRequest.title, reviewRequest.content, reviewRequest.spoilerStatus, webtoon
         )
-        reviewRepository.save(review)
+        reviewRepository.save(updatedReview)
 
         return review.reviewId!!
     }
@@ -248,8 +248,8 @@ class ReviewService(
     fun patchReviewIsSpoiler(id: Long) {
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
-        review.patchIsSpoiler()
-        reviewRepository.save(review)
+        val updatedReview = review.patchedIsSpoiler()
+        reviewRepository.save(updatedReview)
     }
 
     private fun mapReviewResponse(reviews :Page<Review>) : Page<ReviewItemResponse>{
