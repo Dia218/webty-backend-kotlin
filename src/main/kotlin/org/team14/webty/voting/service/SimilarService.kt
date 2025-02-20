@@ -42,7 +42,7 @@ class SimilarService(
             throw BusinessException(ErrorCode.SIMILAR_DUPLICATION_ERROR)
         }
 
-        val similar = toEntity(webtyUser.userId, choiceWebtoon.webtoonId, targetWebtoon)
+        val similar = toEntity(webtyUser.userId!!, choiceWebtoon.webtoonId, targetWebtoon)
         try {
             similarRepository.save(similar)
         } catch (e: DataIntegrityViolationException) {
@@ -57,7 +57,7 @@ class SimilarService(
     fun deleteSimilar(webtyUserDetails: WebtyUserDetails, similarId: Long) {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val similar = similarRepository.findByUserIdAndSimilarId(
-            webtyUser.userId,
+            webtyUser.userId!!,
             similarId
         )
             .orElseThrow(Supplier { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) })!!

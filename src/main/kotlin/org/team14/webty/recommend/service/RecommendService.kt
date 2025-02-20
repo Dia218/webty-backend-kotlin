@@ -23,14 +23,14 @@ class RecommendService(
         val review = reviewIdToReview(reviewId)
 
         recommendRepository.existsByReviewAndUserIdAndLikeType(
-            review, webtyUser.userId, LikeType.fromString(type)
+            review, webtyUser.userId!!, LikeType.fromString(type)
         ).takeIf { it }?.let { // true 이면 Exception 던짐
             throw BusinessException(ErrorCode.RECOMMEND_DUPLICATION_ERROR)
         }
 
         return Recommend(
             likeType = LikeType.fromString(type),
-            userId = webtyUser.userId,
+            userId = webtyUser.userId!!,
             review = review
         ).also { recommendRepository.save(it) }.recommendId
     }
@@ -41,7 +41,7 @@ class RecommendService(
         val review = reviewIdToReview(reviewId)
 
         recommendRepository.findByReviewAndUserIdAndLikeType(
-            review, webtyUser.userId, LikeType.fromString(type)
+            review, webtyUser.userId!!, LikeType.fromString(type)
         )?.let { recommendRepository.delete(it) }
             ?: throw BusinessException(ErrorCode.RECOMMEND_NOT_FOUND)
     }
@@ -56,7 +56,7 @@ class RecommendService(
     }
 
     fun isRecommended(webtyUserDetails: WebtyUserDetails, reviewId: Long): Map<String, Boolean> {
-        return recommendRepository.findRecommendStatusByUserAndReview(webtyUserDetails.webtyUser.userId, reviewId)
+        return recommendRepository.findRecommendStatusByUserAndReview(webtyUserDetails.webtyUser.userId!!, reviewId)
             .mapValues { it.value == 1 }
     }
 }

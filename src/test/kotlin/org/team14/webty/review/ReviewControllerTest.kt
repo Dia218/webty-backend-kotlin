@@ -61,10 +61,10 @@ internal class ReviewControllerTest {
             val users: MutableList<WebtyUser> = ArrayList()
             for (i in 1..30) {
                 val testUser = userRepository.save(
-                    WebtyUser.builder()
-                        .nickname("testUser$i")
-                        .profileImage("https://example.com/profile$i.jpg")
-                        .build()
+                        WebtyUser(
+                                nickname = "testUser$i",
+                                profileImage = "https://example.com/profile$i.jpg"
+                        )
                 )
                 users.add(testUser)
             }

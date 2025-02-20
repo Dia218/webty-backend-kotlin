@@ -8,7 +8,7 @@ import org.team14.webty.voting.enums.VoteType
 object VoteMapper {
     fun toEntity(webtyUser: WebtyUser, similar: Similar, type: String): Vote {
         return Vote(
-            userId = webtyUser.userId,
+            userId = webtyUser.userId!!,
             similar = similar,
             voteType = VoteType.fromString(type)
         )
