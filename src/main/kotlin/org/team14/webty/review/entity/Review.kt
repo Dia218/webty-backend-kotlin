@@ -85,4 +85,8 @@ class Review(
 
         return reviewId == other.reviewId
     }
+
+    override fun hashCode(): Int {
+        return reviewId?.hashCode() ?: 0
+    }
 }
