@@ -47,13 +47,13 @@ class VoteService(
         updateSimilarResult(vote.similar)
     }
 
-    private fun updateSimilarResult(similar: Similar) {
+    private fun updateSimilarResult(existingSimilar: Similar) {
         // agree 및 disagree 투표 개수 가져오기
-        val agreeCount = voteRepository.countBySimilarAndVoteType(similar, VoteType.AGREE) // 동의 수
-        val disagreeCount = voteRepository.countBySimilarAndVoteType(similar, VoteType.DISAGREE) // 비동의 수
+        val agreeCount = voteRepository.countBySimilarAndVoteType(existingSimilar, VoteType.AGREE) // 동의 수
+        val disagreeCount = voteRepository.countBySimilarAndVoteType(existingSimilar, VoteType.DISAGREE) // 비동의 수
 
         // similarResult 업데이트
-        similar.updateSimilarResult(agreeCount - disagreeCount)
-        similarRepository.save<Similar>(similar)
+        val updateSimilar = existingSimilar.copy(similarResult = agreeCount - disagreeCount)
+        similarRepository.save<Similar>(updateSimilar)
     }
 }
