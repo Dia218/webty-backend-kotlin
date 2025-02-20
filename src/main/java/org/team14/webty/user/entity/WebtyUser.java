@@ -28,7 +28,7 @@ public class WebtyUser {
 	public Long userId;
 
 	@Column(name = "nickname", nullable = false, unique = true)
-	private String nickname;
+	public String nickname;
 
 	@Column(name = "profile_image")
 	private String profileImage;
