@@ -5,11 +5,11 @@ import org.team14.webty.recommend.enumerate.LikeType
 import org.team14.webty.review.entity.Review
 
 @Entity
-data class Recommend(
+class Recommend(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "vote_id")
-    val voteId: Long? = null,
+    var voteId: Long? = null,
 
     @Enumerated(EnumType.STRING)
     val likeType: LikeType,
@@ -20,4 +20,16 @@ data class Recommend(
 
     @Column(name = "user_id")
     val userId: Long
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Recommend) return false
+        if (voteId == null || other.voteId == null) return false
+        return voteId == other.voteId
+    }
+
+    override fun hashCode(): Int {
+        return voteId.hashCode()
+    }
+
+}
