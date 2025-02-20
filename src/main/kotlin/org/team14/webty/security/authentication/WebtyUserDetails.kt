@@ -6,12 +6,12 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.team14.webty.user.entity.WebtyUser
 
 class WebtyUserDetails(
-    val webtyUser: WebtyUser
+        val webtyUser: WebtyUser
 ) : UserDetails {
     private val userRole = "ROLE_USER"
 
     override fun getAuthorities(): Collection<GrantedAuthority> =
-        listOf(SimpleGrantedAuthority(userRole))
+            listOf(SimpleGrantedAuthority(userRole))
 
     override fun getPassword(): String? = null
 

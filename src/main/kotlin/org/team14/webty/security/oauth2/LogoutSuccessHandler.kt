@@ -13,9 +13,9 @@ import java.util.concurrent.TimeUnit
 
 @Component
 class LogoutSuccessHandler(
-    private val cookieManager: CookieManager,
-    private val redisTemplate: RedisTemplate<String, String>,
-    private val jwtManager: JwtManager
+        private val cookieManager: CookieManager,
+        private val redisTemplate: RedisTemplate<String, String>,
+        private val jwtManager: JwtManager
 ) : LogoutHandler {
 
     override fun logout(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication?) {

@@ -6,13 +6,13 @@ import org.team14.webty.webtoon.entity.Webtoon
 @Entity
 @Table(name = "similar", uniqueConstraints = [UniqueConstraint(columnNames = ["targetWebtoonId", "similarWebtoonId"])])
 class Similar(
-    val similarWebtoonId: Long,
-    var similarResult: Long,
-    val userId: Long,
+        val similarWebtoonId: Long,
+        var similarResult: Long,
+        val userId: Long,
 
-    @ManyToOne
-    @JoinColumn(name = "targetWebtoonId")
-    val targetWebtoon: Webtoon
+        @ManyToOne
+        @JoinColumn(name = "targetWebtoonId")
+        val targetWebtoon: Webtoon
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -17,8 +17,8 @@ import java.io.IOException
 
 @Component
 class CustomAuthenticationFilter(
-    private val cookieManager: CookieManager,
-    private val jwtManager: JwtManager
+        private val cookieManager: CookieManager,
+        private val jwtManager: JwtManager
 ) : OncePerRequestFilter() {
 
     private val log = LoggerFactory.getLogger(CustomAuthenticationFilter::class.java)
@@ -32,7 +32,7 @@ class CustomAuthenticationFilter(
 
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
-        request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain
+            request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain
     ) {
         val accessToken = getAccessToken(request)
         var authentication = requestGetAuthentication(accessToken)

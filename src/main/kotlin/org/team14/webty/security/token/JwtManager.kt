@@ -20,8 +20,8 @@ import java.util.concurrent.TimeUnit
 
 @Component
 class JwtManager(
-    private val webtyUserDetailsService: WebtyUserDetailsService,
-    private val redisTemplate: RedisTemplate<String, String>
+        private val webtyUserDetailsService: WebtyUserDetailsService,
+        private val redisTemplate: RedisTemplate<String, String>
 ) {
     @Value("\${jwt.secret}")
     private lateinit var secret: String
@@ -59,11 +59,11 @@ class JwtManager(
     fun getExpirationTime(token: String): Long {
         return try {
             Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .payload
-                .expiration.time
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .payload
+                    .expiration.time
         } catch (e: JwtException) {
             println("인증 토큰이 유효하지 않거나 만료되었습니다: ${e.message}")
             throw BusinessException(ErrorCode.TOKEN_NOT_VALID)
@@ -73,9 +73,9 @@ class JwtManager(
     fun validate(token: String): Boolean {
         return try {
             Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
             !isExpired(token)
         } catch (e: JwtException) {
             println("인증 토큰 검증에 실패했습니다: ${e.message}")
@@ -85,11 +85,11 @@ class JwtManager(
 
     private fun isExpired(token: String): Boolean {
         val expiration = Jwts.parser()
-            .verifyWith(secretKey)
-            .build()
-            .parseSignedClaims(token)
-            .payload
-            .expiration
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .payload
+                .expiration
         return expiration.before(Date())
     }
 
@@ -104,10 +104,10 @@ class JwtManager(
     fun getUserIdByToken(token: String): Long {
         return try {
             val claims = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .payload
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .payload
 
             (claims["userId"] as Number).toLong()  // 안전한 변환
         } catch (e: JwtException) {
@@ -118,11 +118,11 @@ class JwtManager(
 
     fun getAuthentication(accessToken: String): Authentication {
         val webtyUserDetails: WebtyUserDetails = webtyUserDetailsService.loadUserByUserId(
-            getUserIdByToken(accessToken)
+                getUserIdByToken(accessToken)
         )
         return UsernamePasswordAuthenticationToken(
-            webtyUserDetails, "",
-            webtyUserDetails.authorities
+                webtyUserDetails, "",
+                webtyUserDetails.authorities
         )
     }
 }

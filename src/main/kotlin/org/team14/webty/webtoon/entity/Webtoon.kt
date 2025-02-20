@@ -1,26 +1,25 @@
 package org.team14.webty.webtoon.entity
 
 import jakarta.persistence.*
-import lombok.NoArgsConstructor
 import org.team14.webty.webtoon.enumerate.Platform
 
 
 @Entity
 data class Webtoon(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val webtoonId: Long? = null,
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        val webtoonId: Long? = null,
 
-    var webtoonName: String,
+        var webtoonName: String,
 
-    @Enumerated(EnumType.STRING)
-    var platform: Platform,
+        @Enumerated(EnumType.STRING)
+        var platform: Platform,
 
-    var webtoonLink: String,
+        var webtoonLink: String,
 
-    var thumbnailUrl: String,
+        var thumbnailUrl: String,
 
-    var authors: String,
+        var authors: String,
 
-    var finished: Boolean
+        var finished: Boolean
 )

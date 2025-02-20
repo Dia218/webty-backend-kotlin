@@ -9,12 +9,12 @@ enum class SpoilerStatus(private val status: String) {
     companion object {
         fun fromString(value: String): SpoilerStatus {
             return Arrays.stream(entries.toTypedArray())
-                .filter { status: SpoilerStatus -> status.status.equals(value, ignoreCase = true) }
-                .findFirst().orElseThrow {
-                    IllegalArgumentException(
-                        "No enum constant " + SpoilerStatus::class.java.canonicalName + "." + value
-                    )
-                }
+                    .filter { status: SpoilerStatus -> status.status.equals(value, ignoreCase = true) }
+                    .findFirst().orElseThrow {
+                        IllegalArgumentException(
+                                "No enum constant " + SpoilerStatus::class.java.canonicalName + "." + value
+                        )
+                    }
         }
     }
 }

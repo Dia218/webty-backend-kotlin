@@ -1,8 +1,8 @@
 package org.team14.webty.voting.dto
 
 class SimilarResponse(
-    val similarId: Long,
-    val similarThumbnailUrl: String,
-    val similarResult: Long,
-    val similarWebtoonId: Long // webtoon-detail 페이지 이동 시 필요
+        val similarId: Long,
+        val similarThumbnailUrl: String,
+        val similarResult: Long,
+        val similarWebtoonId: Long // webtoon-detail 페이지 이동 시 필요
 )

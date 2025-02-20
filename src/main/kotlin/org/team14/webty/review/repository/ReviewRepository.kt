@@ -16,8 +16,8 @@ interface ReviewRepository : JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r WHERE r.user = :webtyUser ORDER BY r.reviewId DESC")
     fun findReviewByWebtyUser(
-        @Param("webtyUser") webtyUser: WebtyUser?,
-        pageable: Pageable?
+            @Param("webtyUser") webtyUser: WebtyUser?,
+            pageable: Pageable?
     ): Page<Review> // 특정 사용자의 리뷰 목록 조회 (페이징 처리)
 
     // 조회수 내림차순으로 모든 리뷰 조회
@@ -30,8 +30,8 @@ interface ReviewRepository : JpaRepository<Review, Long> {
 
     @Query("SELECT r FROM Review r WHERE LOWER(r.title) LIKE LOWER(CONCAT('%', :title, '%')) ORDER BY r.reviewId DESC")
     fun findByTitleContainingIgnoreCaseOrderByReviewIdDesc(
-        @Param("title") title: String?,
-        pageable: Pageable?
+            @Param("title") title: String?,
+            pageable: Pageable?
     ): Page<Review>
 
     @Query("SELECT r FROM Review r WHERE r.webtoon.webtoonId = :webtoonId ORDER BY r.reviewId DESC")

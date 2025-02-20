@@ -36,64 +36,59 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Table(name = "review_comment", indexes = {
-    @Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
-    @Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC")
+	@Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
+	@Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC")
 })
 public class ReviewComment extends BaseEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
-    private Long commentId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "review_id")
+	public Review review;
+	// Adjacency List 방식으로 변경
+	@Column(name = "parent_id")
+	public Long parentId;  // 부모 댓글의 ID를 직접 저장
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "comment_id")
+	private Long commentId;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id")
+	private WebtyUser user;
+	@Column(name = "content", nullable = false)
+	private String content;
+	@Column(name = "depth")
+	@Builder.Default
+	private Integer depth = 0;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글)
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private WebtyUser user;
+	@Convert(converter = ListToJsonConverter.class)
+	@Builder.Default
+	private List<String> mentions = new ArrayList<>();
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    public Review review;
+	public void updateComment(String comment) {
+		this.content = comment;
+	}
 
-    @Column(name = "content", nullable = false)
-    private String content;
+	@Converter
+	public static class ListToJsonConverter implements AttributeConverter<List<String>, String> {
 
-    // Adjacency List 방식으로 변경
-    @Column(name = "parent_id")
-    public Long parentId;  // 부모 댓글의 ID를 직접 저장
+		private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Column(name = "depth")
-    @Builder.Default
-    private Integer depth = 0;  // 댓글의 깊이 (0: 루트 댓글, 1: 대댓글)
+		@Override
+		public String convertToDatabaseColumn(List<String> attribute) {
+			try {
+				return objectMapper.writeValueAsString(attribute);
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to convert list to JSON", e);
+			}
+		}
 
-    @Convert(converter = ListToJsonConverter.class)
-    @Builder.Default
-    private List<String> mentions = new ArrayList<>();
-
-    public void updateComment(String comment) {
-        this.content = comment;
-    }
-
-    @Converter
-    public static class ListToJsonConverter implements AttributeConverter<List<String>, String> {
-
-        private final ObjectMapper objectMapper = new ObjectMapper();
-
-        @Override
-        public String convertToDatabaseColumn(List<String> attribute) {
-            try {
-                return objectMapper.writeValueAsString(attribute);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to convert list to JSON", e);
-            }
-        }
-
-        @Override
-        public List<String> convertToEntityAttribute(String dbData) {
-            try {
-                return objectMapper.readValue(dbData, new TypeReference<>() {
-                });
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to convert JSON to list", e);
-            }
-        }
-    }
+		@Override
+		public List<String> convertToEntityAttribute(String dbData) {
+			try {
+				return objectMapper.readValue(dbData, new TypeReference<>() {
+				});
+			} catch (IOException e) {
+				throw new RuntimeException("Failed to convert JSON to list", e);
+			}
+		}
+	}
 }

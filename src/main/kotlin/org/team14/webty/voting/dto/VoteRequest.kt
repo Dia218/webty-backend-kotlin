@@ -1,6 +1,6 @@
 package org.team14.webty.voting.dto
 
 class VoteRequest(
-    val similarId: Long,
-    val voteType: String
+        val similarId: Long,
+        val voteType: String
 )

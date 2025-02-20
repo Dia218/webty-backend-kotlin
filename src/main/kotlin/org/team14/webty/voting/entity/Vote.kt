@@ -5,14 +5,14 @@ import org.team14.webty.voting.enums.VoteType
 
 @Entity
 class Vote(
-    val userId: Long,
+        val userId: Long,
 
-    @ManyToOne
-    @JoinColumn(name = "similarId")
-    val similar: Similar,
+        @ManyToOne
+        @JoinColumn(name = "similarId")
+        val similar: Similar,
 
-    @Enumerated(value = EnumType.STRING)
-    var voteType: VoteType? = null
+        @Enumerated(value = EnumType.STRING)
+        var voteType: VoteType? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -11,7 +11,7 @@ enum class Platform(val platformName: String) {
 
         fun fromString(value: String): Platform {
             return entries.find { it.platformName.equals(value, ignoreCase = true) }
-                ?: throw IllegalArgumentException("No enum constant ${Platform::class.qualifiedName}.$value")
+                    ?: throw IllegalArgumentException("No enum constant ${Platform::class.qualifiedName}.$value")
         }
     }
 }

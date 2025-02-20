@@ -1,6 +1,6 @@
 package org.team14.webty.webtoon.enumerate
 
-enum class WebtoonSort (val field: String) {
+enum class WebtoonSort(val field: String) {
     WEBTOON_NAME("webtoonName"),
     PLATFORM("platform"),
     AUTHORS("authors"),

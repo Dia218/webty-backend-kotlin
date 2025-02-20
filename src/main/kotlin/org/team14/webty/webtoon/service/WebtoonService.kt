@@ -21,8 +21,8 @@ import org.team14.webty.webtoon.repository.WebtoonRepository
 
 @Service
 class WebtoonService(
-    private val webtoonRepository: WebtoonRepository,
-    private val restTemplate: RestTemplate
+        private val webtoonRepository: WebtoonRepository,
+        private val restTemplate: RestTemplate
 ) {
     private val log = LoggerFactory.getLogger(WebtoonService::class.java)
 
@@ -71,7 +71,7 @@ class WebtoonService(
 
     private fun saveWebtoonsFromPage(webtoonPageApiResponse: WebtoonPageApiResponse) {
         val webtoons = webtoonPageApiResponse.webtoonApiResponses
-            .map(WebtoonApiResponseMapper::toEntity)
+                .map(WebtoonApiResponseMapper::toEntity)
         webtoonRepository.saveAll(webtoons)
     }
 
@@ -87,8 +87,8 @@ class WebtoonService(
     fun updateWebtoonsByProviderAsync(provider: Platform) {
         try {
             val existingWebtoonKeys = webtoonRepository.findAll()
-                .map { generateWebtoonKey(it) }
-                .toSet()
+                    .map { generateWebtoonKey(it) }
+                    .toSet()
             updateWebtoonsByProvider(provider, existingWebtoonKeys)
         } catch (e: Exception) {
             log.error("웹툰 업데이트 중 오류 발생 - Provider: {}, Error: {}", provider, e.message, e)
@@ -108,11 +108,11 @@ class WebtoonService(
             }
 
             val newWebtoons = webtoonPageApiResponse!!.webtoonApiResponses
-                .filter { dto ->
-                    val webtoonKey = generateWebtoonKey(dto.title, provider, formatAuthors(dto.authors))
-                    !existingWebtoonKeys.contains(webtoonKey)
-                }
-                .map(WebtoonApiResponseMapper::toEntity)
+                    .filter { dto ->
+                        val webtoonKey = generateWebtoonKey(dto.title, provider, formatAuthors(dto.authors))
+                        !existingWebtoonKeys.contains(webtoonKey)
+                    }
+                    .map(WebtoonApiResponseMapper::toEntity)
 
             if (newWebtoons.isNotEmpty()) {
                 webtoonRepository.saveAll(newWebtoons)
@@ -136,20 +136,20 @@ class WebtoonService(
 
     fun findWebtoon(id: Long): Webtoon {
         return webtoonRepository.findById(id)
-            .orElseThrow {
-                IllegalArgumentException("웹툰을 찾을 수 없습니다. id: $id")
-            }
+                .orElseThrow {
+                    IllegalArgumentException("웹툰을 찾을 수 없습니다. id: $id")
+                }
     }
 
     fun searchWebtoons(
-        webtoonName: String?,
-        platform: Platform?,
-        authors: String?,
-        finished: Boolean?,
-        page: Int,
-        size: Int,
-        sortBy: String,
-        sortDirection: String
+            webtoonName: String?,
+            platform: Platform?,
+            authors: String?,
+            finished: Boolean?,
+            page: Int,
+            size: Int,
+            sortBy: String,
+            sortDirection: String
     ): Page<Webtoon> {
         val direction = if (sortDirection.equals("desc", ignoreCase = true)) Sort.Direction.DESC else Sort.Direction.ASC
         val sortField = WebtoonSort.fromString(sortBy)?.field ?: WebtoonSort.WEBTOON_NAME.field

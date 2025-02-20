@@ -9,31 +9,31 @@ import org.team14.webty.webtoon.entity.Webtoon
 @Entity
 @Table(name = "review")
 data class Review(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "review_id")
-    val reviewId: Long? = null,
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "review_id")
+        val reviewId: Long? = null,
 
-    @ManyToOne
-    @JoinColumn(name = "userId")
-    val user: WebtyUser,
+        @ManyToOne
+        @JoinColumn(name = "userId")
+        val user: WebtyUser,
 
-    @ManyToOne
-    @JoinColumn(name = "webtoonId")
-    var webtoon: Webtoon,
+        @ManyToOne
+        @JoinColumn(name = "webtoonId")
+        var webtoon: Webtoon,
 
-    @Column(length = 5000)
-    var content: String,
+        @Column(length = 5000)
+        var content: String,
 
-    var title: String,
+        var title: String,
 
-    @Enumerated(EnumType.STRING)
-    var isSpoiler: SpoilerStatus,
+        @Enumerated(EnumType.STRING)
+        var isSpoiler: SpoilerStatus,
 
-    @Column(columnDefinition = "integer default 0", nullable = false)
-    var viewCount: Int = 0,
+        @Column(columnDefinition = "integer default 0", nullable = false)
+        var viewCount: Int = 0,
 
-) : BaseEntity() {
+        ) : BaseEntity() {
     fun plusViewCount() {
         viewCount++
     }

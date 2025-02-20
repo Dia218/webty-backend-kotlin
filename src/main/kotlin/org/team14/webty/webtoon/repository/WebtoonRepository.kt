@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
-import java.util.Optional
+import java.util.*
 
 @Repository
 interface WebtoonRepository : JpaRepository<Webtoon, Long> {
@@ -21,11 +21,11 @@ interface WebtoonRepository : JpaRepository<Webtoon, Long> {
         AND (:finished IS NULL OR w.finished = :finished)
     """)
     fun searchWebtoons(
-        @Param("webtoonName") webtoonName: String?,
-        @Param("platform") platform: Platform?,
-        @Param("authors") authors: String?,
-        @Param("finished") finished: Boolean?,
-        pageable: Pageable
+            @Param("webtoonName") webtoonName: String?,
+            @Param("platform") platform: Platform?,
+            @Param("authors") authors: String?,
+            @Param("finished") finished: Boolean?,
+            pageable: Pageable
     ): Page<Webtoon>
 
     fun findByWebtoonName(similarWebtoonName: String): Optional<Webtoon>

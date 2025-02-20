@@ -23,9 +23,9 @@ import org.team14.webty.security.oauth2.LogoutSuccessHandler
 @Configuration
 @EnableWebSecurity
 class SecurityConfig(
-    private val loginSuccessHandler: LoginSuccessHandler,
-    private val customAuthenticationFilter: CustomAuthenticationFilter,
-    private val logoutSuccessHandler: LogoutSuccessHandler
+        private val loginSuccessHandler: LoginSuccessHandler,
+        private val customAuthenticationFilter: CustomAuthenticationFilter,
+        private val logoutSuccessHandler: LogoutSuccessHandler
 ) {
 
     @Bean
@@ -39,9 +39,9 @@ class SecurityConfig(
         oauth2Login { it.successHandler(loginSuccessHandler) }
         logout {
             it.addLogoutHandler(logoutSuccessHandler)
-                .invalidateHttpSession(true)
-                .logoutSuccessUrl("http://localhost:3000")
-                .logoutSuccessHandler { _, response, _ -> response.status = HttpStatus.OK.value() }
+                    .invalidateHttpSession(true)
+                    .logoutSuccessUrl("http://localhost:3000")
+                    .logoutSuccessHandler { _, response, _ -> response.status = HttpStatus.OK.value() }
         }
         build()
     }
@@ -50,21 +50,21 @@ class SecurityConfig(
     fun webSecurityCustomizer(): WebSecurityCustomizer {
         return WebSecurityCustomizer {
             it.ignoring().requestMatchers(
-                "/v3/**", "/swagger-ui/**", "/api/logistics",
-                "h2-console/**", "/error",
-                "/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
-                "/reviews/search", "/reviews/webtoon/{id:\\d+}",
-                "/reviews/spoiler/{id:\\d+}"
+                    "/v3/**", "/swagger-ui/**", "/api/logistics",
+                    "h2-console/**", "/error",
+                    "/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
+                    "/reviews/search", "/reviews/webtoon/{id:\\d+}",
+                    "/reviews/spoiler/{id:\\d+}"
             )
-                .requestMatchers(HttpMethod.GET, "/similar")
-                .requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments")
-                .requestMatchers(PathRequest.toH2Console())
+                    .requestMatchers(HttpMethod.GET, "/similar")
+                    .requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments")
+                    .requestMatchers(PathRequest.toH2Console())
         }
     }
 
     @Bean
     fun registration(filter: CustomAuthenticationFilter): FilterRegistrationBean<CustomAuthenticationFilter> =
-        FilterRegistrationBean(filter).apply { isEnabled = false }
+            FilterRegistrationBean(filter).apply { isEnabled = false }
 
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource = UrlBasedCorsConfigurationSource().apply {
