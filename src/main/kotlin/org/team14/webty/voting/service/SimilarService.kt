@@ -22,16 +22,16 @@ import java.util.function.Supplier
 
 @Service
 class SimilarService(
-    private val similarRepository: SimilarRepository,
-    private val webtoonService: WebtoonService,
-    private val authWebtyUserProvider: AuthWebtyUserProvider,
-    private val voteRepository: VoteRepository
+        private val similarRepository: SimilarRepository,
+        private val webtoonService: WebtoonService,
+        private val authWebtyUserProvider: AuthWebtyUserProvider,
+        private val voteRepository: VoteRepository
 ) {
     // 유사 웹툰 등록
     @Transactional
     fun createSimilar(
-        webtyUserDetails: WebtyUserDetails, targetWebtoonId: Long,
-        choiceWebtoonId: Long
+            webtyUserDetails: WebtyUserDetails, targetWebtoonId: Long,
+            choiceWebtoonId: Long
     ): SimilarResponse {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val targetWebtoon = webtoonService.findWebtoon(targetWebtoonId)
@@ -42,7 +42,7 @@ class SimilarService(
             throw BusinessException(ErrorCode.SIMILAR_DUPLICATION_ERROR)
         }
 
-        val similar = toEntity(webtyUser.userId, choiceWebtoon.webtoonId, targetWebtoon)
+        val similar = toEntity(webtyUser.userId!!, choiceWebtoon.webtoonId, targetWebtoon)
         try {
             similarRepository.save(similar)
         } catch (e: DataIntegrityViolationException) {
@@ -57,10 +57,10 @@ class SimilarService(
     fun deleteSimilar(webtyUserDetails: WebtyUserDetails, similarId: Long) {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val similar = similarRepository.findByUserIdAndSimilarId(
-            webtyUser.userId,
-            similarId
+                webtyUser.userId!!,
+                similarId
         )
-            .orElseThrow(Supplier { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) })!!
+                .orElseThrow(Supplier { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) })!!
         voteRepository.deleteAll(voteRepository.findAllBySimilar(similar)) // 연관된 투표내역도 삭제
         similarRepository.delete(similar)
     }
@@ -74,9 +74,9 @@ class SimilarService(
 
         return similars.map { similar: Similar? ->
             toResponse(
-                similar!!, webtoonService.findWebtoon(
+                    similar!!, webtoonService.findWebtoon(
                     similar.similarWebtoonId
-                )
+            )
             )
         }
     }

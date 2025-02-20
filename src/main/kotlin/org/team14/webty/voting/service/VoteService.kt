@@ -17,18 +17,18 @@ import java.util.function.Supplier
 
 @Service
 class VoteService(
-    private val voteRepository: VoteRepository,
-    private val similarRepository: SimilarRepository,
-    private val authWebtyUserProvider: AuthWebtyUserProvider
+        private val voteRepository: VoteRepository,
+        private val similarRepository: SimilarRepository,
+        private val authWebtyUserProvider: AuthWebtyUserProvider
 ) {
     // 유사 투표
     @Transactional
     fun vote(webtyUserDetails: WebtyUserDetails, voteRequest: VoteRequest): Long {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val similar = similarRepository.findById(voteRequest.similarId)
-            .orElseThrow<BusinessException> { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!
+                .orElseThrow<BusinessException> { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!
         // 중복 투표 방지
-        if (voteRepository.existsByUserIdAndSimilar(webtyUser.userId, similar)) {
+        if (voteRepository.existsByUserIdAndSimilar(webtyUser.userId!!, similar)) {
             throw BusinessException(ErrorCode.VOTE_ALREADY_EXISTS)
         }
         val vote = toEntity(webtyUser, similar, voteRequest.voteType)
@@ -42,7 +42,7 @@ class VoteService(
     fun cancel(webtyUserDetails: WebtyUserDetails, voteId: Long) {
         authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val vote: Vote = voteRepository.findById(voteId)
-            .orElseThrow(Supplier { BusinessException(ErrorCode.VOTE_NOT_FOUND) })
+                .orElseThrow(Supplier { BusinessException(ErrorCode.VOTE_NOT_FOUND) })
         voteRepository.delete(vote)
         updateSimilarResult(vote.similar)
     }

@@ -11,14 +11,14 @@ import org.team14.webty.common.cookies.CookieManager
 import org.team14.webty.common.enums.TokenType
 import org.team14.webty.security.policy.ExpirationPolicy
 import org.team14.webty.security.token.JwtManager
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.service.UserService
 
 @Component
 class LoginSuccessHandler(
-    private val cookieManager: CookieManager,
-    private val jwtManager: JwtManager,
-    private val userService: UserService
+        private val cookieManager: CookieManager,
+        private val jwtManager: JwtManager,
+        private val userService: UserService
 ) : SimpleUrlAuthenticationSuccessHandler() {
     @Value("\${jwt.redirect}")
     lateinit var redirectUri: String

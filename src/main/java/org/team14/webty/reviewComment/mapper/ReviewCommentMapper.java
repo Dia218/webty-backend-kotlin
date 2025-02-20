@@ -5,8 +5,8 @@ import org.team14.webty.review.entity.Review;
 import org.team14.webty.reviewComment.dto.CommentRequest;
 import org.team14.webty.reviewComment.dto.CommentResponse;
 import org.team14.webty.reviewComment.entity.ReviewComment;
-import org.team14.webty.user.dto.UserDataResponse;
 import org.team14.webty.user.entity.WebtyUser;
+import org.team14.webty.user.mapper.UserDataResponseMapper;
 
 @Component
 public class ReviewCommentMapper {
@@ -23,7 +23,7 @@ public class ReviewCommentMapper {
 
 	public static CommentResponse toResponse(ReviewComment comment) {
 		return CommentResponse.builder()
-			.user(new UserDataResponse(comment.getUser()))
+			.user(UserDataResponseMapper.INSTANCE.toDto(comment.getUser()))
 			.commentId(comment.getCommentId())
 			.content(comment.getContent())
 			.createdAt(comment.getCreatedAt())

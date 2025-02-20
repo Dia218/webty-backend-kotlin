@@ -19,7 +19,7 @@ import org.team14.webty.review.repository.ReviewRepository
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
@@ -59,37 +59,35 @@ internal class RecommendControllerTestKotlin {
         userRepository!!.deleteAll()
 
         testUser = userRepository.save(
-            WebtyUser.builder()
-                .nickname("테스트유저")
-                .profileImage("dasdsa")
-                .socialProvider(
-                    SocialProvider.builder()
-                        .provider(SocialProviderType.KAKAO)
-                        .providerId("313213231")
-                        .build()
+                WebtyUser(
+                        nickname = "테스트유저",
+                        profileImage = "dasdsa",
+                        socialProvider = SocialProvider(
+                                provider = SocialProviderType.KAKAO,
+                                providerId = "313213231"
+                        )
                 )
-                .build()
         )
 
         val testWebtoon = webtoonRepository.save(
-            Webtoon(
-                webtoonName = "테스트 웹툰",
-                platform = Platform.KAKAO_PAGE,
-                webtoonLink = "www.abc",
-                thumbnailUrl = "www.bcd",
-                authors = "testtest",
-                finished = true,
-            )
+                Webtoon(
+                        webtoonName = "테스트 웹툰",
+                        platform = Platform.KAKAO_PAGE,
+                        webtoonLink = "www.abc",
+                        thumbnailUrl = "www.bcd",
+                        authors = "testtest",
+                        finished = true,
+                )
         )
         testReview = reviewRepository.save(
-            Review(
-                user = testUser!!,
-                content = "테스트 리뷰",
-                title = "테스트 리뷰 제목",
-                viewCount = 0,
-                isSpoiler = SpoilerStatus.FALSE,
-                webtoon = testWebtoon
-            )
+                Review(
+                        user = testUser!!,
+                        content = "테스트 리뷰",
+                        title = "테스트 리뷰 제목",
+                        viewCount = 0,
+                        isSpoiler = SpoilerStatus.FALSE,
+                        webtoon = testWebtoon
+                )
         )
     }
 
@@ -99,15 +97,15 @@ internal class RecommendControllerTestKotlin {
     fun t1() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.post("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.content().string("1"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string("1"))
     }
 
     @Test
@@ -116,24 +114,24 @@ internal class RecommendControllerTestKotlin {
     fun t2() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.post("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.post("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
-            .andExpect(MockMvcResultMatchers.status().isBadRequest())
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("추천/비추천을 두번 이상 할 수 없습니다."))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.errorCode").value("RECOMMEND-001"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("추천/비추천을 두번 이상 할 수 없습니다."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errorCode").value("RECOMMEND-001"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("BAD_REQUEST"))
     }
 
     @Test
@@ -142,18 +140,18 @@ internal class RecommendControllerTestKotlin {
     fun t3() {
         val reviewId = testReview!!.reviewId
         val type = "abb"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.post("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
-            .andExpect(MockMvcResultMatchers.status().isBadRequest()) // 400 상태
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)) // JSON 응답 확인
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("type은 LIKE(like), HATE(hate)만 가능합니다."))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.errorCode").value("RECOMMEND-002"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("BAD_REQUEST"))
+                .andExpect(MockMvcResultMatchers.status().isBadRequest()) // 400 상태
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON)) // JSON 응답 확인
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("type은 LIKE(like), HATE(hate)만 가능합니다."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errorCode").value("RECOMMEND-002"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("BAD_REQUEST"))
     }
 
     @Test
@@ -162,20 +160,20 @@ internal class RecommendControllerTestKotlin {
     fun t4() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.post("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.delete("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.delete("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isOk())
     }
 
     @Test
@@ -184,18 +182,18 @@ internal class RecommendControllerTestKotlin {
     fun t5() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.delete("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.delete("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
-            .andExpect(MockMvcResultMatchers.status().isNotFound())
-            .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("해당 추천/비추천이 존재하지 않습니다."))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.errorCode").value("RECOMMEND-003"))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("NOT_FOUND"))
+                .andExpect(MockMvcResultMatchers.status().isNotFound())
+                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("해당 추천/비추천이 존재하지 않습니다."))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.errorCode").value("RECOMMEND-003"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.httpStatus").value("NOT_FOUND"))
     }
 
     @Test
@@ -205,29 +203,29 @@ internal class RecommendControllerTestKotlin {
         val userId = testUser!!.userId
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.post("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
         )
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.get("/recommend/user/$userId")
-                .header("Authorization", "Bearer $accessToken")
+                MockMvcRequestBuilders.get("/recommend/user/$userId")
+                        .header("Authorization", "Bearer $accessToken")
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].reviewId").isNumber())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].title").isString())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].recommendCount").isNumber())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage").isNumber())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").isNumber())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").isNumber())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.hasNext").isBoolean())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.hasPrevious").isBoolean())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.isLast").isBoolean())
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].reviewId").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].title").isString())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content[0].recommendCount").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.currentPage").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalPages").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.totalElements").isNumber())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.hasNext").isBoolean())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.hasPrevious").isBoolean())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.isLast").isBoolean())
     }
 
     @Test
@@ -236,23 +234,23 @@ internal class RecommendControllerTestKotlin {
     fun t7() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post("/recommend/$reviewId")
-                .header("Authorization", "Bearer $accessToken")
-                .param("type", type)
+                MockMvcRequestBuilders.post("/recommend/$reviewId")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("type", type)
 
         )
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.get("/recommend/$reviewId/recommendation")
-                .header("Authorization", "Bearer $accessToken")
+                MockMvcRequestBuilders.get("/recommend/$reviewId/recommendation")
+                        .header("Authorization", "Bearer $accessToken")
 
         )
-            .andExpect(MockMvcResultMatchers.jsonPath("$.LIKES").isBoolean())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.LIKES").value(true))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.HATES").isBoolean())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.HATES").value(false))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.LIKES").isBoolean())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.LIKES").value(true))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.HATES").isBoolean())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.HATES").value(false))
     }
 }

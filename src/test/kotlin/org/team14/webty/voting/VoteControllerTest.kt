@@ -28,7 +28,7 @@ import org.team14.webty.voting.enums.VoteType
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
 @Import(
-    VotingTestDataInitializer::class
+        VotingTestDataInitializer::class
 )
 internal class VoteControllerTest {
     private val votePath = "/vote"
@@ -50,9 +50,9 @@ internal class VoteControllerTest {
     @BeforeEach
     fun beforeEach() {
         mockMvc = MockMvcBuilders
-            .webAppContextSetup(context!!)
-            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
+                .webAppContextSetup(context!!)
+                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+                .build()
 
         votingTestDataInitializer!!.deleteAllData()
         testUser = votingTestDataInitializer.initTestUser()
@@ -73,13 +73,13 @@ internal class VoteControllerTest {
         val jsonRequest = objectMapper.writeValueAsString(requestBody)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post(votePath)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
-                .content(jsonRequest)
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                MockMvcRequestBuilders.post(votePath)
+                        .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isOk())
     }
 
     @Test
@@ -89,11 +89,11 @@ internal class VoteControllerTest {
         val testVote = votingTestDataInitializer!!.newTestVote(testUser!!, testSimilar!!, VoteType.AGREE)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.delete(votePath + "/" + testVote.voteId)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                MockMvcRequestBuilders.delete(votePath + "/" + testVote.voteId)
+                        .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isOk())
     }
 }

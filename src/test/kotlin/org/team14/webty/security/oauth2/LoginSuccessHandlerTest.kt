@@ -18,7 +18,7 @@ import org.team14.webty.common.cookies.CookieManager
 import org.team14.webty.common.enums.TokenType
 import org.team14.webty.security.policy.ExpirationPolicy
 import org.team14.webty.security.token.JwtManager
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.service.UserService
 import java.io.IOException
 import java.util.*
@@ -52,11 +52,11 @@ internal class LoginSuccessHandlerTest {
 
         val attributes = mapOf("id" to "123456789")
         val oAuth2User: OAuth2User = DefaultOAuth2User(
-            listOf(SimpleGrantedAuthority("ROLE_USER")), attributes, "id"
+                listOf(SimpleGrantedAuthority("ROLE_USER")), attributes, "id"
         )
 
         authenticationToken = OAuth2AuthenticationToken(
-            oAuth2User, oAuth2User.authorities, "kakao"
+                oAuth2User, oAuth2User.authorities, "kakao"
         )
     }
 

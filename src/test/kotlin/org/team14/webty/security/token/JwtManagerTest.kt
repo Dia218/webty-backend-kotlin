@@ -41,7 +41,7 @@ class JwtManagerTest {
     @BeforeEach
     fun setUp() {
         // 1. 테스트 유저 생성 및 저장
-        val testUser = WebtyUser(null, nickName, null, null)
+        val testUser = WebtyUser(nickname = nickName, profileImage = "test img", socialProvider = null)
         userId = userRepository.save(testUser).userId
 
         // 2. JWT 토큰 생성
@@ -86,11 +86,11 @@ class JwtManagerTest {
     fun `should return false for expired token`() {
         // 만료된 토큰 생성 (0ms 후 만료)
         val expiredToken = Jwts.builder()
-            .claim("userId", userId)
-            .issuedAt(Date())
-            .expiration(Date(System.currentTimeMillis() - 1000)) // 이미 만료됨
-            .signWith(Keys.hmacShaKeyFor("testtesttesttesttesttesttesttesttesttest".toByteArray()))
-            .compact()
+                .claim("userId", userId)
+                .issuedAt(Date())
+                .expiration(Date(System.currentTimeMillis() - 1000)) // 이미 만료됨
+                .signWith(Keys.hmacShaKeyFor("testtesttesttesttesttesttesttesttesttest".toByteArray()))
+                .compact()
 
         assertThat(jwtManager.validate(expiredToken)).isFalse()
     }

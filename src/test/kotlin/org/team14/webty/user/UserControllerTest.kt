@@ -1,4 +1,4 @@
-package org.team14.webty.user.controller
+package org.team14.webty.user
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.hamcrest.Matchers.`is`
@@ -43,10 +43,10 @@ class UserControllerTest {
     fun beforeEach() {
         userRepository.deleteAll()
         testUser = userRepository.save(
-            WebtyUser.builder()
-                .nickname("테스트유저")
-                .profileImage("testUserProfileImg")
-                .build()
+                WebtyUser(
+                        nickname = "테스트유저",
+                        profileImage = "testUserProfileImg"
+                )
         )
     }
 
@@ -57,57 +57,57 @@ class UserControllerTest {
         val jsonRequest = objectMapper.writeValueAsString(reqBody)
 
         mockMvc.perform(
-            patch("/user/nickname")
-                .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId)}")
-                .content(jsonRequest)
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(csrf())
+                patch("/user/nickname")
+                        .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(csrf())
         )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.message", `is`("닉네임이 변경되었습니다.")))
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.message", `is`("닉네임이 변경되었습니다.")))
     }
 
     @Test
     @DisplayName("사용자 정보 조회 테스트")
     fun getUserDataTest() {
         mockMvc.perform(
-            get("/user/info")
-                .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId)}")
-                .contentType(MediaType.APPLICATION_JSON)
+                get("/user/info")
+                        .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
+                        .contentType(MediaType.APPLICATION_JSON)
         )
-            .andExpect(status().isOk)
+                .andExpect(status().isOk)
     }
 
     @Test
     @DisplayName("프로필 이미지 변경 테스트")
     fun changeProfileImageTest() {
         val file = MockMultipartFile(
-            "file",
-            "profile.jpg",
-            "image/jpeg",
-            "dummy image content".toByteArray()
+                "file",
+                "profile.jpg",
+                "image/jpeg",
+                "dummy image content".toByteArray()
         )
 
         mockMvc.perform(multipart("/user/profileImage")
-            .file(file)
-            .with { request -> request.method = "PATCH"; request }
-            .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId)}")
-            .with(csrf())
+                .file(file)
+                .with { request -> request.method = "PATCH"; request }
+                .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
+                .with(csrf())
         )
-            .andExpect(status().isOk)
-            .andExpect(jsonPath("$.message", `is`("프로필사진이 변경되었습니다.")))
+                .andExpect(status().isOk)
+                .andExpect(jsonPath("$.message", `is`("프로필사진이 변경되었습니다.")))
     }
 
     @Test
     @DisplayName("사용자 삭제 테스트")
     fun deleteUserTest() {
         mockMvc.perform(
-            delete("/user/users")
-                .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId)}")
-                .with(csrf())
+                delete("/user/users")
+                        .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
+                        .with(csrf())
         )
-            .andExpect(status().isNoContent)
+                .andExpect(status().isNoContent)
 
-        assertFalse { userRepository.findById(testUser.userId).isPresent }
+        assertFalse { userRepository.findById(testUser.userId!!).isPresent }
     }
 }

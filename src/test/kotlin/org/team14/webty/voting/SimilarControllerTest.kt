@@ -27,7 +27,7 @@ import org.team14.webty.webtoon.entity.Webtoon
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
 @Import(
-    VotingTestDataInitializer::class
+        VotingTestDataInitializer::class
 )
 internal class SimilarControllerTest {
     private val similarPath = "/similar"
@@ -50,9 +50,9 @@ internal class SimilarControllerTest {
     @BeforeEach
     fun beforeEach() {
         mockMvc = MockMvcBuilders
-            .webAppContextSetup(context!!)
-            .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
-            .build()
+                .webAppContextSetup(context!!)
+                .apply<DefaultMockMvcBuilder>(SecurityMockMvcConfigurers.springSecurity())
+                .build()
 
         votingTestDataInitializer!!.deleteAllData()
         testUser = votingTestDataInitializer.initTestUser()
@@ -75,15 +75,15 @@ internal class SimilarControllerTest {
         val jsonRequest = objectMapper.writeValueAsString(requestBody)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.post(similarPath)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
-                .content(jsonRequest)
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                MockMvcRequestBuilders.post(similarPath)
+                        .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
+                        .content(jsonRequest)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.similarThumbnailUrl").value(testChoiceWebtoon!!.thumbnailUrl))
-            .andExpect(MockMvcResultMatchers.jsonPath("$.similarWebtoonId").value(testChoiceWebtoon!!.webtoonId))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.similarThumbnailUrl").value(testChoiceWebtoon!!.thumbnailUrl))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.similarWebtoonId").value(testChoiceWebtoon!!.webtoonId))
     }
 
     @Test
@@ -91,17 +91,17 @@ internal class SimilarControllerTest {
     @Throws(Exception::class)
     fun deleteSimilar_test() {
         val testSimilar = votingTestDataInitializer!!.newTestSimilar(
-            testUser!!, testTargetWebtoon!!,
-            testChoiceWebtoon!!
+                testUser!!, testTargetWebtoon!!,
+                testChoiceWebtoon!!
         )
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.delete(similarPath + "/" + testSimilar.similarId)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                MockMvcRequestBuilders.delete(similarPath + "/" + testSimilar.similarId)
+                        .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.status().isOk())
     }
 
     @Test
@@ -113,18 +113,18 @@ internal class SimilarControllerTest {
         votingTestDataInitializer.newTestSimilar(testUser!!, testTargetWebtoon!!, testChoiceWebtoon2)
 
         mockMvc!!.perform(
-            MockMvcRequestBuilders.get(similarPath)
-                .param("targetWebtoonId", testTargetWebtoon!!.webtoonId.toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .with(SecurityMockMvcRequestPostProcessors.csrf())
+                MockMvcRequestBuilders.get(similarPath)
+                        .param("targetWebtoonId", testTargetWebtoon!!.webtoonId.toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content", IsCollectionWithSize.hasSize<Any>(2)))
-            .andExpect(
-                MockMvcResultMatchers.jsonPath("$.content[0].similarWebtoonId").value(testChoiceWebtoon!!.webtoonId)
-            )
-            .andExpect(
-                MockMvcResultMatchers.jsonPath("$.content[1].similarWebtoonId").value(testChoiceWebtoon2.webtoonId)
-            )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content", IsCollectionWithSize.hasSize<Any>(2)))
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.content[0].similarWebtoonId").value(testChoiceWebtoon!!.webtoonId)
+                )
+                .andExpect(
+                        MockMvcResultMatchers.jsonPath("$.content[1].similarWebtoonId").value(testChoiceWebtoon2.webtoonId)
+                )
     }
 }

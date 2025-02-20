@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
@@ -41,34 +41,31 @@ class WebtoonControllerTest {
     private var testWebtoon: Webtoon? = null
 
 
-
     @BeforeEach
     fun beforeEach() {
         webtoonRepository.deleteAll()
         userRepository.deleteAll()
 
-        testUser = userRepository?.save(
-            WebtyUser.builder()
-                .nickname("테스트유저")
-                .profileImage("dasdsa")
-                .socialProvider(
-                    SocialProvider.builder()
-                        .provider(SocialProviderType.KAKAO)
-                        .providerId("313213231")
-                        .build()
+        testUser = userRepository.save(
+                WebtyUser(
+                        nickname = "테스트유저",
+                        profileImage = "dasdsa",
+                        socialProvider = SocialProvider(
+                                provider = SocialProviderType.KAKAO,
+                                providerId = "313213231"
+                        )
                 )
-                .build()
         )
 
-        testWebtoon = webtoonRepository!!.save(
-            Webtoon(
-                webtoonName = "테스트 웹툰",
-                platform = Platform.KAKAO_PAGE,
-                webtoonLink = "www.abc",
-                thumbnailUrl = "www.bcd",
-                authors = "Author1",
-                finished = true
-            )
+        testWebtoon = webtoonRepository.save(
+                Webtoon(
+                        webtoonName = "테스트 웹툰",
+                        platform = Platform.KAKAO_PAGE,
+                        webtoonLink = "www.abc",
+                        thumbnailUrl = "www.bcd",
+                        authors = "Author1",
+                        finished = true
+                )
         )
 
     }
@@ -83,14 +80,14 @@ class WebtoonControllerTest {
     @DisplayName("단일 웹툰 조회 테스트")
     fun t1() {
         val webtoonId = testWebtoon!!.webtoonId
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
-        mockMvc!!.perform(
-            MockMvcRequestBuilders.get("/webtoons/$webtoonId")
-                .header("Authorization", "Bearer $accessToken")
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/webtoons/$webtoonId")
+                        .header("Authorization", "Bearer $accessToken")
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.webtoonName").value("테스트 웹툰"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.webtoonName").value("테스트 웹툰"))
     }
 
     @Test
@@ -98,17 +95,17 @@ class WebtoonControllerTest {
     fun t2() {
         val page = 0
         val size = 10
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
-        mockMvc!!.perform(
-            MockMvcRequestBuilders.get("/webtoons")
-                .header("Authorization", "Bearer $accessToken")
-                .param("page", page.toString())
-                .param("size", size.toString())
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/webtoons")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("page", page.toString())
+                        .param("size", size.toString())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray)
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1))
     }
 
     @Test
@@ -117,17 +114,17 @@ class WebtoonControllerTest {
         val page = 0
         val size = 10
         val authors = "Author1"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
-        mockMvc!!.perform(
-            MockMvcRequestBuilders.get("/webtoons")
-                .header("Authorization", "Bearer $accessToken")
-                .param("authors", authors)
-                .param("page", page.toString())
-                .param("size", size.toString())
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/webtoons")
+                        .header("Authorization", "Bearer $accessToken")
+                        .param("authors", authors)
+                        .param("page", page.toString())
+                        .param("size", size.toString())
         )
-            .andExpect(MockMvcResultMatchers.status().isOk())
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray)
-            .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content").isArray)
+                .andExpect(MockMvcResultMatchers.jsonPath("$.content.length()").value(1))
     }
 }
