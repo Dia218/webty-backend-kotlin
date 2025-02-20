@@ -8,8 +8,8 @@ import org.team14.webty.review.entity.Review
 class Recommend(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "vote_id")
-    var voteId: Long? = null,
+    @Column(name = "recommend_id")
+    var recommendId: Long? = null,
 
     @Enumerated(EnumType.STRING)
     val likeType: LikeType,
@@ -24,12 +24,12 @@ class Recommend(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Recommend) return false
-        if (voteId == null || other.voteId == null) return false
-        return voteId == other.voteId
+        if (recommendId == null || other.recommendId == null) return false
+        return recommendId == other.recommendId
     }
 
     override fun hashCode(): Int {
-        return voteId.hashCode()
+        return recommendId.hashCode()
     }
 
 }

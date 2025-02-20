@@ -27,13 +27,13 @@ interface RecommendRepository : JpaRepository<Recommend, Long> {
         JOIN FETCH r.user
         JOIN FETCH r.webtoon
         WHERE r.reviewId IN (SELECT rec.review.reviewId FROM Recommend rec WHERE rec.userId = :userId)
-        ORDER BY (SELECT MAX(rec.voteId) FROM Recommend rec WHERE rec.review.reviewId = r.reviewId) DESC
+        ORDER BY (SELECT MAX(rec.recommendId) FROM Recommend rec WHERE rec.review.reviewId = r.reviewId) DESC
         """
     )
     fun getUserRecommendReview(@Param("userId") userId: Long, pageable: Pageable): Page<Review>
 
     @Query(
-        ("SELECT COALESCE(COUNT(r.voteId), 0) " +
+        ("SELECT COALESCE(COUNT(r.recommendId), 0) " +
                 "FROM Review rv LEFT JOIN Recommend r ON rv.reviewId = r.review.reviewId AND r.likeType = 'LIKE' " +
                 "WHERE rv.reviewId IN :reviewIds " +
                 "GROUP BY rv.reviewId ORDER BY rv.reviewId DESC")

@@ -32,7 +32,7 @@ class RecommendService(
             likeType = LikeType.fromString(type),
             userId = webtyUser.userId,
             review = review
-        ).also { recommendRepository.save(it) }.voteId
+        ).also { recommendRepository.save(it) }.recommendId
     }
 
     @Transactional
