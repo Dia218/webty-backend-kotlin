@@ -50,10 +50,9 @@ class RecommendService(
         return recommendRepository.getRecommendCounts(reviewId)
     }
 
-    private fun reviewIdToReview(reviewId: Long): Review = runCatching {
-        reviewRepository.findById(reviewId).get()
-    }.getOrElse {
-        throw BusinessException(ErrorCode.REVIEW_NOT_FOUND)
+    private fun reviewIdToReview(reviewId: Long): Review {
+        return reviewRepository.findById(reviewId)
+            .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }
     }
 
     fun isRecommended(webtyUserDetails: WebtyUserDetails, reviewId: Long): Map<String, Boolean> {
