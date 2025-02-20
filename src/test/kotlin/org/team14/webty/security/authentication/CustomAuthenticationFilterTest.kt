@@ -52,6 +52,7 @@ class CustomAuthenticationFilterTest {
     @BeforeEach
     fun setUp() {
         SecurityContextHolder.clearContext() // SecurityContext 초기화
+        whenever(request.requestURI).thenReturn("/")
     }
 
     @Test
@@ -62,7 +63,7 @@ class CustomAuthenticationFilterTest {
         whenever(jwtManager.getAuthentication(accessToken)).thenReturn(authentication)
 
         // When
-        customAuthenticationFilter.doFilterInternal(request, response, filterChain)
+        customAuthenticationFilter.doFilter(request, response, filterChain)
 
         // Then
         assertEquals(authentication, SecurityContextHolder.getContext().authentication)
@@ -82,12 +83,12 @@ class CustomAuthenticationFilterTest {
         whenever(jwtManager.getAuthentication(newAccessToken)).thenReturn(authentication)
 
         // When
-        customAuthenticationFilter.doFilterInternal(request, response, filterChain)
+        customAuthenticationFilter.doFilter(request, response, filterChain)
 
         // Then
         assertEquals(authentication, SecurityContextHolder.getContext().authentication)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.refreshTokenExpirationTime)
         verify(filterChain).doFilter(request, response)
     }
 
@@ -104,12 +105,12 @@ class CustomAuthenticationFilterTest {
         whenever(jwtManager.getAuthentication(newAccessToken)).thenReturn(authentication)
 
         // When
-        customAuthenticationFilter.doFilterInternal(request, response, filterChain)
+        customAuthenticationFilter.doFilter(request, response, filterChain)
 
         // Then
         assertEquals(authentication, SecurityContextHolder.getContext().authentication)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.refreshTokenExpirationTime)
         verify(filterChain).doFilter(request, response)
     }
 
@@ -121,7 +122,7 @@ class CustomAuthenticationFilterTest {
         whenever(cookieManager.getCookieByTokenType(TokenType.REFRESH_TOKEN)).thenReturn(null)
 
         // When
-        customAuthenticationFilter.doFilterInternal(request, response, filterChain)
+        customAuthenticationFilter.doFilter(request, response, filterChain)
 
         // Then
         verify(response).status = HttpServletResponse.SC_UNAUTHORIZED
