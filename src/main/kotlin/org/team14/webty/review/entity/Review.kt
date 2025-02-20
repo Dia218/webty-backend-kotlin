@@ -78,4 +78,11 @@ data class Review(
         newReview.modifiedAt = this.modifiedAt
         return newReview
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Review) return false
+
+        return reviewId == other.reviewId
+    }
 }
