@@ -34,49 +34,39 @@ class Review(
     val viewCount: Int = 0,
 
 ) : BaseEntity() {
-    fun plusViewCount(): Review {
-        val newReview = Review(
-            reviewId = this.reviewId,
-            user = this.user,
-            webtoon = this.webtoon,
-            content = this.content,
-            title = this.title,
-            isSpoiler = this.isSpoiler,
-            viewCount = this.viewCount + 1
-        )
-        newReview.createdAt = this.createdAt
-        newReview.modifiedAt = this.modifiedAt
-        return newReview
-    }
-
-    fun updatedReview(title: String, content: String, isSpoiler: SpoilerStatus, webtoon: Webtoon): Review {
-        val newReview = Review(
-            reviewId = this.reviewId,
-            user = this.user,
+    private fun copy(
+        reviewId: Long? = this.reviewId,
+        user: WebtyUser = this.user,
+        webtoon: Webtoon = this.webtoon,
+        content: String = this.content,
+        title: String = this.title,
+        isSpoiler: SpoilerStatus = this.isSpoiler,
+        viewCount: Int = this.viewCount
+    ): Review {
+        return Review(
+            reviewId = reviewId,
+            user = user,
             webtoon = webtoon,
             content = content,
             title = title,
             isSpoiler = isSpoiler,
-            viewCount = this.viewCount
-        )
-        newReview.createdAt = this.createdAt
-        newReview.modifiedAt = this.modifiedAt
-        return newReview
+            viewCount = viewCount
+        ).apply {
+            this.createdAt = this@Review.createdAt
+            this.modifiedAt = this@Review.modifiedAt
+        }
+    }
+
+    fun plusViewCount(): Review {
+        return copy(viewCount = this.viewCount + 1)
+    }
+
+    fun updatedReview(title: String, content: String, isSpoiler: SpoilerStatus, webtoon: Webtoon): Review {
+        return copy(title = title, content = content, isSpoiler = isSpoiler, webtoon = webtoon)
     }
 
     fun patchedIsSpoiler(): Review {
-        val newReview = Review(
-            reviewId = this.reviewId,
-            user = this.user,
-            webtoon = this.webtoon,
-            content = this.content,
-            title = this.title,
-            isSpoiler = SpoilerStatus.TRUE,
-            viewCount = this.viewCount
-        )
-        newReview.createdAt = this.createdAt
-        newReview.modifiedAt = this.modifiedAt
-        return newReview
+        return copy(isSpoiler = SpoilerStatus.TRUE)
     }
 
     override fun equals(other: Any?): Boolean {
