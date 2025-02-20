@@ -3,11 +3,13 @@ package org.team14.webty.review.repository
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.team14.webty.review.entity.Review
 import org.team14.webty.user.entity.WebtyUser
+
 
 @Repository
 interface ReviewRepository : JpaRepository<Review, Long> {
@@ -35,5 +37,9 @@ interface ReviewRepository : JpaRepository<Review, Long> {
     ): Page<Review>
 
     @Query("SELECT r FROM Review r WHERE r.webtoon.webtoonId = :webtoonId ORDER BY r.reviewId DESC")
-    fun findReviewByWebtoonId(@Param("webtoonId") webtoonId: Long?, pageable: Pageable?): Page<Review>
+    fun findReviewByWebtoonId(@Param("webtoonId") webtoonId: Long, pageable: Pageable?): Page<Review>
+
+    @Modifying
+    @Query("UPDATE Review r SET r.viewCount = r.viewCount + 1 WHERE r.reviewId = :reviewId")
+    fun incrementViewCount(@Param("reviewId") reviewId: Long)
 }

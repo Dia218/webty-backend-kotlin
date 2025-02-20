@@ -51,8 +51,9 @@ class ReviewService(
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
 
-        val updatedReview = review.plusViewCount()
-        reviewRepository.save(updatedReview)
+        // 조회수 증가 때문에 LastModified 수정되는점 우회
+        reviewRepository.incrementViewCount(id)
+
         val comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable)
         val commentResponses = PageMapper.toPageDto(comments.map { comment: ReviewComment? ->
             ReviewCommentMapper.toResponse(
@@ -61,7 +62,7 @@ class ReviewService(
         })
         val reviewImages = reviewImageRepository.findAllByReview(review)
         val recommendCounts = recommendRepository.getRecommendCounts(id)
-        return ReviewMapper.toDetail(updatedReview, commentResponses, reviewImages, recommendCounts)
+        return ReviewMapper.toDetail(review, commentResponses, reviewImages, recommendCounts)
     }
 
     // 전체 리뷰 조회

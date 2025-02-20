@@ -51,12 +51,7 @@ class Review(
             viewCount = viewCount
         ).apply {
             this.createdAt = this@Review.createdAt
-            this.modifiedAt = this@Review.modifiedAt
         }
-    }
-
-    fun plusViewCount(): Review {
-        return copy(viewCount = this.viewCount + 1)
     }
 
     fun updatedReview(title: String, content: String, isSpoiler: SpoilerStatus, webtoon: Webtoon): Review {
