@@ -58,10 +58,6 @@ class Review(
         return copy(title = title, content = content, isSpoiler = isSpoiler, webtoon = webtoon)
     }
 
-    fun patchedIsSpoiler(): Review {
-        return copy(isSpoiler = SpoilerStatus.TRUE)
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Review) return false

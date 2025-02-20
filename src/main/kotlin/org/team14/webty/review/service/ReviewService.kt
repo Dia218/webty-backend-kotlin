@@ -249,8 +249,8 @@ class ReviewService(
     fun patchReviewIsSpoiler(id: Long) {
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
-        val updatedReview = review.patchedIsSpoiler()
-        reviewRepository.save(updatedReview)
+        // 이부분도 수정일자 안바뀌게 수정
+        reviewRepository.patchIsSpoiler(id)
     }
 
     private fun mapReviewResponse(reviews :Page<Review>) : Page<ReviewItemResponse>{
