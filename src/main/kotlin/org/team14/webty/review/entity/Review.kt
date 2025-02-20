@@ -12,7 +12,7 @@ data class Review(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "review_id")
-    val reviewId: Long? = null,
+    var reviewId: Long? = null,
 
     @ManyToOne
     @JoinColumn(name = "userId")
@@ -20,34 +20,45 @@ data class Review(
 
     @ManyToOne
     @JoinColumn(name = "webtoonId")
-    var webtoon: Webtoon,
+    val webtoon: Webtoon,
 
     @Column(length = 5000)
-    var content: String,
+    val content: String,
 
-    var title: String,
+    val title: String,
 
     @Enumerated(EnumType.STRING)
-    var isSpoiler: SpoilerStatus,
+    val isSpoiler: SpoilerStatus,
 
     @Column(columnDefinition = "integer default 0", nullable = false)
-    var viewCount: Int = 0,
+    val viewCount: Int = 0,
 
 ) : BaseEntity() {
-    fun plusViewCount() {
-        viewCount++
+    fun plusViewCount(): Review {
+        val newReview = Review(
+            reviewId = this.reviewId,
+            user = this.user,
+            webtoon = this.webtoon,
+            content = this.content,
+            title = this.title,
+            isSpoiler = this.isSpoiler,
+            viewCount = this.viewCount + 1
+        )
+        newReview.createdAt = this.createdAt
+        newReview.modifiedAt = this.modifiedAt
+        return newReview
     }
 
-    fun updateReview(title: String, content: String, isSpoiler: SpoilerStatus, webtoon: Webtoon) {
-        this.title = title
-        this.content = content
-        this.isSpoiler = isSpoiler
-        this.webtoon = webtoon
+    fun updateReview(title: String, content: String, isSpoiler: SpoilerStatus, webtoon: Webtoon): Review {
+        return this.copy(
+            title = title,
+            content = content,
+            isSpoiler = isSpoiler,
+            webtoon = webtoon
+        )
     }
 
-    fun patchIsSpoiler() {
-        this.isSpoiler = SpoilerStatus.TRUE
+    fun patchIsSpoiler(): Review {
+        return this.copy(isSpoiler = SpoilerStatus.TRUE)
     }
-
-
 }

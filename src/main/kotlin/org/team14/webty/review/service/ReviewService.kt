@@ -50,6 +50,9 @@ class ReviewService(
         val pageable: Pageable = PageRequest.of(page, size)
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
+
+        val updatedReview = review.plusViewCount()
+        reviewRepository.save(updatedReview)
         val comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable)
         val commentResponses = PageMapper.toPageDto(comments.map { comment: ReviewComment? ->
             ReviewCommentMapper.toResponse(
@@ -57,9 +60,8 @@ class ReviewService(
             )
         })
         val reviewImages = reviewImageRepository.findAllByReview(review)
-        review.plusViewCount() // 조회수 증가
         val recommendCounts = recommendRepository.getRecommendCounts(id)
-        return ReviewMapper.toDetail(review, commentResponses, reviewImages, recommendCounts)
+        return ReviewMapper.toDetail(updatedReview, commentResponses, reviewImages, recommendCounts)
     }
 
     // 전체 리뷰 조회
@@ -134,8 +136,7 @@ class ReviewService(
         }
 
         review.updateReview(
-            reviewRequest.title, reviewRequest.content, reviewRequest.spoilerStatus,
-            webtoon
+            reviewRequest.title, reviewRequest.content, reviewRequest.spoilerStatus, webtoon
         )
         reviewRepository.save(review)
 
