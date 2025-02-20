@@ -9,14 +9,14 @@ import java.util.*
 
 @Repository
 interface VoteRepository : JpaRepository<Vote, Long> {
-
+    
     fun findBySimilarAndUserId(similar: Similar, userId: Long): Optional<Vote>
-
+    
     fun existsByUserIdAndSimilar(userId: Long, similar: Similar): Boolean
-
+    
     fun deleteBySimilarAndUserId(similar: Similar, userId: Long): Long
-
+    
     fun findAllBySimilar(similar: Similar): List<Vote>
-
+    
     fun countBySimilarAndVoteType(similar: Similar, voteType: VoteType): Long
 }

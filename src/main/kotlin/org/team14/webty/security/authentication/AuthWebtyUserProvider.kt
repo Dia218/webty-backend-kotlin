@@ -11,7 +11,7 @@ class AuthWebtyUserProvider {
         if (webtyUserDetails == null) {
             throw BusinessException(ErrorCode.USER_LOGIN_REQUIRED)
         }
-
+        
         // 이부분 에러 발생할 일 없다고 함
         return webtyUserDetails.webtyUser
     }

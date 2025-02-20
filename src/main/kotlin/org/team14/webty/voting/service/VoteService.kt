@@ -17,16 +17,16 @@ import java.util.function.Supplier
 
 @Service
 class VoteService(
-        private val voteRepository: VoteRepository,
-        private val similarRepository: SimilarRepository,
-        private val authWebtyUserProvider: AuthWebtyUserProvider
+    private val voteRepository: VoteRepository,
+    private val similarRepository: SimilarRepository,
+    private val authWebtyUserProvider: AuthWebtyUserProvider
 ) {
     // 유사 투표
     @Transactional
     fun vote(webtyUserDetails: WebtyUserDetails, voteRequest: VoteRequest): Long {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val similar = similarRepository.findById(voteRequest.similarId)
-                .orElseThrow<BusinessException> { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!
+            .orElseThrow<BusinessException> { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!
         // 중복 투표 방지
         if (voteRepository.existsByUserIdAndSimilar(webtyUser.userId!!, similar)) {
             throw BusinessException(ErrorCode.VOTE_ALREADY_EXISTS)
@@ -36,22 +36,22 @@ class VoteService(
         updateSimilarResult(similar)
         return vote.voteId!!
     }
-
+    
     // 투표 취소
     @Transactional
     fun cancel(webtyUserDetails: WebtyUserDetails, voteId: Long) {
         authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val vote: Vote = voteRepository.findById(voteId)
-                .orElseThrow(Supplier { BusinessException(ErrorCode.VOTE_NOT_FOUND) })
+            .orElseThrow(Supplier { BusinessException(ErrorCode.VOTE_NOT_FOUND) })
         voteRepository.delete(vote)
         updateSimilarResult(vote.similar)
     }
-
+    
     private fun updateSimilarResult(similar: Similar) {
         // agree 및 disagree 투표 개수 가져오기
         val agreeCount = voteRepository.countBySimilarAndVoteType(similar, VoteType.AGREE) // 동의 수
         val disagreeCount = voteRepository.countBySimilarAndVoteType(similar, VoteType.DISAGREE) // 비동의 수
-
+        
         // similarResult 업데이트
         similar.updateSimilarResult(agreeCount - disagreeCount)
         similarRepository.save<Similar>(similar)

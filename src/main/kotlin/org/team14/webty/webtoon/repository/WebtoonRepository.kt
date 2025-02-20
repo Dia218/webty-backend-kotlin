@@ -12,21 +12,23 @@ import java.util.*
 
 @Repository
 interface WebtoonRepository : JpaRepository<Webtoon, Long> {
-
-    @Query("""
+    
+    @Query(
+        """
         SELECT w FROM Webtoon w 
         WHERE (:webtoonName IS NULL OR w.webtoonName LIKE %:webtoonName%) 
         AND (:platform IS NULL OR w.platform = :platform) 
         AND (:authors IS NULL OR w.authors LIKE %:authors%) 
         AND (:finished IS NULL OR w.finished = :finished)
-    """)
+    """
+    )
     fun searchWebtoons(
-            @Param("webtoonName") webtoonName: String?,
-            @Param("platform") platform: Platform?,
-            @Param("authors") authors: String?,
-            @Param("finished") finished: Boolean?,
-            pageable: Pageable
+        @Param("webtoonName") webtoonName: String?,
+        @Param("platform") platform: Platform?,
+        @Param("authors") authors: String?,
+        @Param("finished") finished: Boolean?,
+        pageable: Pageable
     ): Page<Webtoon>
-
+    
     fun findByWebtoonName(similarWebtoonName: String): Optional<Webtoon>
 }

@@ -18,30 +18,30 @@ import org.team14.webty.webtoon.service.WebtoonService
 @RestController
 @RequestMapping("/webtoons")
 class WebtoonController(
-        private val webtoonService: WebtoonService
+    private val webtoonService: WebtoonService
 ) {
     // @GetMapping("/fetch") // 초기화 할 때만 사용
     // fun fetchWebtoons() {
     //     webtoonService.saveWebtoons()
     // }
-
+    
     @GetMapping("/{id}")
     fun findWebtoon(@PathVariable("id") @Min(1) id: Long): ResponseEntity<WebtoonDetailDto> {
         val webtoon = webtoonService.findWebtoon(id)
         return ResponseEntity.ok(WebtoonDetailMapper.toDto(webtoon))
     }
-
+    
     @GetMapping
     fun searchWebtoons(@Valid request: WebtoonSearchRequest): ResponseEntity<PageDto<WebtoonDetailDto>> {
         val webtoons = webtoonService.searchWebtoons(
-                request.webtoonName,
-                if (!request.platform.isNullOrEmpty()) Platform.fromString(request.platform) else null,
-                request.authors,
-                request.finished,
-                request.page,
-                request.size,
-                request.sortBy,
-                request.sortDirection
+            request.webtoonName,
+            if (!request.platform.isNullOrEmpty()) Platform.fromString(request.platform) else null,
+            request.authors,
+            request.finished,
+            request.page,
+            request.size,
+            request.sortBy,
+            request.sortDirection
         ).map(WebtoonDetailMapper::toDto)
         return ResponseEntity.ok(PageMapper.toPageDto(webtoons))
     }

@@ -16,38 +16,42 @@ import org.team14.webty.user.service.UserService
 
 @Component
 class LoginSuccessHandler(
-        private val cookieManager: CookieManager,
-        private val jwtManager: JwtManager,
-        private val userService: UserService
+    private val cookieManager: CookieManager,
+    private val jwtManager: JwtManager,
+    private val userService: UserService
 ) : SimpleUrlAuthenticationSuccessHandler() {
     @Value("\${jwt.redirect}")
     lateinit var redirectUri: String
-
-    override fun onAuthenticationSuccess(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication) {
+    
+    override fun onAuthenticationSuccess(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        authentication: Authentication
+    ) {
         val token = authentication as OAuth2AuthenticationToken
         val provider = token.authorizedClientRegistrationId
-
+        
         registerTokens(request, response, getLoginUserId(token, provider))
     }
-
+    
     private fun registerTokens(request: HttpServletRequest, response: HttpServletResponse, userId: Long) {
         val refreshToken = jwtManager.createRefreshToken(userId)
         val accessToken = jwtManager.createAccessToken(userId)
-
+        
         cookieManager.setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.accessTokenExpirationTime)
         cookieManager.setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.refreshTokenExpirationTime)
-
+        
         redirectStrategy.sendRedirect(request, response, String.format(redirectUri))
     }
-
+    
     private fun getLoginUserId(token: OAuth2AuthenticationToken, provider: String): Long {
         val providerId = ProviderUserInfo(token.principal.attributes).providerId
-
+        
         val existUserId = userService.existSocialProvider(providerId)
-
+        
         println("PROVIDER: $provider")
         println("PROVIDER_ID: $providerId")
-
+        
         return existUserId.orElseGet {
             println("신규 유저입니다. 등록을 진행합니다.")
             userService.createUser(SocialProviderType.fromProviderName(provider), providerId)

@@ -19,32 +19,32 @@ import java.io.IOException
 @RequestMapping("/user")
 @Slf4j
 class UserController(
-        private val userService: UserService
+    private val userService: UserService
 ) {
     @PatchMapping("/nickname")
     fun changeNickname(
-            @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
-            @RequestBody request: @Valid NicknameRequest
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
+        @RequestBody request: @Valid NicknameRequest
     ): ResponseEntity<NicknameResponse> {
         userService.modifyNickname(webtyUserDetails, request.nickname)
         return ResponseEntity.ok(NicknameResponse("닉네임이 변경되었습니다."))
     }
-
+    
     @GetMapping("/info")
     fun getUserData(@AuthenticationPrincipal webtyUserDetails: WebtyUserDetails): ResponseEntity<UserDataResponse> {
         return ResponseEntity.ok(UserDataResponseMapper.toDto(userService.getAuthenticatedUser(webtyUserDetails)))
     }
-
+    
     @PatchMapping("/profileImage")
     @Throws(IOException::class)
     fun changeProfileImg(
-            @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
-            @RequestParam("file") file: MultipartFile
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
+        @RequestParam("file") file: MultipartFile
     ): ResponseEntity<ImageResponse> {
         userService.modifyImage(webtyUserDetails, file)
         return ResponseEntity.ok(ImageResponse("프로필사진이 변경되었습니다."))
     }
-
+    
     @DeleteMapping("/users")
     fun delete(@AuthenticationPrincipal webtyUserDetails: WebtyUserDetails): ResponseEntity<Void> {
         userService.delete(webtyUserDetails)

@@ -12,8 +12,8 @@ import java.util.*
 @Repository
 interface SimilarRepository : JpaRepository<Similar, Long> {
     fun existsByTargetWebtoonAndSimilarWebtoonId(targetWebtoon: Webtoon, similarWebtoonId: Long): Boolean
-
+    
     fun findByUserIdAndSimilarId(userId: Long, similarId: Long): Optional<Similar>
-
+    
     fun findAllByTargetWebtoon(targetWebtoon: Webtoon, pageable: Pageable): Page<Similar>
 }

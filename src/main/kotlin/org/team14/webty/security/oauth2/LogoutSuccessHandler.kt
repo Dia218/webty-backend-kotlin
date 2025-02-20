@@ -13,22 +13,22 @@ import java.util.concurrent.TimeUnit
 
 @Component
 class LogoutSuccessHandler(
-        private val cookieManager: CookieManager,
-        private val redisTemplate: RedisTemplate<String, String>,
-        private val jwtManager: JwtManager
+    private val cookieManager: CookieManager,
+    private val redisTemplate: RedisTemplate<String, String>,
+    private val jwtManager: JwtManager
 ) : LogoutHandler {
-
+    
     override fun logout(request: HttpServletRequest, response: HttpServletResponse, authentication: Authentication?) {
         // access-token 쿠키 삭제
         cookieManager.removeCookie(TokenType.ACCESS_TOKEN)
-
+        
         // refresh-token 쿠키 삭제 및 Redis에 저장
         cookieManager.getCookieByTokenType(TokenType.REFRESH_TOKEN)?.let { refreshToken ->
             val expirationTime = jwtManager.getExpirationTime(refreshToken)
             redisTemplate.opsForValue().set(refreshToken, "logout", expirationTime, TimeUnit.MILLISECONDS)
             cookieManager.removeCookie(TokenType.REFRESH_TOKEN)
         }
-
+        
         // JSESSIONID 쿠키 삭제
         cookieManager.removeCookie(TokenType.JSESSIONID)
     }

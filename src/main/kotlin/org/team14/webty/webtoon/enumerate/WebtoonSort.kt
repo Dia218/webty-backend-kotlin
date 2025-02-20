@@ -5,7 +5,7 @@ enum class WebtoonSort(val field: String) {
     PLATFORM("platform"),
     AUTHORS("authors"),
     FINISHED("finished");
-
+    
     companion object {
         fun fromString(value: String): WebtoonSort? {
             return entries.find { it.name.equals(value, ignoreCase = true) }
