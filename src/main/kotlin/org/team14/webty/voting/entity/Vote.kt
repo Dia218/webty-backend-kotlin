@@ -12,10 +12,35 @@ class Vote(
     val similar: Similar,
 
     @Enumerated(value = EnumType.STRING)
-    var voteType: VoteType? = null
+    val voteType: VoteType? = null
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var voteId: Long? = null
         private set
+
+    fun copy(
+        voteType: VoteType? = null,
+    ): Vote {
+        val copiedVote = Vote(
+            userId = this.userId,
+            similar = this.similar,
+            voteType = voteType ?: this.voteType // 변경 가능한 값
+        )
+        copiedVote.voteId = this.voteId
+        return copiedVote
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as Vote
+
+        return voteId == other.voteId
+    }
+
+    override fun hashCode(): Int {
+        return voteId?.hashCode() ?: 0
+    }
 }
