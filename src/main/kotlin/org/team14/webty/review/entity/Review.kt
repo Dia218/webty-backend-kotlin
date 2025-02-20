@@ -35,8 +35,6 @@ class Review(
 
 ) : BaseEntity() {
     private fun copy(
-        reviewId: Long? = this.reviewId,
-        user: WebtyUser = this.user,
         webtoon: Webtoon = this.webtoon,
         content: String = this.content,
         title: String = this.title,
