@@ -1,6 +1,6 @@
 package org.team14.webty.recommend
 
-import org.junit.jupiter.api.AfterEach
+import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -28,6 +28,7 @@ import org.team14.webty.webtoon.repository.WebtoonRepository
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
+@Transactional
 internal class RecommendControllerTestKotlin {
 
     @Autowired
@@ -52,7 +53,12 @@ internal class RecommendControllerTestKotlin {
 
     @BeforeEach
     fun beforeEach() {
-        testUser = userRepository?.save(
+        recommendRepository!!.deleteAll()
+        reviewRepository!!.deleteAll()
+        webtoonRepository!!.deleteAll()
+        userRepository!!.deleteAll()
+
+        testUser = userRepository.save(
             WebtyUser.builder()
                 .nickname("테스트유저")
                 .profileImage("dasdsa")
@@ -65,33 +71,26 @@ internal class RecommendControllerTestKotlin {
                 .build()
         )
 
-        val testWebtoon = webtoonRepository?.save(
+        val testWebtoon = webtoonRepository.save(
             Webtoon(
-                webtoonName="테스트 웹툰",
+                webtoonName = "테스트 웹툰",
                 platform = Platform.KAKAO_PAGE,
-                webtoonLink="www.abc",
+                webtoonLink = "www.abc",
                 thumbnailUrl = "www.bcd",
                 authors = "testtest",
                 finished = true,
             )
         )
-        testReview = reviewRepository?.save(
+        testReview = reviewRepository.save(
             Review(
                 user = testUser!!,
                 content = "테스트 리뷰",
                 title = "테스트 리뷰 제목",
                 viewCount = 0,
                 isSpoiler = SpoilerStatus.FALSE,
-                webtoon = testWebtoon!!
-        ))
-    }
-
-    @AfterEach
-    fun afterEach() {
-        recommendRepository!!.deleteAll()
-        reviewRepository!!.deleteAll()
-        webtoonRepository!!.deleteAll()
-        userRepository!!.deleteAll()
+                webtoon = testWebtoon
+            )
+        )
     }
 
     @Test
