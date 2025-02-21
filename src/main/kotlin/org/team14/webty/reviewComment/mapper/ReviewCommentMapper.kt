@@ -41,7 +41,7 @@ object ReviewCommentMapper {
             parentId = comment.parentId,
             mentions = comment.getMentionsList(),
             childComments = emptyList(),
-            createdAt = comment.createdAt,
+            createdAt = comment.createdAt!!,
             modifiedAt = comment.modifiedAt
         )
     }

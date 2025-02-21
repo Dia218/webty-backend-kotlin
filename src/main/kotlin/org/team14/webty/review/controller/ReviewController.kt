@@ -15,7 +15,7 @@ import org.team14.webty.security.authentication.WebtyUserDetails
 
 @RestController
 @RequestMapping("/reviews")
-class ReviewController (private val reviewService: ReviewService){
+class ReviewController(private val reviewService: ReviewService) {
 
     // id로 조회하기
     @GetMapping("/{reviewId}")
@@ -32,7 +32,7 @@ class ReviewController (private val reviewService: ReviewService){
     fun getAllFeedReviews(
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int
-    ): ResponseEntity<PageDto<ReviewItemResponse?>> {
+    ): ResponseEntity<PageDto<ReviewItemResponse>> {
         return ResponseEntity.ok(
             PageMapper.toPageDto(
                 reviewService.getAllFeedReviews(page, size)
@@ -78,7 +78,7 @@ class ReviewController (private val reviewService: ReviewService){
         @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails?,
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int
-    ): ResponseEntity<PageDto<ReviewItemResponse?>> {
+    ): ResponseEntity<PageDto<ReviewItemResponse>> {
         return ResponseEntity.ok(
             PageMapper.toPageDto(
                 reviewService.getReviewsByUser(webtyUserDetails, page, size)
@@ -91,7 +91,7 @@ class ReviewController (private val reviewService: ReviewService){
     fun getAllReviewsOrderByViewCountDesc(
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int
-    ): ResponseEntity<PageDto<ReviewItemResponse?>> {
+    ): ResponseEntity<PageDto<ReviewItemResponse>> {
         return ResponseEntity.ok(
             PageMapper.toPageDto(
                 reviewService.getAllReviewsOrderByViewCountDesc(page, size)
@@ -111,7 +111,7 @@ class ReviewController (private val reviewService: ReviewService){
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int,
         @RequestParam(defaultValue = "", value = "title") title: String?
-    ): ResponseEntity<PageDto<ReviewItemResponse?>> {
+    ): ResponseEntity<PageDto<ReviewItemResponse>> {
         return ResponseEntity.ok(
             PageMapper.toPageDto(
                 reviewService.searchFeedReviewByTitle(page, size, title)
@@ -125,7 +125,7 @@ class ReviewController (private val reviewService: ReviewService){
         @PathVariable(value = "webtoonId") webtoonId: Long,
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int
-    ): ResponseEntity<PageDto<ReviewItemResponse?>> {
+    ): ResponseEntity<PageDto<ReviewItemResponse>> {
         return ResponseEntity.ok(
             PageMapper.toPageDto(
                 reviewService.searchReviewByWebtoonId(webtoonId, page, size)

@@ -7,7 +7,6 @@ import org.team14.webty.review.dto.ReviewRequest
 import org.team14.webty.review.entity.Review
 import org.team14.webty.review.entity.ReviewImage
 import org.team14.webty.reviewComment.dto.CommentResponse
-import org.team14.webty.user.dto.UserDataResponse
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.mapper.UserDataResponseMapper
 import org.team14.webty.webtoon.entity.Webtoon
@@ -57,7 +56,7 @@ object ReviewMapper {
             spoilerStatus = review.isSpoiler,
             imageUrls = reviewImages.mapNotNull { it?.imageUrl },
             commentResponses = comments,
-            createdAt = review.createdAt,
+            createdAt = review.createdAt!!,
             updatedAt = review.modifiedAt,
             recommendCount = recommendCount
         )
