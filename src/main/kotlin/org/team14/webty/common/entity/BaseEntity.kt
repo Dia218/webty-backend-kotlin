@@ -16,7 +16,6 @@ open class BaseEntity {
         name = "created_at",
         nullable = false,
         updatable = false,
-        columnDefinition = "datetime DEFAULT CURRENT_TIMESTAMP",
     )
     var createdAt: LocalDateTime? = null
 

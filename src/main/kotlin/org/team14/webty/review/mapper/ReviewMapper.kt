@@ -11,7 +11,6 @@ import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.mapper.UserDataResponseMapper
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper
-import java.time.LocalDateTime
 
 object ReviewMapper {
     fun toEntity(request: ReviewRequest, webtyUser: WebtyUser, webtoon: Webtoon): Review {
@@ -57,7 +56,7 @@ object ReviewMapper {
             spoilerStatus = review.isSpoiler,
             imageUrls = reviewImages.mapNotNull { it?.imageUrl },
             commentResponses = comments,
-            createdAt = review.createdAt ?: LocalDateTime.now(),
+            createdAt = review.createdAt!!,
             updatedAt = review.modifiedAt,
             recommendCount = recommendCount
         )

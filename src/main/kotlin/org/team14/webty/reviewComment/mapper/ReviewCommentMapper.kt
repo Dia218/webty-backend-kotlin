@@ -8,7 +8,6 @@ import org.team14.webty.reviewComment.dto.CommentResponse
 import org.team14.webty.reviewComment.entity.ReviewComment
 import org.team14.webty.user.dto.UserDataResponse
 import org.team14.webty.user.entity.WebtyUser
-import java.time.LocalDateTime
 
 object ReviewCommentMapper {
     // CommentRequest DTO를 ReviewComment 엔티티로 변환하는 메서드
@@ -42,7 +41,7 @@ object ReviewCommentMapper {
             parentId = comment.parentId,
             mentions = comment.getMentionsList(),
             childComments = emptyList(),
-            createdAt = comment.createdAt ?: LocalDateTime.now(),
+            createdAt = comment.createdAt!!,
             modifiedAt = comment.modifiedAt
         )
     }
