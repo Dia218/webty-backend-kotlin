@@ -42,7 +42,7 @@ class ReviewService(
     private val fileStorageUtil: FileStorageUtil,
     private val reviewImageRepository: ReviewImageRepository,
     private val recommendRepository: RecommendRepository
-){
+) {
 
     // 리뷰 상세 조회
     @Transactional
@@ -55,7 +55,7 @@ class ReviewService(
         reviewRepository.incrementViewCount(id)
 
         val comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable)
-        val commentResponses = PageMapper.toPageDto(comments.map { comment: ReviewComment? ->
+        val commentResponses = PageMapper.toPageDto(comments.map { comment: ReviewComment ->
             ReviewCommentMapper.toResponse(
                 comment
             )
@@ -184,7 +184,7 @@ class ReviewService(
 
         // 리뷰 ID를 기준으로 부모 댓글을 매핑하는 Map 생성
         return parentComments.groupBy(
-            { it.review.reviewId!! },
+            { it.review!!.reviewId!! },
             { ReviewCommentMapper.toResponse(it) }
         )
     }
@@ -253,7 +253,7 @@ class ReviewService(
         reviewRepository.patchIsSpoiler(id)
     }
 
-    private fun mapReviewResponse(reviews :Page<Review>) : Page<ReviewItemResponse>{
+    private fun mapReviewResponse(reviews: Page<Review>): Page<ReviewItemResponse> {
         // 모든 리뷰 ID 리스트 추출
         val reviewIds = reviews.mapNotNull { it.reviewId }
         // 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
