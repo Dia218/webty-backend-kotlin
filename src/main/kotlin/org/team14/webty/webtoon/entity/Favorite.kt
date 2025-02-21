@@ -10,7 +10,7 @@ data class Favorite (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    val favoriteId: Long? = null,
+    var favoriteId: Long? = null,
 
     @ManyToOne
     @JoinColumn(name = "userId")

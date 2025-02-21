@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
@@ -42,6 +42,7 @@ class FavoriteControllerTest {
     private val jwtManager: JwtManager? = null
     private var testUser: WebtyUser? = null
     private var testWebtoon: Webtoon? = null
+    private var testSocialProvider:SocialProviderType? = null
 
     @BeforeEach
     fun beforeEach() {
@@ -50,16 +51,10 @@ class FavoriteControllerTest {
         userRepository.deleteAll()
 
         testUser = userRepository?.save(
-            WebtyUser.builder()
-                .nickname("테스트유저")
-                .profileImage("dasdsa")
-                .socialProvider(
-                    SocialProvider.builder()
-                        .provider(SocialProviderType.KAKAO)
-                        .providerId("313213231")
-                        .build()
-                )
-                .build()
+            WebtyUser(
+                nickname="테스트유저",
+                profileImage="dasdsa"
+            )
         )
 
         testWebtoon = webtoonRepository!!.save(
@@ -87,7 +82,7 @@ class FavoriteControllerTest {
     @Transactional
     fun t1() {
         val webtoonId = testWebtoon!!.webtoonId
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc.perform(
             MockMvcRequestBuilders.post("/favorite/$webtoonId")
@@ -101,7 +96,7 @@ class FavoriteControllerTest {
     @Transactional
     fun t2() {
         val webtoonId = testWebtoon!!.webtoonId
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         favoriteRepository!!.save(FavoriteMapper.toEntity(testUser!!, testWebtoon!!))
 
@@ -119,7 +114,7 @@ class FavoriteControllerTest {
     @DisplayName("유저의 추천웹툰 목록 테스트")
     @Transactional
     fun t3() {
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         favoriteRepository!!.save(FavoriteMapper.toEntity(testUser!!, testWebtoon!!))
 
@@ -136,7 +131,7 @@ class FavoriteControllerTest {
     @Transactional
     fun t4() {
         val webtoonId = testWebtoon!!.webtoonId
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         favoriteRepository.save(FavoriteMapper.toEntity(testUser!!, testWebtoon!!))
 
