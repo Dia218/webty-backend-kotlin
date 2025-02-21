@@ -15,6 +15,7 @@ data class WebtoonSearchRequest(
 
     val finished: Boolean?,
 
+    //page, size, sortBy, sorDirection은 기본값이 지정되어 있어서 null이 되지 X
     @field:Min(0)
     val page: Int = 0,
 
