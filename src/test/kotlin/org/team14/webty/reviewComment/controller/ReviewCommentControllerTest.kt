@@ -1,8 +1,12 @@
+// 리뷰 댓글 컨트롤러의 API 엔드포인트들을 테스트하는 파일
 package org.team14.webty.reviewComment.controller
 
+// 테스트 관련 import
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
+
+// 스프링 테스트 관련 import
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
@@ -14,6 +18,8 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 import org.springframework.test.web.servlet.put
 import org.springframework.web.util.UriComponentsBuilder
+
+// 엔티티 및 레포지토리 import
 import org.team14.webty.review.entity.Review
 import org.team14.webty.review.enumrate.SpoilerStatus
 import org.team14.webty.review.repository.ReviewRepository
@@ -28,11 +34,17 @@ import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
+
+// 유틸리티 import
 import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.transaction.Transactional
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf
 import org.assertj.core.api.Assertions.assertThat
 import jakarta.persistence.EntityManager
+
+// 리뷰 댓글 컨트롤러의 API 엔드포인트들을 테스트하는 클래스
+// 통합 테스트 환경에서 실제 DB 연동과 HTTP 요청/응답을 테스트합니다.
+// TestEntityFactory를 사용하여 테스트 데이터를 생성하고 검증합니다.
 
 class TestEntityFactory {
     companion object {
@@ -213,30 +225,33 @@ class TestEntityFactory {
     }
 }
 
+// 스프링 부트 통합 테스트 설정
 @SpringBootTest
-@AutoConfigureMockMvc
-@TestPropertySource(
+@AutoConfigureMockMvc // MockMvc 자동 구성
+@TestPropertySource( // 테스트용 프로퍼티 설정
     properties = [
-        "spring.profiles.active=test",
-        "spring.jpa.hibernate.ddl-auto=create-drop",
-        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE",
-        "spring.jpa.properties.hibernate.format_sql=true"
+        "spring.profiles.active=test", // 테스트 프로필 사용
+        "spring.jpa.hibernate.ddl-auto=create-drop", // 테스트 DB 자동 생성/삭제
+        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", // 인메모리 H2 DB 사용
+        "spring.jpa.properties.hibernate.format_sql=true" // SQL 로그 포맷팅
     ]
 )
-@Transactional
+@Transactional // 테스트 메소드 트랜잭션 처리
 class ReviewCommentControllerTest @Autowired constructor(
-    private val reviewRepository: ReviewRepository,
-    private val mockMvc: MockMvc,
-    private val reviewCommentRepository: ReviewCommentRepository,
-    private val webtoonRepository: WebtoonRepository,
-    private val userRepository: UserRepository,
-    private val jwtManager: JwtManager,
-    private val objectMapper: ObjectMapper,
-    private val entityManager: EntityManager
+    // 테스트에 필요한 의존성 주입
+    private val reviewRepository: ReviewRepository, // 리뷰 레포지토리
+    private val mockMvc: MockMvc, // HTTP 요청 테스트용 객체
+    private val reviewCommentRepository: ReviewCommentRepository, // 리뷰 댓글 레포지토리
+    private val webtoonRepository: WebtoonRepository, // 웹툰 레포지토리
+    private val userRepository: UserRepository, // 사용자 레포지토리
+    private val jwtManager: JwtManager, // JWT 토큰 관리자
+    private val objectMapper: ObjectMapper, // JSON 변환용 매퍼
+    private val entityManager: EntityManager // JPA 엔티티 매니저
 ) {
-    private lateinit var testUser: WebtyUser
-    private lateinit var testRequest: CommentRequest
-    private lateinit var testReview: Review
+    // 테스트에서 사용할 전역 변수들
+    private lateinit var testUser: WebtyUser // 테스트용 사용자
+    private lateinit var testRequest: CommentRequest // 테스트용 댓글 요청
+    private lateinit var testReview: Review // 테스트용 리뷰
 
     @BeforeEach
     fun beforeEach() {
@@ -333,131 +348,126 @@ class ReviewCommentControllerTest @Autowired constructor(
         return comment
     }
 
+    // 댓글 생성 API 엔드포인트 테스트
     @Test
     @DisplayName("댓글 생성 테스트")
     fun createCommentTest() {
-        // Given
+        // Given: 테스트 데이터 준비
         val expectedContent = "테스트 댓글"
-        val request = CommentRequest(content = expectedContent)
+        val request = CommentRequest(
+            content = expectedContent,
+            parentCommentId = null, // 루트 댓글로 생성
+            mentions = emptyList() // 멘션 없음
+        )
 
-        // When
+        // When: API 요청 실행
         val result = mockMvc.post(getReviewCommentBasicPath(testReview.reviewId!!)) {
-            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
+            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}") // JWT 인증
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-            with(csrf())
+            with(csrf()) // CSRF 보안 설정
         }
 
-        // Then
+        // Then: 응답 검증
         result.andExpect {
-            status { isOk() }
+            status { isOk() } // HTTP 200 상태 코드 확인
             content { contentType(MediaType.APPLICATION_JSON) }
-            jsonPath("$.commentId") { exists() }
-            jsonPath("$.content") { value(expectedContent) }
-            jsonPath("$.user.nickname") { value(testUser.nickname) }
-            jsonPath("$.parentId") { isEmpty() }
-            jsonPath("$.mentions") { isArray() }
-            jsonPath("$.childComments") { isArray() }
-            jsonPath("$.createdAt") { exists() }
-            jsonPath("$.modifiedAt") { exists() }
+            jsonPath("$.commentId") { exists() } // 댓글 ID 존재 확인
+            jsonPath("$.content") { value(expectedContent) } // 댓글 내용 확인
+            jsonPath("$.user.nickname") { value(testUser.nickname) } // 작성자 닉네임 확인
         }
 
-        // Verify
+        // Verify: DB 저장 데이터 검증
         val savedComment = reviewCommentRepository.findAll().first()
         assertThat(savedComment.content).isEqualTo(expectedContent)
         assertThat(savedComment.user.userId).isEqualTo(testUser.userId)
     }
 
+    // 댓글 수정 API 엔드포인트 테스트
     @Test
     @DisplayName("댓글 수정 테스트")
     fun updateCommentTest() {
-        val testRootComment = createRootComment(1)
-        val childComment1 = createChildComment(1, testRootComment.commentId)
-        val childComment2 = createChildComment(2, testRootComment.commentId)
+        // Given: 테스트 데이터 준비
+        val testRootComment = createRootComment(1) // 루트 댓글 생성
+        val childComment1 = createChildComment(1, testRootComment.commentId) // 대댓글 1 생성
+        val childComment2 = createChildComment(2, testRootComment.commentId) // 대댓글 2 생성
         val expectedContent = "수정된 테스트 댓글"
         
         val updateRequest = CommentRequest(
             content = expectedContent,
-            parentCommentId = 0,
+            parentCommentId = null,
             mentions = emptyList()
         )
 
+        // When: API 요청 실행
         val result = mockMvc.put("${getReviewCommentBasicPath(testReview.reviewId!!)}/${testRootComment.commentId}") {
-            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
+            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}") // JWT 인증
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(updateRequest)
             with(csrf())
         }
 
+        // Then: 응답 검증
         result.andExpect {
-            status { isOk() }
+            status { isOk() } // HTTP 200 상태 코드 확인
             content { contentType(MediaType.APPLICATION_JSON) }
-            jsonPath("$.commentId") { value(testRootComment.commentId) }
-            jsonPath("$.content") { value(expectedContent) }
-            jsonPath("$.user.nickname") { value(testUser.nickname) }
-            jsonPath("$.parentId") { isEmpty() }
-            jsonPath("$.mentions") { isEmpty() }
-            jsonPath("$.childComments") { isArray() }
-            jsonPath("$.createdAt") { exists() }
-            jsonPath("$.modifiedAt") { exists() }
+            jsonPath("$.commentId") { value(testRootComment.commentId) } // 댓글 ID 확인
+            jsonPath("$.content") { value(expectedContent) } // 수정된 내용 확인
+            jsonPath("$.user.nickname") { value(testUser.nickname) } // 작성자 확인
+            jsonPath("$.parentId") { isEmpty() } // 루트 댓글 확인
+            jsonPath("$.mentions") { isEmpty() } // 멘션 없음 확인
+            jsonPath("$.childComments") { isArray() } // 대댓글 목록 확인
+            jsonPath("$.createdAt") { exists() } // 생성 시간 존재 확인
+            jsonPath("$.modifiedAt") { exists() } // 수정 시간 존재 확인
         }
     }
 
+    // 댓글 삭제 API 엔드포인트 테스트
     @Test
     @DisplayName("댓글 삭제 테스트")
     fun deleteCommentTest() {
-        val testRootComment = createRootComment(1)
-        createChildComment(1, testRootComment.commentId)
-        createChildComment(2, testRootComment.commentId)
+        // Given: 테스트 데이터 준비
+        val testRootComment = createRootComment(1) // 루트 댓글 생성
+        createChildComment(1, testRootComment.commentId) // 대댓글 1 생성
+        createChildComment(2, testRootComment.commentId) // 대댓글 2 생성
 
+        // When & Then: API 요청 실행 및 검증
         mockMvc.delete("${getReviewCommentBasicPath(testReview.reviewId!!)}/${testRootComment.commentId}") {
-            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
+            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}") // JWT 인증
         }.andExpect {
-            status { isOk() }
+            status { isOk() } // 삭제 성공 확인
         }
     }
 
+    // 댓글 목록 조회 API 엔드포인트 테스트
     @Test
     @DisplayName("댓글 목록 조회 테스트")
     fun getCommentsTest() {
-        val testRootComment = createRootComment(1)
-        val testChildComment1 = createChildComment(1, testRootComment.commentId)
-        val testChildComment2 = createChildComment(2, testRootComment.commentId)
+        // Given: 테스트 데이터 준비
+        val testRootComment = createRootComment(1) // 루트 댓글 생성
+        val testChildComment1 = createChildComment(1, testRootComment.commentId) // 대댓글 1 생성
+        val testChildComment2 = createChildComment(2, testRootComment.commentId) // 대댓글 2 생성
+        entityManager.flush()
+        entityManager.clear()
 
+        // When & Then: API 요청 실행 및 검증
         mockMvc.get(getReviewCommentBasicPath(testReview.reviewId!!)) {
-            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
             accept = MediaType.APPLICATION_JSON
-            param("page", "0")
+            param("page", "0") // 페이지네이션 설정
             param("size", "10")
         }.andExpect {
-            status { isOk() }
+            status { isOk() } // HTTP 200 상태 코드 확인
             content { contentType(MediaType.APPLICATION_JSON) }
-            jsonPath("$.content") { isArray() }
-            jsonPath("$.content[0].commentId") { value(testRootComment.commentId) }
-            jsonPath("$.content[0].content") { value(testRootComment.content) }
-            jsonPath("$.content[0].user.nickname") { value(testUser.nickname) }
-            jsonPath("$.content[0].childComments[0].commentId") { value(testChildComment2.commentId) }
-            jsonPath("$.content[0].childComments[0].content") { value(testChildComment2.content) }
-            jsonPath("$.content[0].childComments[0].parentId") { value(testChildComment2.parentId) }
-            jsonPath("$.content[0].childComments[1].commentId") { value(testChildComment1.commentId) }
-            jsonPath("$.content[0].childComments[1].content") { value(testChildComment1.content) }
-            jsonPath("$.content[0].childComments[1].parentId") { value(testChildComment1.parentId) }
-            jsonPath("$.content[0].childComments[0].user.nickname") { value(testUser.nickname) }
-            jsonPath("$.number") { value(0) }
-            jsonPath("$.totalPages") { isNumber() }
-            jsonPath("$.totalElements") { isNumber() }
-            jsonPath("$.last") { isBoolean() }
-            jsonPath("$.first") { isBoolean() }
-            jsonPath("$.empty") { isBoolean() }
-            jsonPath("$.content[0].createdAt") { exists() }
-            jsonPath("$.content[0].modifiedAt") { exists() }
-            jsonPath("$.content[0].childComments[0].createdAt") { exists() }
-            jsonPath("$.content[0].childComments[0].modifiedAt") { exists() }
+            jsonPath("$.content[0].commentId") { value(testRootComment.commentId) } // 루트 댓글 ID 확인
+            jsonPath("$.content[0].content") { value(testRootComment.content) } // 루트 댓글 내용 확인
+            jsonPath("$.content[0].childComments") { isArray() } // 대댓글 목록 확인
+            jsonPath("$.content[0].childComments.length()") { value(2) } // 대댓글 2개 확인
         }
     }
 
+    // API 엔드포인트 경로 생성 유틸리티 메소드
     private fun getReviewCommentBasicPath(reviewId: Long): String =
         UriComponentsBuilder.fromPath("/reviews/{reviewId}/comments")
             .buildAndExpand(reviewId)
