@@ -2,17 +2,14 @@
 package org.team14.webty.reviewComment.mapper
 
 // 필요한 의존성들을 임포트
-import org.springframework.stereotype.Component
 import org.team14.webty.review.entity.Review
 import org.team14.webty.reviewComment.dto.CommentRequest
 import org.team14.webty.reviewComment.dto.CommentResponse
 import org.team14.webty.reviewComment.entity.ReviewComment
 import org.team14.webty.user.dto.UserDataResponse
 import org.team14.webty.user.entity.WebtyUser
-import java.time.LocalDateTime
 
-@Component
-class ReviewCommentMapper {
+object ReviewCommentMapper {
     // CommentRequest DTO를 ReviewComment 엔티티로 변환하는 메서드
     fun toEntity(
         request: CommentRequest, // 클라이언트로부터 받은 댓글 요청 DTO
