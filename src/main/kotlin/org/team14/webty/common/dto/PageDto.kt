@@ -9,6 +9,6 @@ data class PageDto<T>(
     val totalElements: Long = 0,
     val hasNext: Boolean = false,
     val hasPrevious: Boolean = false,
-    @JsonProperty("isLast")
+    @get:JsonProperty("isLast")
     val isLast: Boolean = false
 )
