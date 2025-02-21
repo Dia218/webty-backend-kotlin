@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.security.token.JwtManager
-import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
@@ -28,21 +27,26 @@ import org.team14.webty.webtoon.repository.WebtoonRepository
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
+@Transactional
 class FavoriteControllerTest {
 
     @Autowired
     lateinit var mockMvc: MockMvc
+
     @Autowired
     lateinit var userRepository: UserRepository
+
     @Autowired
     lateinit var webtoonRepository: WebtoonRepository
+
     @Autowired
     lateinit var favoriteRepository: FavoriteRepository
+
     @Autowired
     private val jwtManager: JwtManager? = null
     private var testUser: WebtyUser? = null
     private var testWebtoon: Webtoon? = null
-    private var testSocialProvider:SocialProviderType? = null
+    private var testSocialProvider: SocialProviderType? = null
 
     @BeforeEach
     fun beforeEach() {
@@ -50,14 +54,14 @@ class FavoriteControllerTest {
         webtoonRepository.deleteAll()
         userRepository.deleteAll()
 
-        testUser = userRepository?.save(
+        testUser = userRepository.save(
             WebtyUser(
-                nickname="테스트유저",
-                profileImage="dasdsa"
+                nickname = "테스트유저",
+                profileImage = "dasdsa"
             )
         )
 
-        testWebtoon = webtoonRepository!!.save(
+        testWebtoon = webtoonRepository.save(
             Webtoon(
                 webtoonName = "테스트 웹툰",
                 platform = Platform.KAKAO_PAGE,
@@ -98,7 +102,7 @@ class FavoriteControllerTest {
         val webtoonId = testWebtoon!!.webtoonId
         val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
-        favoriteRepository!!.save(FavoriteMapper.toEntity(testUser!!, testWebtoon!!))
+        favoriteRepository.save(FavoriteMapper.toEntity(testUser!!, testWebtoon!!))
 
         mockMvc.perform(
             MockMvcRequestBuilders.delete("/favorite/$webtoonId")
@@ -106,7 +110,7 @@ class FavoriteControllerTest {
         )
             .andExpect(MockMvcResultMatchers.status().isOk()) // 1. 상태코드 200ok인지 확인
 
-        assertTrue(favoriteRepository!!.findByWebtyUserAndWebtoon(testUser!!, testWebtoon!!).isEmpty)
+        assertTrue(favoriteRepository.findByWebtyUserAndWebtoon(testUser!!, testWebtoon!!).isEmpty)
         // 2. db에서 삭제됐는지 확인
     }
 
@@ -116,7 +120,7 @@ class FavoriteControllerTest {
     fun t3() {
         val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
-        favoriteRepository!!.save(FavoriteMapper.toEntity(testUser!!, testWebtoon!!))
+        favoriteRepository.save(FavoriteMapper.toEntity(testUser!!, testWebtoon!!))
 
         mockMvc.perform(
             MockMvcRequestBuilders.get("/favorite/list")

@@ -13,12 +13,14 @@ import org.mockito.kotlin.whenever
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.ValueOperations
 import org.springframework.security.core.Authentication
+import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.common.cookies.CookieManager
 import org.team14.webty.common.enums.TokenType
 import org.team14.webty.security.token.JwtManager
 import java.util.concurrent.TimeUnit
 
 @ExtendWith(MockitoExtension::class)
+@Transactional
 class LogoutSuccessHandlerTest {
 
     @Mock

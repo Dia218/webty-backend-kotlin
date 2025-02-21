@@ -14,6 +14,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.common.cookies.CookieManager
 import org.team14.webty.common.enums.TokenType
 import org.team14.webty.security.policy.ExpirationPolicy
@@ -21,6 +22,7 @@ import org.team14.webty.security.token.JwtManager
 import kotlin.test.assertEquals
 
 @ExtendWith(MockitoExtension::class)
+@Transactional
 class CustomAuthenticationFilterTest {
 
     @InjectMocks
@@ -87,8 +89,16 @@ class CustomAuthenticationFilterTest {
 
         // Then
         assertEquals(authentication, SecurityContextHolder.getContext().authentication)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.accessTokenExpirationTime)
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.refreshTokenExpirationTime)
+        verify(cookieManager).setCookie(
+            TokenType.ACCESS_TOKEN,
+            newAccessToken,
+            ExpirationPolicy.accessTokenExpirationTime
+        )
+        verify(cookieManager).setCookie(
+            TokenType.REFRESH_TOKEN,
+            newRefreshToken,
+            ExpirationPolicy.refreshTokenExpirationTime
+        )
         verify(filterChain).doFilter(request, response)
     }
 
@@ -109,8 +119,16 @@ class CustomAuthenticationFilterTest {
 
         // Then
         assertEquals(authentication, SecurityContextHolder.getContext().authentication)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, newAccessToken, ExpirationPolicy.accessTokenExpirationTime)
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, newRefreshToken, ExpirationPolicy.refreshTokenExpirationTime)
+        verify(cookieManager).setCookie(
+            TokenType.ACCESS_TOKEN,
+            newAccessToken,
+            ExpirationPolicy.accessTokenExpirationTime
+        )
+        verify(cookieManager).setCookie(
+            TokenType.REFRESH_TOKEN,
+            newRefreshToken,
+            ExpirationPolicy.refreshTokenExpirationTime
+        )
         verify(filterChain).doFilter(request, response)
     }
 

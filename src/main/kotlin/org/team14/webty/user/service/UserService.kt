@@ -70,8 +70,7 @@ class UserService(
         if (userRepository.existsByNickname(nickname)) {
             throw BusinessException(ErrorCode.USER_NICKNAME_DUPLICATION)
         }
-        webtyUser.updateProfile(nickname = nickname)
-        userRepository.save(webtyUser)
+        userRepository.save(webtyUser.updateProfile(nickname = nickname))
     }
 
     @Transactional
@@ -79,8 +78,7 @@ class UserService(
     fun modifyImage(webtyUserDetails: WebtyUserDetails, file: MultipartFile) {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val filePath = fileStorageUtil.storeImageFile(file)
-        webtyUser.updateProfile(webtyUser.nickname, filePath)
-        userRepository.save(webtyUser)
+        userRepository.save(webtyUser.updateProfile(webtyUser.nickname, filePath))
     }
 
     @Transactional
