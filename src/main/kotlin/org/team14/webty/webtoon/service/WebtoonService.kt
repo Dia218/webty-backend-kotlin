@@ -75,7 +75,7 @@ class WebtoonService(
         webtoonRepository.saveAll(webtoons)
     }
 
-    @Scheduled(cron = "0 0 6 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 54 15 * * ?", zone = "Asia/Seoul")
     fun updateWebtoons() {
         log.info("웹툰 데이터 업데이트 시작 (비동기)")
         Platform.values().forEach { updateWebtoonsByProviderAsync(it) }

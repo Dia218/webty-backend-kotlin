@@ -13,7 +13,7 @@ object WebtoonApiResponseMapper {
             webtoonName = webtoonApiResponse.title,
             platform = Platform.fromString(webtoonApiResponse.provider),
             webtoonLink = webtoonApiResponse.url,
-            thumbnailUrl = webtoonApiResponse.thumbnails,
+            thumbnailUrl = webtoonApiResponse.thumbnails[0],
             authors = formatAuthors(webtoonApiResponse.authors),
             finished = webtoonApiResponse.isEnd
         )

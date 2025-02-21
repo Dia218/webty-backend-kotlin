@@ -11,7 +11,7 @@ data class WebtoonApiResponse(
     @JsonProperty("url")
     val url : String,
     @JsonProperty("thumbnail")
-    val  thumbnails : String,
+    val thumbnails : List<String>,
     @JsonProperty("isEnd")
     val isEnd: Boolean,
     @JsonProperty("authors")
