@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.TestComponent
 import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.voting.entity.Similar
 import org.team14.webty.voting.entity.Vote
@@ -39,16 +39,14 @@ class VotingTestDataInitializer {
 
     fun initTestUser(): WebtyUser {
         return userRepository!!.save(
-            WebtyUser.builder()
-                .nickname("테스트유저")
-                .profileImage("testUserProfileImg")
-                .socialProvider(
-                    SocialProvider.builder()
-                        .provider(SocialProviderType.KAKAO)
-                        .providerId("123456789")
-                        .build()
+                WebtyUser(
+                        nickname = "테스트유저",
+                        profileImage = "testUserProfileImg",
+                        socialProvider = SocialProvider(
+                                provider = SocialProviderType.KAKAO,
+                                providerId = "123456789"
+                        )
                 )
-                .build()
         )
     }
 
@@ -83,7 +81,7 @@ class VotingTestDataInitializer {
             Similar(
                 similarWebtoonId = testChoiceWebtoon.webtoonId!!,
                 similarResult = 0L,
-                userId = testUser.getUserId(),
+                userId = testUser.userId!!,
                 targetWebtoon = testTargetWebtoon
             )
         )
@@ -92,7 +90,7 @@ class VotingTestDataInitializer {
     fun newTestVote(testUser: WebtyUser, testSimilar: Similar, voteType: VoteType): Vote {
         return voteRepository!!.save(
             Vote(
-                userId = testUser.getUserId(),
+                userId = testUser.userId!!,
                 similar = testSimilar,
                 voteType = voteType
             )

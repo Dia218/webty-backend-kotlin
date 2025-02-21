@@ -38,12 +38,11 @@ class SimilarService(
         val choiceWebtoon = webtoonService.findWebtoon(choiceWebtoonId)
 
         // 이미 등록된 유사 웹툰인지 확인
-
-        val choiceWebtoonId = choiceWebtoon.webtoonId ?: throw BusinessException(ErrorCode.WEBTOON_NOT_FOUND)
-        if (similarRepository.existsByTargetWebtoonAndSimilarWebtoonId(targetWebtoon, choiceWebtoonId)) {
+        if (similarRepository.existsByTargetWebtoonAndSimilarWebtoonId(targetWebtoon, choiceWebtoon.webtoonId!!)) {
             throw BusinessException(ErrorCode.SIMILAR_DUPLICATION_ERROR)
         }
-        val similar = toEntity(webtyUser.userId, choiceWebtoonId, targetWebtoon)
+
+        val similar = toEntity(webtyUser.userId!!, choiceWebtoon.webtoonId, targetWebtoon)
         try {
             similarRepository.save(similar)
         } catch (e: DataIntegrityViolationException) {

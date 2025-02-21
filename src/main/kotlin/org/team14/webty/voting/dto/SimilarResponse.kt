@@ -1,6 +1,6 @@
 package org.team14.webty.voting.dto
 
-class SimilarResponse(
+data class SimilarResponse(
     val similarId: Long,
     val similarThumbnailUrl: String,
     val similarResult: Long,

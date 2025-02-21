@@ -41,7 +41,7 @@ class JwtManagerTest {
     @BeforeEach
     fun setUp() {
         // 1. 테스트 유저 생성 및 저장
-        val testUser = WebtyUser(null, nickName, null, null)
+        val testUser = WebtyUser(nickname = nickName, profileImage = "test img", socialProvider = null)
         userId = userRepository.save(testUser).userId
 
         // 2. JWT 토큰 생성

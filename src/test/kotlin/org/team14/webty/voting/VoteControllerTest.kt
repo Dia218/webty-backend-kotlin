@@ -74,7 +74,7 @@ internal class VoteControllerTest {
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post(votePath)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
+                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
                 .content(jsonRequest)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
@@ -90,7 +90,7 @@ internal class VoteControllerTest {
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.delete(votePath + "/" + testVote.voteId)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
+                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
         )
