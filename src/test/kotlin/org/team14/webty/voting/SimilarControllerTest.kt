@@ -76,7 +76,7 @@ internal class SimilarControllerTest {
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post(similarPath)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
+                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
                 .content(jsonRequest)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
@@ -97,7 +97,7 @@ internal class SimilarControllerTest {
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.delete(similarPath + "/" + testSimilar.similarId)
-                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.getUserId()))
+                .header("Authorization", "Bearer " + jwtManager!!.createAccessToken(testUser!!.userId!!))
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(SecurityMockMvcRequestPostProcessors.csrf())
         )

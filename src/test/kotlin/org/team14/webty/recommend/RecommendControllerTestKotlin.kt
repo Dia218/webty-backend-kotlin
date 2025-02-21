@@ -19,7 +19,7 @@ import org.team14.webty.review.repository.ReviewRepository
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
@@ -59,16 +59,14 @@ internal class RecommendControllerTestKotlin {
         userRepository!!.deleteAll()
 
         testUser = userRepository.save(
-            WebtyUser.builder()
-                .nickname("테스트유저")
-                .profileImage("dasdsa")
-                .socialProvider(
-                    SocialProvider.builder()
-                        .provider(SocialProviderType.KAKAO)
-                        .providerId("313213231")
-                        .build()
+                WebtyUser(
+                        nickname = "테스트유저",
+                        profileImage = "dasdsa",
+                        socialProvider = SocialProvider(
+                                provider = SocialProviderType.KAKAO,
+                                providerId = "313213231"
+                        )
                 )
-                .build()
         )
 
         val testWebtoon = webtoonRepository.save(
@@ -99,7 +97,7 @@ internal class RecommendControllerTestKotlin {
     fun t1() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -116,7 +114,7 @@ internal class RecommendControllerTestKotlin {
     fun t2() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -142,7 +140,7 @@ internal class RecommendControllerTestKotlin {
     fun t3() {
         val reviewId = testReview!!.reviewId
         val type = "abb"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -162,7 +160,7 @@ internal class RecommendControllerTestKotlin {
     fun t4() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -184,7 +182,7 @@ internal class RecommendControllerTestKotlin {
     fun t5() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.delete("/recommend/$reviewId")
@@ -205,7 +203,7 @@ internal class RecommendControllerTestKotlin {
         val userId = testUser!!.userId
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -236,7 +234,7 @@ internal class RecommendControllerTestKotlin {
     fun t7() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")

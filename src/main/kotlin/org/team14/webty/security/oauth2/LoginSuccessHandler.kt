@@ -11,7 +11,7 @@ import org.team14.webty.common.cookies.CookieManager
 import org.team14.webty.common.enums.TokenType
 import org.team14.webty.security.policy.ExpirationPolicy
 import org.team14.webty.security.token.JwtManager
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.service.UserService
 
 @Component
