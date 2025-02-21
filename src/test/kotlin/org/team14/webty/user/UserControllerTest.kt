@@ -15,7 +15,9 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.TestPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.repository.UserRepository
@@ -24,21 +26,22 @@ import org.team14.webty.user.repository.UserRepository
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
+@Transactional
 class UserControllerTest {
-    
+
     private val objectMapper = ObjectMapper()
-    
+
     @Autowired
     private lateinit var mockMvc: MockMvc
-    
+
     @Autowired
     private lateinit var userRepository: UserRepository
-    
+
     @Autowired
     private lateinit var jwtManager: JwtManager
-    
+
     private lateinit var testUser: WebtyUser
-    
+
     @BeforeEach
     fun beforeEach() {
         userRepository.deleteAll()
@@ -49,13 +52,13 @@ class UserControllerTest {
             )
         )
     }
-    
+
     @Test
     @DisplayName("닉네임 변경 테스트")
     fun changeNicknameTest() {
         val reqBody = mutableMapOf("nickname" to "새닉네임")
         val jsonRequest = objectMapper.writeValueAsString(reqBody)
-        
+
         mockMvc.perform(
             patch("/user/nickname")
                 .header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
@@ -66,7 +69,7 @@ class UserControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.message", `is`("닉네임이 변경되었습니다.")))
     }
-    
+
     @Test
     @DisplayName("사용자 정보 조회 테스트")
     fun getUserDataTest() {
@@ -77,7 +80,7 @@ class UserControllerTest {
         )
             .andExpect(status().isOk)
     }
-    
+
     @Test
     @DisplayName("프로필 이미지 변경 테스트")
     fun changeProfileImageTest() {
@@ -87,7 +90,7 @@ class UserControllerTest {
             "image/jpeg",
             "dummy image content".toByteArray()
         )
-        
+
         mockMvc.perform(multipart("/user/profileImage")
             .file(file)
             .with { request -> request.method = "PATCH"; request }
@@ -97,7 +100,7 @@ class UserControllerTest {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.message", `is`("프로필사진이 변경되었습니다.")))
     }
-    
+
     @Test
     @DisplayName("사용자 삭제 테스트")
     fun deleteUserTest() {
@@ -107,7 +110,7 @@ class UserControllerTest {
                 .with(csrf())
         )
             .andExpect(status().isNoContent)
-        
+
         assertFalse { userRepository.findById(testUser.userId!!).isPresent }
     }
 }

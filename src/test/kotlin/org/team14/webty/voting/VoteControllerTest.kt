@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.DefaultMockMvcBuilder
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.WebApplicationContext
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.WebtyUser
@@ -27,6 +28,7 @@ import org.team14.webty.voting.enums.VoteType
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
+@Transactional
 @Import(
     VotingTestDataInitializer::class
 )

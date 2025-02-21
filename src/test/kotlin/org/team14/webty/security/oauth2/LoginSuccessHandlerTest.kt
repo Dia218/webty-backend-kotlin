@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.core.user.OAuth2User
 import org.springframework.test.util.ReflectionTestUtils
+import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.common.cookies.CookieManager
 import org.team14.webty.common.enums.TokenType
 import org.team14.webty.security.policy.ExpirationPolicy
@@ -24,6 +25,7 @@ import java.io.IOException
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
+@Transactional
 internal class LoginSuccessHandlerTest {
 
     @Mock
@@ -77,7 +79,11 @@ internal class LoginSuccessHandlerTest {
         verify(jwtManager).createAccessToken(userId)
         verify(jwtManager).createRefreshToken(userId)
         verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.accessTokenExpirationTime)
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.refreshTokenExpirationTime)
+        verify(cookieManager).setCookie(
+            TokenType.REFRESH_TOKEN,
+            refreshToken,
+            ExpirationPolicy.refreshTokenExpirationTime
+        )
     }
 
     @Test
@@ -99,6 +105,10 @@ internal class LoginSuccessHandlerTest {
         verify(jwtManager).createAccessToken(newUserId)
         verify(jwtManager).createRefreshToken(newUserId)
         verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.accessTokenExpirationTime)
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.refreshTokenExpirationTime)
+        verify(cookieManager).setCookie(
+            TokenType.REFRESH_TOKEN,
+            refreshToken,
+            ExpirationPolicy.refreshTokenExpirationTime
+        )
     }
 }

@@ -36,7 +36,7 @@ class UserService(
                     .map(WebtyUser::userId)
             })
     }
-    
+
     @Transactional
     fun createUser(socialProviderType: SocialProviderType, providerId: String): Long {
         val socialProvider = SocialProvider(
@@ -54,7 +54,7 @@ class UserService(
         userRepository.save(webtyUser)
         return webtyUser.userId!!
     }
-    
+
     fun generateUniqueNickname(socialProvider: SocialProvider): String {
         var uniqueNickname = DEFAULT_NICKNAME.formatted(UUID.randomUUID().toString().substring(0, 18))
         // 닉네임이 만약 중복되었을 경우 값을 추가하는 기능 추가
@@ -63,26 +63,24 @@ class UserService(
         }
         return uniqueNickname
     }
-    
+
     @Transactional
     fun modifyNickname(webtyUserDetails: WebtyUserDetails, nickname: String) {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         if (userRepository.existsByNickname(nickname)) {
             throw BusinessException(ErrorCode.USER_NICKNAME_DUPLICATION)
         }
-        webtyUser.updateProfile(nickname = nickname)
-        userRepository.save(webtyUser)
+        userRepository.save(webtyUser.updateProfile(nickname = nickname))
     }
-    
+
     @Transactional
     @Throws(IOException::class)
     fun modifyImage(webtyUserDetails: WebtyUserDetails, file: MultipartFile) {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val filePath = fileStorageUtil.storeImageFile(file)
-        webtyUser.updateProfile(webtyUser.nickname, filePath)
-        userRepository.save(webtyUser)
+        userRepository.save(webtyUser.updateProfile(webtyUser.nickname, filePath))
     }
-    
+
     @Transactional
     fun delete(webtyUserDetails: WebtyUserDetails) {
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
@@ -90,23 +88,23 @@ class UserService(
             .orElseThrow { BusinessException(ErrorCode.USER_NOT_FOUND) }!!
         userRepository.delete(existingUser)
     }
-    
+
     @Transactional
     fun findNickNameByUserId(userId: Long): String {
         val webtyUser = userRepository.findById(userId)
             .orElseThrow { BusinessException(ErrorCode.USER_NOT_FOUND) }!!
         return webtyUser.nickname
     }
-    
+
     fun findByNickName(nickName: String): WebtyUser {
         return userRepository.findByNickname(nickName)
             .orElseThrow(Supplier { BusinessException(ErrorCode.USER_NOT_FOUND) })!!
     }
-    
+
     fun getAuthenticatedUser(webtyUserDetails: WebtyUserDetails): WebtyUser {
         return authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
     }
-    
+
     companion object {
         private const val DEFAULT_NICKNAME = "웹티사랑꾼 %s"
     }
