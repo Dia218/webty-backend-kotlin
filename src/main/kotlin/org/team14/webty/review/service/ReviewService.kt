@@ -50,6 +50,10 @@ class ReviewService(
         val pageable: Pageable = PageRequest.of(page, size)
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
+
+        // 조회수 증가 때문에 LastModified 수정되는점 우회
+        reviewRepository.incrementViewCount(id)
+
         val comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable)
         val commentResponses = PageMapper.toPageDto(comments.map { comment: ReviewComment? ->
             ReviewCommentMapper.toResponse(
@@ -57,7 +61,6 @@ class ReviewService(
             )
         })
         val reviewImages = reviewImageRepository.findAllByReview(review)
-        review.plusViewCount() // 조회수 증가
         val recommendCounts = recommendRepository.getRecommendCounts(id)
         return ReviewMapper.toDetail(review, commentResponses, reviewImages, recommendCounts)
     }
@@ -133,11 +136,10 @@ class ReviewService(
             uploadReviewImage(review, reviewRequest.images!!)
         }
 
-        review.updateReview(
-            reviewRequest.title, reviewRequest.content, reviewRequest.spoilerStatus,
-            webtoon
+        val updatedReview = review.updatedReview(
+            reviewRequest.title, reviewRequest.content, reviewRequest.spoilerStatus, webtoon
         )
-        reviewRepository.save(review)
+        reviewRepository.save(updatedReview)
 
         return review.reviewId!!
     }
@@ -247,8 +249,8 @@ class ReviewService(
     fun patchReviewIsSpoiler(id: Long) {
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
-        review.patchIsSpoiler()
-        reviewRepository.save(review)
+        // 이부분도 수정일자 안바뀌게 수정
+        reviewRepository.patchIsSpoiler(id)
     }
 
     private fun mapReviewResponse(reviews :Page<Review>) : Page<ReviewItemResponse>{

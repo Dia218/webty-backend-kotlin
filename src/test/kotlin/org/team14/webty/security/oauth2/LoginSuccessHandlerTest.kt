@@ -18,7 +18,7 @@ import org.team14.webty.common.cookies.CookieManager
 import org.team14.webty.common.enums.TokenType
 import org.team14.webty.security.policy.ExpirationPolicy
 import org.team14.webty.security.token.JwtManager
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.service.UserService
 import java.io.IOException
 import java.util.*
@@ -48,7 +48,7 @@ internal class LoginSuccessHandlerTest {
 
     @BeforeEach
     fun setUp() {
-        ReflectionTestUtils.setField(loginSuccessHandler, "REDIRECT_URI", "callbackURI")
+        ReflectionTestUtils.setField(loginSuccessHandler, "redirectUri", "callbackURI")
 
         val attributes = mapOf("id" to "123456789")
         val oAuth2User: OAuth2User = DefaultOAuth2User(
@@ -76,8 +76,8 @@ internal class LoginSuccessHandlerTest {
         verify(userService).existSocialProvider("123456789")
         verify(jwtManager).createAccessToken(userId)
         verify(jwtManager).createRefreshToken(userId)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.refreshTokenExpirationTime)
     }
 
     @Test
@@ -98,7 +98,7 @@ internal class LoginSuccessHandlerTest {
         verify(userService).createUser(SocialProviderType.KAKAO, "123456789")
         verify(jwtManager).createAccessToken(newUserId)
         verify(jwtManager).createRefreshToken(newUserId)
-        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.getAccessTokenExpirationTime())
-        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.getRefreshTokenExpirationTime())
+        verify(cookieManager).setCookie(TokenType.ACCESS_TOKEN, accessToken, ExpirationPolicy.accessTokenExpirationTime)
+        verify(cookieManager).setCookie(TokenType.REFRESH_TOKEN, refreshToken, ExpirationPolicy.refreshTokenExpirationTime)
     }
 }

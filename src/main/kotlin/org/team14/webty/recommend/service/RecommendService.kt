@@ -18,34 +18,32 @@ class RecommendService(
 ) {
 
     @Transactional
-    fun createRecommend(webtyUserDetails: WebtyUserDetails, reviewId: Long, type: String?): Long? {
+    fun createRecommend(webtyUserDetails: WebtyUserDetails, reviewId: Long, type: String): Long? {
         val webtyUser = webtyUserDetails.webtyUser
         val review = reviewIdToReview(reviewId)
 
-        if (recommendRepository.existsByReviewAndUserIdAndLikeType(
-                review, webtyUser.userId, LikeType.fromString(type!!)
-            )
-        ) {
+        recommendRepository.existsByReviewAndUserIdAndLikeType(
+            review, webtyUser.userId!!, LikeType.fromString(type)
+        ).takeIf { it }?.let { // true 이면 Exception 던짐
             throw BusinessException(ErrorCode.RECOMMEND_DUPLICATION_ERROR)
         }
-        val recommend = Recommend(
-            voteId = null,
+
+        return Recommend(
             likeType = LikeType.fromString(type),
-            userId = webtyUser.userId,
-            review = review,
-        )
-        recommendRepository.save(recommend)
-        return recommend.voteId
+            userId = webtyUser.userId!!,
+            review = review
+        ).also { recommendRepository.save(it) }.recommendId
     }
 
     @Transactional
     fun deleteRecommend(webtyUserDetails: WebtyUserDetails, reviewId: Long, type: String) {
         val webtyUser = webtyUserDetails.webtyUser
         val review = reviewIdToReview(reviewId)
-        val recommend = recommendRepository
-            .findByReviewAndUserIdAndLikeType(review, webtyUser.userId, LikeType.fromString(type))
+
+        recommendRepository.findByReviewAndUserIdAndLikeType(
+            review, webtyUser.userId!!, LikeType.fromString(type)
+        )?.let { recommendRepository.delete(it) }
             ?: throw BusinessException(ErrorCode.RECOMMEND_NOT_FOUND)
-        recommendRepository.delete(recommend)
     }
 
     fun getRecommendCounts(reviewId: Long): Map<String, Long> {
@@ -58,9 +56,7 @@ class RecommendService(
     }
 
     fun isRecommended(webtyUserDetails: WebtyUserDetails, reviewId: Long): Map<String, Boolean> {
-        val webtyUser = webtyUserDetails.webtyUser
-        val rawResult = recommendRepository.findRecommendStatusByUserAndReview(webtyUser.userId, reviewId)
-
-        return rawResult.mapValues { it.value == 1 } // key값은 유지 value값만 변경
+        return recommendRepository.findRecommendStatusByUserAndReview(webtyUserDetails.webtyUser.userId!!, reviewId)
+            .mapValues { it.value == 1 }
     }
 }

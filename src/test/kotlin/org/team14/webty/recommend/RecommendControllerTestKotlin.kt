@@ -1,6 +1,6 @@
 package org.team14.webty.recommend
 
-import org.junit.jupiter.api.AfterEach
+import jakarta.transaction.Transactional
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -19,16 +19,16 @@ import org.team14.webty.review.repository.ReviewRepository
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
-import java.time.LocalDateTime
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
+@Transactional
 internal class RecommendControllerTestKotlin {
 
     @Autowired
@@ -53,47 +53,42 @@ internal class RecommendControllerTestKotlin {
 
     @BeforeEach
     fun beforeEach() {
-        testUser = userRepository?.save(
-            WebtyUser.builder()
-                .nickname("테스트유저")
-                .profileImage("dasdsa")
-                .socialProvider(
-                    SocialProvider.builder()
-                        .provider(SocialProviderType.KAKAO)
-                        .providerId("313213231")
-                        .build()
+        recommendRepository!!.deleteAll()
+        reviewRepository!!.deleteAll()
+        webtoonRepository!!.deleteAll()
+        userRepository!!.deleteAll()
+
+        testUser = userRepository.save(
+                WebtyUser(
+                        nickname = "테스트유저",
+                        profileImage = "dasdsa",
+                        socialProvider = SocialProvider(
+                                provider = SocialProviderType.KAKAO,
+                                providerId = "313213231"
+                        )
                 )
-                .build()
         )
 
-        val testWebtoon = webtoonRepository?.save(
+        val testWebtoon = webtoonRepository.save(
             Webtoon(
-                webtoonName="테스트 웹툰",
+                webtoonName = "테스트 웹툰",
                 platform = Platform.KAKAO_PAGE,
-                webtoonLink="www.abc",
+                webtoonLink = "www.abc",
                 thumbnailUrl = "www.bcd",
                 authors = "testtest",
                 finished = true,
             )
         )
-        testReview = reviewRepository?.save(
+        testReview = reviewRepository.save(
             Review(
                 user = testUser!!,
                 content = "테스트 리뷰",
                 title = "테스트 리뷰 제목",
                 viewCount = 0,
                 isSpoiler = SpoilerStatus.FALSE,
-                webtoon = testWebtoon!!,
-                createdAt = LocalDateTime.now())
+                webtoon = testWebtoon
+            )
         )
-    }
-
-    @AfterEach
-    fun afterEach() {
-        recommendRepository!!.deleteAll()
-        reviewRepository!!.deleteAll()
-        webtoonRepository!!.deleteAll()
-        userRepository!!.deleteAll()
     }
 
     @Test
@@ -102,7 +97,7 @@ internal class RecommendControllerTestKotlin {
     fun t1() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -119,7 +114,7 @@ internal class RecommendControllerTestKotlin {
     fun t2() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -145,7 +140,7 @@ internal class RecommendControllerTestKotlin {
     fun t3() {
         val reviewId = testReview!!.reviewId
         val type = "abb"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -165,7 +160,7 @@ internal class RecommendControllerTestKotlin {
     fun t4() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -187,7 +182,7 @@ internal class RecommendControllerTestKotlin {
     fun t5() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.delete("/recommend/$reviewId")
@@ -208,7 +203,7 @@ internal class RecommendControllerTestKotlin {
         val userId = testUser!!.userId
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")
@@ -239,7 +234,7 @@ internal class RecommendControllerTestKotlin {
     fun t7() {
         val reviewId = testReview!!.reviewId
         val type = "like"
-        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId)
+        val accessToken = jwtManager!!.createAccessToken(testUser!!.userId!!)
 
         mockMvc!!.perform(
             MockMvcRequestBuilders.post("/recommend/$reviewId")

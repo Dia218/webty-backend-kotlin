@@ -20,32 +20,33 @@ class RecommendController(
     @PostMapping("/{reviewId}")
     fun createRecommend(
         @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
-        @PathVariable(value = "reviewId") reviewId: Long?,
-        @RequestParam(value = "type") type: String?
+        @PathVariable(value = "reviewId") reviewId: Long,
+        @RequestParam(value = "type") type: String
     ): ResponseEntity<Long> {
-        return ResponseEntity.ok(recommendService.createRecommend(webtyUserDetails, reviewId!!, type))
+        return ResponseEntity.ok(recommendService.createRecommend(webtyUserDetails, reviewId, type))
     }
 
     // 선택한 리뷰 추천 취소하기
     @DeleteMapping("/{reviewId}")
     fun deleteRecommend(
         @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
-        @PathVariable(value = "reviewId") reviewId: Long?,
-        @RequestParam(value = "type") type: String?
+        @PathVariable(value = "reviewId") reviewId: Long,
+        @RequestParam(value = "type") type: String
     ): ResponseEntity<Void> {
-        recommendService.deleteRecommend(webtyUserDetails, reviewId!!, type!!)
+        recommendService.deleteRecommend(webtyUserDetails, reviewId, type)
         return ResponseEntity.ok().build()
     }
 
     // 선택한 리뷰의 추천수 조회 (사용하지 않을 것으로 보임)
     @GetMapping("/{reviewId}")
     fun getRecommendCounts(
-        @PathVariable(value = "reviewId") reviewId: Long?
+        @PathVariable(value = "reviewId") reviewId: Long
     ): ResponseEntity<Map<String, Long>> {
-        val recommendCounts = recommendService.getRecommendCounts(
-            reviewId!!
+        return ResponseEntity.ok(
+            recommendService.getRecommendCounts(
+                reviewId
+            )
         )
-        return ResponseEntity.ok(recommendCounts)
     }
 
     // 로그인한 사용자 기준) 추천한 리뷰 목록 조회
@@ -62,12 +63,12 @@ class RecommendController(
     @GetMapping("/{reviewId}/recommendation")
     fun getRecommended(
         @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
-        @PathVariable(value = "reviewId") reviewId: Long?
+        @PathVariable(value = "reviewId") reviewId: Long
     ): ResponseEntity<Map<String, Boolean>> {
         return ResponseEntity.ok(
             recommendService.isRecommended(
                 webtyUserDetails,
-                reviewId!!
+                reviewId
             )
         )
     }
