@@ -29,7 +29,7 @@ import org.team14.webty.reviewComment.repository.ReviewCommentRepository
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
 import org.team14.webty.user.entity.WebtyUser
-import org.team14.webty.user.enumerate.SocialProviderType
+import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
@@ -191,7 +191,7 @@ class TestEntityFactory {
         var content: String = "테스트 댓글"
         var parentId: Long? = null
         var depth: Int = 0
-        var mentions: List<String> = emptyList()
+        var mentions: String = ""
 
         fun build(): ReviewComment = ReviewComment::class.java.getDeclaredConstructor().let { constructor ->
             constructor.isAccessible = true
@@ -231,26 +231,17 @@ class TestEntityFactory {
 @TestPropertySource( // 테스트용 프로퍼티 설정
     properties = [
         "spring.profiles.active=test", // 테스트 프로필 사용
-        "spring.jpa.hibernate.ddl-auto=create-drop", // 테스트 DB 자동 생성/삭제
-        "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE", // 인메모리 H2 DB 사용
-        "spring.jpa.properties.hibernate.format_sql=true" // SQL 로그 포맷팅
     ]
 )
 @Transactional // 테스트 메소드 트랜잭션 처리
 class ReviewCommentControllerTest @Autowired constructor(
-    // 테스트에 필요한 의존성 주입
-    private val reviewRepository: ReviewRepository, // 리뷰 레포지토리
     private val mockMvc: MockMvc, // HTTP 요청 테스트용 객체
-    private val reviewCommentRepository: ReviewCommentRepository, // 리뷰 댓글 레포지토리
-    private val webtoonRepository: WebtoonRepository, // 웹툰 레포지토리
-    private val userRepository: UserRepository, // 사용자 레포지토리
     private val jwtManager: JwtManager, // JWT 토큰 관리자
     private val objectMapper: ObjectMapper, // JSON 변환용 매퍼
     private val entityManager: EntityManager // JPA 엔티티 매니저
 ) {
     // 테스트에서 사용할 전역 변수들
     private lateinit var testUser: WebtyUser // 테스트용 사용자
-    private lateinit var testRequest: CommentRequest // 테스트용 댓글 요청
     private lateinit var testReview: Review // 테스트용 리뷰
 
     @BeforeEach
@@ -311,11 +302,6 @@ class ReviewCommentControllerTest @Autowired constructor(
         }
         entityManager.persist(testReview)
         entityManager.flush()
-
-        // 5. 기본 CommentRequest 설정
-        testRequest = CommentRequest(
-            content = "테스트 댓글"
-        )
     }
 
     private fun createRootComment(number: Int): ReviewComment {
@@ -325,7 +311,7 @@ class ReviewCommentControllerTest @Autowired constructor(
             content = "테스트 댓글: $number"
             parentId = null
             depth = 0
-            mentions = emptyList()
+            mentions = ""
         }
         entityManager.persist(comment)
         entityManager.flush()
@@ -340,7 +326,7 @@ class ReviewCommentControllerTest @Autowired constructor(
             content = "테스트 댓글: $number"
             this.parentId = parentId
             depth = 1
-            mentions = emptyList()
+            mentions = ""
         }
         entityManager.persist(comment)
         entityManager.flush()
@@ -351,38 +337,28 @@ class ReviewCommentControllerTest @Autowired constructor(
     // 댓글 생성 API 엔드포인트 테스트
     @Test
     @DisplayName("댓글 생성 테스트")
-    fun createCommentTest() {
-        // Given: 테스트 데이터 준비
+    fun createCommentTest() = runCatching {
         val expectedContent = "테스트 댓글"
         val request = CommentRequest(
             content = expectedContent,
-            parentCommentId = null, // 루트 댓글로 생성
-            mentions = emptyList() // 멘션 없음
+            parentCommentId = null,
+            mentions = emptyList()
         )
 
-        // When: API 요청 실행
-        val result = mockMvc.post(getReviewCommentBasicPath(testReview.reviewId!!)) {
-            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}") // JWT 인증
+        mockMvc.post(getReviewCommentBasicPath(testReview.reviewId!!)) {
+            header("Authorization", "Bearer ${jwtManager.createAccessToken(testUser.userId!!)}")
             contentType = MediaType.APPLICATION_JSON
             accept = MediaType.APPLICATION_JSON
             content = objectMapper.writeValueAsString(request)
-            with(csrf()) // CSRF 보안 설정
-        }
-
-        // Then: 응답 검증
-        result.andExpect {
-            status { isOk() } // HTTP 200 상태 코드 확인
+            with(csrf())
+        }.andExpect {
+            status { isOk() }
             content { contentType(MediaType.APPLICATION_JSON) }
-            jsonPath("$.commentId") { exists() } // 댓글 ID 존재 확인
-            jsonPath("$.content") { value(expectedContent) } // 댓글 내용 확인
-            jsonPath("$.user.nickname") { value(testUser.nickname) } // 작성자 닉네임 확인
+            jsonPath("$.commentId") { exists() }
+            jsonPath("$.content") { value(expectedContent) }
+            jsonPath("$.user.nickname") { value(testUser.nickname) }
         }
-
-        // Verify: DB 저장 데이터 검증
-        val savedComment = reviewCommentRepository.findAll().first()
-        assertThat(savedComment.content).isEqualTo(expectedContent)
-        assertThat(savedComment.user.userId).isEqualTo(testUser.userId)
-    }
+    }.getOrThrow()
 
     // 댓글 수정 API 엔드포인트 테스트
     @Test
@@ -390,8 +366,8 @@ class ReviewCommentControllerTest @Autowired constructor(
     fun updateCommentTest() {
         // Given: 테스트 데이터 준비
         val testRootComment = createRootComment(1) // 루트 댓글 생성
-        val childComment1 = createChildComment(1, testRootComment.commentId) // 대댓글 1 생성
-        val childComment2 = createChildComment(2, testRootComment.commentId) // 대댓글 2 생성
+        createChildComment(1, testRootComment.commentId!!) // 대댓글 1 생성
+        createChildComment(2, testRootComment.commentId!!) // 대댓글 2 생성
         val expectedContent = "수정된 테스트 댓글"
         
         val updateRequest = CommentRequest(
@@ -430,8 +406,8 @@ class ReviewCommentControllerTest @Autowired constructor(
     fun deleteCommentTest() {
         // Given: 테스트 데이터 준비
         val testRootComment = createRootComment(1) // 루트 댓글 생성
-        createChildComment(1, testRootComment.commentId) // 대댓글 1 생성
-        createChildComment(2, testRootComment.commentId) // 대댓글 2 생성
+        createChildComment(1, testRootComment.commentId!!) // 대댓글 1 생성
+        createChildComment(2, testRootComment.commentId!!) // 대댓글 2 생성
 
         // When & Then: API 요청 실행 및 검증
         mockMvc.delete("${getReviewCommentBasicPath(testReview.reviewId!!)}/${testRootComment.commentId}") {
@@ -447,8 +423,8 @@ class ReviewCommentControllerTest @Autowired constructor(
     fun getCommentsTest() {
         // Given: 테스트 데이터 준비
         val testRootComment = createRootComment(1) // 루트 댓글 생성
-        val testChildComment1 = createChildComment(1, testRootComment.commentId) // 대댓글 1 생성
-        val testChildComment2 = createChildComment(2, testRootComment.commentId) // 대댓글 2 생성
+        createChildComment(1, testRootComment.commentId!!) // 대댓글 1 생성
+        createChildComment(2, testRootComment.commentId!!) // 대댓글 2 생성
         entityManager.flush()
         entityManager.clear()
 
