@@ -51,16 +51,16 @@ class ReviewCommentControllerTest {
 
     // 테스트에 필요한 레포지토리들 주입
     @Autowired
-    private lateinit var userRepository: UserRepository
+    private lateinit var userRepository: UserRepository//사용자 데이터 처리
 
     @Autowired
-    private lateinit var webtoonRepository: WebtoonRepository
+    private lateinit var webtoonRepository: WebtoonRepository//웹툰 데이터 처리
 
     @Autowired
-    private lateinit var reviewRepository: ReviewRepository
+    private lateinit var reviewRepository: ReviewRepository//리뷰 데이터 처리
 
     @Autowired
-    private lateinit var reviewCommentRepository: ReviewCommentRepository
+    private lateinit var reviewCommentRepository: ReviewCommentRepository//댓글 데이터 처리
 
     // JWT 토큰 생성을 위한 매니저 주입
     @Autowired
@@ -122,7 +122,7 @@ class ReviewCommentControllerTest {
         }
     }
 
-    // 각 테스트 실행 후 실행되는 정리 메소드
+    // 각 테스트 실행 후 실행되는 테스트 데이터 정리 메소드
     @AfterEach
     fun tearDown() {
         try {
@@ -223,7 +223,8 @@ class ReviewCommentControllerTest {
             .andDo(print())  // 요청/응답 내용 출력
             .andExpect(status().isOk)  // HTTP 상태코드 200 확인
     }
-
+    
+    //예외 케이스 테스트 1
     @Test
     @DisplayName("존재하지 않는 리뷰의 댓글 생성 시도")
     fun t5() {
@@ -245,6 +246,7 @@ class ReviewCommentControllerTest {
             .andExpect(status().isNotFound)  // HTTP 상태코드 404 확인
     }
 
+    //예외 케이스 테스트 2
     @Test
     @DisplayName("권한 없는 댓글 수정 시도")
     fun t6() {
