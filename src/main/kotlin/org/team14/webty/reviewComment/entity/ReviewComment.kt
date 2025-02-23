@@ -29,13 +29,13 @@ class ReviewComment(
 
     // 댓글 작성자 정보 (지연 로딩)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    val user: WebtyUser? = null,
+    @JoinColumn(name = "user_id", nullable = false)
+    val user: WebtyUser,
 
     // 댓글이 달린 리뷰 정보 (지연 로딩)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    val review: Review? = null,
+    @JoinColumn(name = "review_id", nullable = false)
+    val review: Review,
 
     // 댓글 내용 (필수 입력)
     @Column(name = "content", nullable = false)
