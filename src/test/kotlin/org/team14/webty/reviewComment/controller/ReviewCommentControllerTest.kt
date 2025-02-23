@@ -26,12 +26,13 @@ import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enumerate.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.junit.jupiter.api.AfterEach
 
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = ["spring.profiles.active=test"])
 @Transactional
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class ReviewCommentControllerTest {
 
     @Autowired
@@ -62,23 +63,22 @@ class ReviewCommentControllerTest {
 
     @BeforeEach
     fun setUp() {
-        // 기존 데이터 정리
-        reviewCommentRepository.deleteAll()
-        reviewRepository.deleteAll()
-        webtoonRepository.deleteAll()
-        userRepository.deleteAll()
+        try {
+            // 기존 데이터 정리
+            reviewCommentRepository.deleteAllInBatch()
+            reviewRepository.deleteAllInBatch()
+            webtoonRepository.deleteAllInBatch()
+            userRepository.deleteAllInBatch()
 
-        // 테스트 유저 생성
-        testUser = userRepository.save(
-            WebtyUser(
+            // 테스트 유저 생성
+            testUser = WebtyUser(
                 nickname = "테스트유저",
                 profileImage = "testImage"
             )
-        )
+            testUser = userRepository.saveAndFlush(testUser)
 
-        // 테스트 웹툰 생성
-        testWebtoon = webtoonRepository.save(
-            Webtoon(
+            // 테스트 웹툰 생성
+            testWebtoon = Webtoon(
                 webtoonName = "테스트 웹툰",
                 platform = Platform.NAVER_WEBTOON,
                 webtoonLink = "https://test.com",
@@ -86,21 +86,36 @@ class ReviewCommentControllerTest {
                 authors = "테스트 작가",
                 finished = false
             )
-        )
+            testWebtoon = webtoonRepository.saveAndFlush(testWebtoon)
 
-        // 테스트 리뷰 생성
-        testReview = reviewRepository.save(
-            Review(
+            // 테스트 리뷰 생성
+            testReview = Review(
                 user = testUser,
                 webtoon = testWebtoon,
                 title = "테스트 리뷰",
                 content = "테스트 내용",
                 isSpoiler = SpoilerStatus.FALSE
             )
-        )
+            testReview = reviewRepository.saveAndFlush(testReview)
 
-        // JWT 토큰 생성
-        jwtToken = "Bearer " + jwtManager.createAccessToken(testUser.userId!!)
+            // JWT 토큰 생성
+            jwtToken = "Bearer " + jwtManager.createAccessToken(testUser.userId!!)
+        } catch (e: Exception) {
+            println("Setup failed: ${e.message}")
+            throw e
+        }
+    }
+
+    @AfterEach
+    fun tearDown() {
+        try {
+            reviewCommentRepository.deleteAllInBatch()
+            reviewRepository.deleteAllInBatch()
+            webtoonRepository.deleteAllInBatch()
+            userRepository.deleteAllInBatch()
+        } catch (e: Exception) {
+            println("Cleanup failed: ${e.message}")
+        }
     }
 
     @Test
