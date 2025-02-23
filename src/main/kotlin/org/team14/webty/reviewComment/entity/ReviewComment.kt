@@ -29,13 +29,13 @@ class ReviewComment(
 
     // 댓글 작성자 정보 (지연 로딩)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    val user: WebtyUser? = null,
+    @JoinColumn(name = "user_id", nullable = false)
+    val user: WebtyUser,
 
     // 댓글이 달린 리뷰 정보 (지연 로딩)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
-    val review: Review? = null,
+    @JoinColumn(name = "review_id", nullable = false)
+    val review: Review,
 
     // 댓글 내용 (필수 입력)
     @Column(name = "content", nullable = false)
@@ -53,10 +53,15 @@ class ReviewComment(
     @Column(name = "mentions", columnDefinition = "TEXT")
     var mentions: String = "[]"
 ) : BaseEntity() {
+        init {
+        this.modifiedAt = null  // 엔티티 생성 시 modifiedAt을 null로 초기화
+    }
+    
     // 댓글 내용과 멘션 목록을 업데이트하는 메소드
     fun updateComment(content: String, mentions: List<String>) {
         this.content = content
         this.mentions = mentions.joinToString(",")
+        this.modifiedAt = LocalDateTime.now() // 실제 수정 시에만 modifiedAt 설정
     }
 
     // 멘션 문자열을 리스트로 변환하는 메소드
