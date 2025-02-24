@@ -1,10 +1,10 @@
 package org.team14.webty.review.dto
 
-import org.team14.webty.review.enumrate.SpoilerStatus
+import org.team14.webty.review.enums.SpoilerStatus
 import org.team14.webty.user.dto.UserDataResponse
 import org.team14.webty.webtoon.dto.WebtoonSummaryDto
 
-data class ReviewItemResponse (
+data class ReviewItemResponse(
     val reviewId: Long,
     val userDataResponse: UserDataResponse, // 사용자 프로필, 닉네임
     val content: String,

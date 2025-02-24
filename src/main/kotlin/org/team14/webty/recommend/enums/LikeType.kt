@@ -1,4 +1,4 @@
-package org.team14.webty.recommend.enumerate
+package org.team14.webty.recommend.enums
 
 import org.team14.webty.common.exception.BusinessException
 import org.team14.webty.common.exception.ErrorCode

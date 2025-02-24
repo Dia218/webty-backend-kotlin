@@ -18,7 +18,7 @@ import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
 
 

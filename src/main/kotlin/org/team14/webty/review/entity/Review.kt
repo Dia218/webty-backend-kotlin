@@ -2,7 +2,7 @@ package org.team14.webty.review.entity
 
 import jakarta.persistence.*
 import org.team14.webty.common.entity.BaseEntity
-import org.team14.webty.review.enumrate.SpoilerStatus
+import org.team14.webty.review.enums.SpoilerStatus
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.webtoon.entity.Webtoon
 
@@ -33,7 +33,7 @@ class Review(
     @Column(columnDefinition = "integer default 0", nullable = false)
     val viewCount: Int = 0,
 
-) : BaseEntity() {
+    ) : BaseEntity() {
     private fun copy(
         webtoon: Webtoon = this.webtoon,
         content: String = this.content,

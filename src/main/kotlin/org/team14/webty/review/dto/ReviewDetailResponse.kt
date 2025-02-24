@@ -1,7 +1,7 @@
 package org.team14.webty.review.dto
 
 import org.team14.webty.common.dto.PageDto
-import org.team14.webty.review.enumrate.SpoilerStatus
+import org.team14.webty.review.enums.SpoilerStatus
 import org.team14.webty.reviewComment.dto.CommentResponse
 import org.team14.webty.user.dto.UserDataResponse
 import org.team14.webty.webtoon.dto.WebtoonSummaryDto

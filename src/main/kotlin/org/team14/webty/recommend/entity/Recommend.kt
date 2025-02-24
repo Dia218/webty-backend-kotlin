@@ -1,7 +1,7 @@
 package org.team14.webty.recommend.entity
 
 import jakarta.persistence.*
-import org.team14.webty.recommend.enumerate.LikeType
+import org.team14.webty.recommend.enums.LikeType
 import org.team14.webty.review.entity.Review
 
 @Entity

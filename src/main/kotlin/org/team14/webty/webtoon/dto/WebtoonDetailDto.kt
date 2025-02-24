@@ -1,6 +1,6 @@
 package org.team14.webty.webtoon.dto
 
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 
 
 data class WebtoonDetailDto(

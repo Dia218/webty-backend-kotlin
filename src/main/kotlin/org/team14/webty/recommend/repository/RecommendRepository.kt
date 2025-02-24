@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.team14.webty.recommend.entity.Recommend
-import org.team14.webty.recommend.enumerate.LikeType
+import org.team14.webty.recommend.enums.LikeType
 import org.team14.webty.review.entity.Review
 
 interface RecommendRepository : JpaRepository<Recommend, Long> {
