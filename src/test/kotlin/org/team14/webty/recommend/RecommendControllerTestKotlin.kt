@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.team14.webty.recommend.repository.RecommendRepository
 import org.team14.webty.review.entity.Review
-import org.team14.webty.review.enumrate.SpoilerStatus
+import org.team14.webty.review.enums.SpoilerStatus
 import org.team14.webty.review.repository.ReviewRepository
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.SocialProvider
@@ -22,7 +22,7 @@ import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.enums.SocialProviderType
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
 
 @SpringBootTest
@@ -59,14 +59,14 @@ internal class RecommendControllerTestKotlin {
         userRepository!!.deleteAll()
 
         testUser = userRepository.save(
-                WebtyUser(
-                        nickname = "테스트유저",
-                        profileImage = "dasdsa",
-                        socialProvider = SocialProvider(
-                                provider = SocialProviderType.KAKAO,
-                                providerId = "313213231"
-                        )
+            WebtyUser(
+                nickname = "테스트유저",
+                profileImage = "dasdsa",
+                socialProvider = SocialProvider(
+                    provider = SocialProviderType.KAKAO,
+                    providerId = "313213231"
                 )
+            )
         )
 
         val testWebtoon = webtoonRepository.save(

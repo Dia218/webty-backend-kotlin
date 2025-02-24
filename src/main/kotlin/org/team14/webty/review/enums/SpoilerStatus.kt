@@ -1,4 +1,4 @@
-package org.team14.webty.review.enumrate
+package org.team14.webty.review.enums
 
 import java.util.*
 

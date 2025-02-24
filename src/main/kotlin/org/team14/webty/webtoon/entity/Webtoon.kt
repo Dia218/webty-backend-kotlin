@@ -1,9 +1,7 @@
 package org.team14.webty.webtoon.entity
 
 import jakarta.persistence.*
-import lombok.NoArgsConstructor
-import org.team14.webty.common.entity.BaseEntity
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 
 
 @Entity

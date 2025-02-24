@@ -12,7 +12,7 @@ import org.team14.webty.voting.enums.VoteType
 import org.team14.webty.voting.repository.SimilarRepository
 import org.team14.webty.voting.repository.VoteRepository
 import org.team14.webty.webtoon.entity.Webtoon
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
 
 
@@ -39,14 +39,14 @@ class VotingTestDataInitializer {
 
     fun initTestUser(): WebtyUser {
         return userRepository!!.save(
-                WebtyUser(
-                        nickname = "테스트유저",
-                        profileImage = "testUserProfileImg",
-                        socialProvider = SocialProvider(
-                                provider = SocialProviderType.KAKAO,
-                                providerId = "123456789"
-                        )
+            WebtyUser(
+                nickname = "테스트유저",
+                profileImage = "testUserProfileImg",
+                socialProvider = SocialProvider(
+                    provider = SocialProviderType.KAKAO,
+                    providerId = "123456789"
                 )
+            )
         )
     }
 

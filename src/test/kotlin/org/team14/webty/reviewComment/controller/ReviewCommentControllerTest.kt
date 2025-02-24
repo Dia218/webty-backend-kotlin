@@ -1,23 +1,25 @@
 package org.team14.webty.reviewComment.controller
 
-import org.junit.jupiter.api.BeforeEach  // 각 테스트 전에 실행될 메소드 지정
-import org.junit.jupiter.api.DisplayName  // 테스트 이름을 지정하기 위한 어노테이션
-import org.junit.jupiter.api.Test        // 테스트 메소드임을 나타내는 어노테이션
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.http.MediaType
+import org.springframework.test.context.TestPropertySource
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.test.context.TestPropertySource
-import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.review.entity.Review
-import org.team14.webty.review.enumrate.SpoilerStatus
+import org.team14.webty.review.enums.SpoilerStatus
 import org.team14.webty.review.repository.ReviewRepository
 import org.team14.webty.reviewComment.dto.CommentRequest
 import org.team14.webty.reviewComment.repository.ReviewCommentRepository
@@ -25,9 +27,8 @@ import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
-import com.fasterxml.jackson.databind.ObjectMapper
 
 // 스프링 부트 테스트 환경을 설정하는 어노테이션
 @ExtendWith(SpringExtension::class)
@@ -231,7 +232,7 @@ class ReviewCommentControllerTest {
         println("댓글 목록 조회 테스트 실패: ${e.message}")
         throw e
     }
-    
+
     //예외 케이스 테스트 1
     @Test
     @DisplayName("존재하지 않는 리뷰의 댓글 생성 시도")

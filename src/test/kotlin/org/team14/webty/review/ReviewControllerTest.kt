@@ -18,13 +18,13 @@ import org.springframework.test.web.servlet.result.MockMvcResultHandlers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.team14.webty.review.dto.ReviewRequest
 import org.team14.webty.review.entity.Review
-import org.team14.webty.review.enumrate.SpoilerStatus
+import org.team14.webty.review.enums.SpoilerStatus
 import org.team14.webty.review.repository.ReviewRepository
 import org.team14.webty.security.token.JwtManager
 import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.user.repository.UserRepository
 import org.team14.webty.webtoon.entity.Webtoon
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 import org.team14.webty.webtoon.repository.WebtoonRepository
 import java.util.*
 
@@ -61,10 +61,10 @@ internal class ReviewControllerTest {
             val users: MutableList<WebtyUser> = ArrayList()
             for (i in 1..30) {
                 val testUser = userRepository.save(
-                        WebtyUser(
-                                nickname = "testUser$i",
-                                profileImage = "https://example.com/profile$i.jpg"
-                        )
+                    WebtyUser(
+                        nickname = "testUser$i",
+                        profileImage = "https://example.com/profile$i.jpg"
+                    )
                 )
                 users.add(testUser)
             }

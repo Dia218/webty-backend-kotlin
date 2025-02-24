@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import org.team14.webty.common.dto.PageDto
 import org.team14.webty.common.mapper.PageMapper
 import org.team14.webty.webtoon.dto.WebtoonDetailDto
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 import org.team14.webty.webtoon.mapper.WebtoonDetailMapper
 import org.team14.webty.webtoon.service.WebtoonService
-import org.team14.webty.common.dto.PageDto;
 
 @RestController
 @RequestMapping("/webtoons")

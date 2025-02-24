@@ -4,7 +4,7 @@ import org.team14.webty.webtoon.api.WebtoonApiResponse
 import org.team14.webty.webtoon.dto.WebtoonDetailDto
 import org.team14.webty.webtoon.dto.WebtoonSummaryDto
 import org.team14.webty.webtoon.entity.Webtoon
-import org.team14.webty.webtoon.enumerate.Platform
+import org.team14.webty.webtoon.enums.Platform
 
 
 object WebtoonApiResponseMapper {

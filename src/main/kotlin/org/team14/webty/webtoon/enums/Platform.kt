@@ -1,4 +1,4 @@
-package org.team14.webty.webtoon.enumerate
+package org.team14.webty.webtoon.enums
 
 import org.slf4j.LoggerFactory
 

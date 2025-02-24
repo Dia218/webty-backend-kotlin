@@ -13,8 +13,8 @@ import org.springframework.web.client.RestClientException
 import org.springframework.web.client.RestTemplate
 import org.team14.webty.webtoon.api.WebtoonPageApiResponse
 import org.team14.webty.webtoon.entity.Webtoon
-import org.team14.webty.webtoon.enumerate.Platform
-import org.team14.webty.webtoon.enumerate.WebtoonSort
+import org.team14.webty.webtoon.enums.Platform
+import org.team14.webty.webtoon.enums.WebtoonSort
 import org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper
 import org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper.formatAuthors
 import org.team14.webty.webtoon.repository.WebtoonRepository
@@ -27,7 +27,8 @@ class WebtoonService(
     private val log = LoggerFactory.getLogger(WebtoonService::class.java)
 
     companion object {
-        private const val URL_QUERY_TEMPLATE = "https://korea-webtoon-api-cc7dda2f0d77.herokuapp.com/webtoons?page=%s&perPage=%s&sort=%s&provider=%s"
+        private const val URL_QUERY_TEMPLATE =
+            "https://korea-webtoon-api-cc7dda2f0d77.herokuapp.com/webtoons?page=%s&perPage=%s&sort=%s&provider=%s"
         private const val DEFAULT_PAGE_SIZE = 100
         private const val DEFAULT_PAGE_NUMBER = 1
         private const val DEFAULT_SORT = "ASC"
@@ -58,7 +59,12 @@ class WebtoonService(
         } while (!isLastPage)
     }
 
-    private fun getWebtoonPageApiResponse(page: Int, perPage: Int, sort: String, provider: Platform): WebtoonPageApiResponse? {
+    private fun getWebtoonPageApiResponse(
+        page: Int,
+        perPage: Int,
+        sort: String,
+        provider: Platform
+    ): WebtoonPageApiResponse? {
         val url = String.format(URL_QUERY_TEMPLATE, page, perPage, sort, provider.platformName)
         log.info(url)
         return try {

@@ -5,7 +5,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.common.exception.BusinessException
 import org.team14.webty.common.exception.ErrorCode
 import org.team14.webty.recommend.entity.Recommend
-import org.team14.webty.recommend.enumerate.LikeType
+import org.team14.webty.recommend.enums.LikeType
 import org.team14.webty.recommend.repository.RecommendRepository
 import org.team14.webty.review.entity.Review
 import org.team14.webty.review.repository.ReviewRepository
