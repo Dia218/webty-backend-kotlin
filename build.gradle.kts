@@ -24,9 +24,11 @@ repositories {
 }
 
 dependencies {
-// Web
+    // Web
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-security")
+    // WebSocket
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
     // devtools
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     // kotlin
@@ -54,15 +56,17 @@ dependencies {
     // JUnit
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+    // mockito-kotlin (test)
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     // lombok
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     // validation
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    // logger
+    implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
-    // mockito-kotlin (test)
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
 kotlin {
