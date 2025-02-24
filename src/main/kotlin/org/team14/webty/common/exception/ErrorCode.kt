@@ -30,5 +30,6 @@ enum class ErrorCode(
     SIMILAR_DUPLICATION_ERROR(HttpStatus.BAD_REQUEST, "SIMILAR-002", "이미 등록된 유사웹툰입니다."),
     INVALID_SIMILAR_NAME(HttpStatus.BAD_REQUEST, "SIMILAR-003", "유사웹툰 이름이 유효하지 않습니다."),
     VOTE_NOT_FOUND(HttpStatus.NOT_FOUND, "VOTE-001", "투표 내역을 찾을 수 없습니다."),
-    VOTE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "VOTE-002", "이미 투표한 내역이 존재합니다.");
+    VOTE_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "VOTE-002", "이미 투표한 내역이 존재합니다."),
+    VOTE_TYPE_ERROR(HttpStatus.BAD_REQUEST, "VOTE-003", "vote-type은 AGREE(agree), DISAGREE(disagree)만 가능합니다.");
 }
