@@ -39,7 +39,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 // 각 테스트 메소드를 트랜잭션으로 감싸는 어노테이션
 @Transactional
 // 각 테스트 메소드 실행 전에 새로운 ApplicationContext를 생성
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class ReviewCommentControllerTest {
 
     // MockMvc 객체 주입 (HTTP 요청을 시뮬레이션하기 위한 객체)
