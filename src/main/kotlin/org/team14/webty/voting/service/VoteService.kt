@@ -34,7 +34,7 @@ class VoteService(
         val vote = toEntity(webtyUser, similar, voteRequest.voteType)
         voteRepository.save(vote)
         updateSimilarResult(similar)
-        return vote.voteId!!
+        return vote.voteId!! // to do: 투표 결과 계산 및 이에 따라 정렬하여 PageDto<SimilarResponse> 를 반환하도록 수정
     }
 
     // 투표 취소
