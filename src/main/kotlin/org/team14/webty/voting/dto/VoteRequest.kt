@@ -5,7 +5,5 @@ data class VoteRequest(
     val voteType: String,
     val page: Int?,
     val size: Int?
-) {
-    val validatedPage: Int = page ?: 0
-    val validatedSize: Int = size?.takeIf { it >= 1 } ?: 10
-}
+)
+
