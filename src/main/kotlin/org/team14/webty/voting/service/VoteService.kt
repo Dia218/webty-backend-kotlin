@@ -18,6 +18,7 @@ import org.team14.webty.voting.mapper.SimilarMapper
 import org.team14.webty.voting.mapper.VoteMapper.toEntity
 import org.team14.webty.voting.repository.SimilarRepository
 import org.team14.webty.voting.repository.VoteRepository
+import org.team14.webty.webtoon.repository.WebtoonRepository
 import java.util.function.Supplier
 
 @Service
@@ -25,6 +26,7 @@ class VoteService(
     private val voteRepository: VoteRepository,
     private val similarRepository: SimilarRepository,
     private val authWebtyUserProvider: AuthWebtyUserProvider,
+    private val webtoonRepository: WebtoonRepository
 ) {
     // 유사 투표
     @Transactional
@@ -47,7 +49,8 @@ class VoteService(
         return similars.map { mapSimilar: Similar ->
             SimilarMapper.toResponse(
                 mapSimilar,
-                mapSimilar.targetWebtoon
+                webtoonRepository.findById(mapSimilar.similarId!!)
+                    .orElseThrow { BusinessException(ErrorCode.WEBTOON_NOT_FOUND) }
             )
         }
     }
