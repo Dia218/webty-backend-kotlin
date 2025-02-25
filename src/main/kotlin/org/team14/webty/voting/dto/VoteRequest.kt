@@ -4,3 +4,4 @@ data class VoteRequest(
     val similarId: Long,
     val voteType: String
 )
+
