@@ -12,7 +12,7 @@ class Vote(
     val similar: Similar,
 
     @Enumerated(value = EnumType.STRING)
-    val voteType: VoteType? = null
+    val voteType: VoteType
 ) {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,12 +20,12 @@ class Vote(
         private set
 
     fun copy(
-        voteType: VoteType? = null,
+        voteType: VoteType,
     ): Vote {
         val copiedVote = Vote(
             userId = this.userId,
             similar = this.similar,
-            voteType = voteType ?: this.voteType // 변경 가능한 값
+            voteType = voteType // 변경 가능한 값
         )
         copiedVote.voteId = this.voteId
         return copiedVote
