@@ -11,8 +11,4 @@ data class PageDto<T>(
     val hasPrevious: Boolean = false,
     @get:JsonProperty("isLast")
     val isLast: Boolean = false
-) {
-    fun toMutablePageDto(): PageDto<T> {
-        return this.copy(content = content.toMutableList())
-    }
-}
+)
