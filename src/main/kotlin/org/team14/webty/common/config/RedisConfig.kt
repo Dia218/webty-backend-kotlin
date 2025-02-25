@@ -59,15 +59,10 @@ class RedisConfig(
      * 투표용 RedisTemplate입니다.
      */
     @Bean
-    fun voteRedisTemplate(): RedisTemplate<String, Any> = RedisTemplate<String, Any>().apply {
-        setConnectionFactory(redisConnectionFactory())
-        
+    fun redisTemplate(): RedisTemplate<String, Any> = RedisTemplate<String, Any>().apply {
         keySerializer = StringRedisSerializer()
-        valueSerializer = Jackson2JsonRedisSerializer(Any::class.java)
-        hashKeySerializer = StringRedisSerializer()
-        hashValueSerializer = Jackson2JsonRedisSerializer(Any::class.java)
-        
-        afterPropertiesSet()
+        valueSerializer = StringRedisSerializer()
+        setConnectionFactory(redisConnectionFactory())
     }
 
     /**
@@ -75,7 +70,7 @@ class RedisConfig(
      */
     @Bean
     fun messageListenerAdapter(subscriber: RedisSubscriber): MessageListenerAdapter {
-        return MessageListenerAdapter(subscriber)
+        return MessageListenerAdapter(subscriber) // RedisSubscriber를 Listener로 등록
     }
 
     @Bean
@@ -85,7 +80,8 @@ class RedisConfig(
     ): RedisMessageListenerContainer {
         return RedisMessageListenerContainer().apply {
             setConnectionFactory(connectionFactory)
-            addMessageListener(listenerAdapter, PatternTopic("vote-results"))
+            addMessageListener(listenerAdapter, PatternTopic("vote-results")) // 구독 채널 지정
         }
     }
+
 }
