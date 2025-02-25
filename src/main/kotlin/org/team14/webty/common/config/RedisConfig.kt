@@ -1,4 +1,4 @@
-package org.team14.webty.security.config
+package org.team14.webty.common.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -10,6 +10,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.listener.PatternTopic
 import org.springframework.data.redis.listener.RedisMessageListenerContainer
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import org.team14.webty.common.redis.RedisSubscriber
 
@@ -28,6 +29,19 @@ class RedisConfig(
         keySerializer = StringRedisSerializer()
         valueSerializer = StringRedisSerializer()
         setConnectionFactory(redisConnectionFactory())
+    }
+
+    @Bean
+    fun searchRedisTemplate(): RedisTemplate<String, Any> {
+        val template = RedisTemplate<String, Any>()
+        template.connectionFactory = redisConnectionFactory()
+
+        template.keySerializer = StringRedisSerializer()
+        template.valueSerializer = Jackson2JsonRedisSerializer(Any::class.java)
+        template.hashKeySerializer = StringRedisSerializer()
+        template.hashValueSerializer = Jackson2JsonRedisSerializer(Any::class.java)
+
+        return template
     }
 
     @Bean
