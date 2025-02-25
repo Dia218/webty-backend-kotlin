@@ -30,12 +30,13 @@ class VoteService(
 ) {
     // 유사 투표
     @Transactional
-    fun vote(webtyUserDetails: WebtyUserDetails, voteRequest: VoteRequest): Page<SimilarResponse> {
-        val validRequest = voteRequest.copy(
-            page = voteRequest.page ?: 0,   // 기본값 적용
-            size = voteRequest.size ?: 10   // 기본값 적용
-        )
-        val pageable: Pageable = PageRequest.of(validRequest.page!!, validRequest.size!!)
+    fun vote(
+        webtyUserDetails: WebtyUserDetails,
+        voteRequest: VoteRequest,
+        page: Int,
+        size: Int
+    ): Page<SimilarResponse> {
+        val pageable: Pageable = PageRequest.of(page, size)
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val similar = similarRepository.findById(voteRequest.similarId)
             .orElseThrow { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!

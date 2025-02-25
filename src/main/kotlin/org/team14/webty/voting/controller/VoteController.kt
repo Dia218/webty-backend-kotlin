@@ -2,22 +2,16 @@ package org.team14.webty.voting.controller
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.ResponseEntity
-import org.springframework.messaging.handler.annotation.MessageMapping
-import org.springframework.messaging.handler.annotation.Payload
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor
 import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.team14.webty.common.exception.BusinessException
-import org.team14.webty.common.exception.ErrorCode
+import org.springframework.web.bind.annotation.*
 import org.team14.webty.common.mapper.PageMapper
 import org.team14.webty.common.redis.RedisPublisher
 import org.team14.webty.security.authentication.WebtyUserDetails
 import org.team14.webty.voting.dto.VoteRequest
 import org.team14.webty.voting.service.VoteService
 
-@Controller
+@RestController
+@RequestMapping("/vote")
 class VoteController(
     private val voteService: VoteService,
     private val redisPublisher: RedisPublisher
@@ -25,20 +19,22 @@ class VoteController(
     private val logger = KotlinLogging.logger {}
 
     // 투표
-    @MessageMapping("/vote")
+    @PostMapping
     fun vote(
-        @Payload voteRequest: VoteRequest,
-        headerAccessor: SimpMessageHeaderAccessor
-    ) {
-        val webtyUserDetails = headerAccessor.sessionAttributes?.get("user") as? WebtyUserDetails
-            ?: throw BusinessException(ErrorCode.USER_NOT_FOUND)
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
+        @RequestBody voteRequest: VoteRequest,
+        @RequestParam(defaultValue = "0", value = "page") page: Int,
+        @RequestParam(defaultValue = "10", value = "size") size: Int,
+    ): ResponseEntity<Void> {
         val response =
-            voteService.vote(webtyUserDetails, voteRequest)
+            voteService.vote(webtyUserDetails, voteRequest, page, size)
         val responsePageDto =
             PageMapper.toPageDto(response) // to do: voteService 에서 PageDto<SimilarResponse> 를 반환하도록 수정
         logger.info { "VoteService 실행 로그" }
 
         redisPublisher.publish("vote-results", responsePageDto)
+
+        return ResponseEntity.ok().build() // 응답은 WebSocket통해서 받아오므로 상태값만 전달
     }
 
     // 투표 취소 // to do: 웹소켓으로 변경
