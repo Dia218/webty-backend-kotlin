@@ -25,7 +25,7 @@ class RedisSubscriber(
             val pageDto = objectMapper.readValue(messageBody, object : TypeReference<PageDto<SimilarResponse>>() {})
 
             // WebSocket을 통해 프론트로 전송
-            val destination = "/topic/vote-results/"
+            val destination = "/topic/vote-results/${pageDto.content.firstOrNull()?.targetWebtoonId ?: "default"}"
             simpMessagingTemplate.convertAndSend(destination, pageDto)
             destination
         }.onSuccess { destination ->
