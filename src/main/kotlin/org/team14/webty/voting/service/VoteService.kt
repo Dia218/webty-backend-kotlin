@@ -51,11 +51,11 @@ class VoteService(
         if (voteCacheService.hasUserVoted(similarId, webtyUser.userId!!)) {
             throw BusinessException(ErrorCode.VOTE_ALREADY_EXISTS)
         }
-        voteCacheService.setUserVote(similarId, webtyUser.userId!!)
         runCatching {
             val vote = toEntity(webtyUser, similar, voteType)
             voteRepository.save(vote)
 
+            voteCacheService.setUserVote(similarId, webtyUser.userId!!)
             voteCacheService.incrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
@@ -63,12 +63,10 @@ class VoteService(
         }.onFailure { e ->
             when (e) {
                 is BusinessException -> {
-                    voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 삭제
                     logger.info { "BusinessException 발생" }
                 }
 
                 is RedisConnectionFailureException -> {
-                    voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 삭제
                     logger.info { "Redis 연결 오류 발생" }
                 }
 
@@ -76,6 +74,7 @@ class VoteService(
                     logger.info { "알 수 없는 오류 발생" }
                 }
             }
+            voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 삭제
             throw e
         }
     }
@@ -89,13 +88,31 @@ class VoteService(
             similarRepository.findById(similarId).orElseThrow { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }
         val vote = voteRepository.findBySimilarAndUserId(similar, webtyUser.userId!!)
             .orElseThrow { BusinessException(ErrorCode.VOTE_NOT_FOUND) }
+        runCatching {
+            voteRepository.delete(vote)
 
-        voteRepository.delete(vote)
-        voteCacheService.decrementVote(similarId, vote.voteType)
-        voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 캐시 삭제
-        updateSimilarResult(similar)
+            voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 캐시 삭제
+            voteCacheService.decrementVote(similarId, vote.voteType)
+            updateSimilarResult(similar)
 
-        publish(similar, pageable)
+            publish(similar, pageable)
+        }.onFailure { e ->
+            when (e) {
+                is BusinessException -> {
+                    logger.info { "BusinessException 발생" }
+                }
+
+                is RedisConnectionFailureException -> {
+                    logger.info { "Redis 연결 오류 발생" }
+                }
+
+                else -> {
+                    logger.info { "알 수 없는 오류 발생" }
+                }
+            }
+            voteCacheService.setUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 복구
+            throw e
+        }
     }
 
     private fun updateSimilarResult(existingSimilar: Similar) { // DB조회 -> Redis 조회로 변경
