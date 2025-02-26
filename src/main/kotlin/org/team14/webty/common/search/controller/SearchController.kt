@@ -1,5 +1,6 @@
 package org.team14.webty.common.search.controller
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -20,77 +21,159 @@ class SearchController(
     // 자동완성 서비스를 주입받아 사용합니다.
     private val autocompleteService: AutocompleteService
 ) {
+    private val log = LoggerFactory.getLogger(SearchController::class.java)
     
-    // GET 방식의 "/search" 요청을 처리하는 메서드입니다.
+    /**
+     * 검색을 수행합니다.
+     * 
+     * @param keyword 검색어
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @param searchType 검색 타입 (webtoonName, nickname, reviewContent, null)
+     * @param sortBy 정렬 방식 (recommend, recent)
+     * @param filter 필터 (all, webtoon, user, review)
+     * @return 검색 결과
+     */
     @GetMapping
-    fun search(
-        // 검색어를 파라미터로 받습니다.
+    suspend fun search(
         @RequestParam keyword: String,
-        // 페이지 번호를 파라미터로 받습니다. 기본값은 0입니다.
         @RequestParam(defaultValue = "0") page: Int,
-        // 한 페이지에 표시할 결과 수를 파라미터로 받습니다. 기본값은 10입니다.
         @RequestParam(defaultValue = "10") size: Int,
-        // 검색 타입을 파라미터로 받습니다. 필수가 아닙니다.
         @RequestParam(required = false) searchType: String?,
-        // 정렬 방식을 파라미터로 받습니다. 기본값은 "recommend"(추천순)입니다.
-        @RequestParam(defaultValue = "recommend") sortBy: String
+        @RequestParam(defaultValue = "recommend") sortBy: String,
+        @RequestParam(defaultValue = "all") filter: String
     ): ResponseEntity<SearchResponseDto> {
+        log.info("검색 요청: keyword={}, searchType={}, sortBy={}, filter={}, page={}, size={}", 
+                keyword, searchType, sortBy, filter, page, size)
     
-        // 검색 타입과 정렬 방식에 따라 적절한 서비스 메서드를 호출하고 결과를 반환합니다.
-        return ResponseEntity.ok(
-            when {
-                // 웹툰 이름으로 검색하고 추천순으로 정렬
+        try {
+            // 검색 타입과 정렬 방식, 필터에 따라 적절한 서비스 메서드를 호출
+            val result = when {
+                // 웹툰 이름으로 검색
                 searchType == "webtoonName" && sortBy == "recommend" -> 
                     searchService.searchByWebtoonNameOrderByRecommendCount(keyword, page, size)
-                // 웹툰 이름으로 검색하고 최신순으로 정렬
                 searchType == "webtoonName" && sortBy == "recent" -> 
                     searchService.searchByWebtoonName(keyword, page, size)
-                // 닉네임으로 검색하고 추천순으로 정렬
+                
+                // 닉네임으로 검색
                 searchType == "nickname" && sortBy == "recommend" -> 
                     searchService.searchByNicknameOrderByRecommendCount(keyword, page, size)
-                // 닉네임으로 검색하고 최신순으로 정렬
                 searchType == "nickname" && sortBy == "recent" -> 
                     searchService.searchByNickname(keyword, page, size)
-                // 일반 검색이고 추천순으로 정렬
+                    
+                // 리뷰 내용 및 제목으로 검색
+                searchType == "reviewContent" && sortBy == "recommend" -> 
+                    searchService.searchByReviewContentOrderByRecommendCount(keyword, page, size)
+                searchType == "reviewContent" && sortBy == "recent" -> 
+                    searchService.searchByReviewContent(keyword, page, size)
+                
+                // 필터 적용 (webtoon 필터)
+                filter == "webtoon" && sortBy == "recommend" ->
+                    searchService.searchByWebtoonNameOrderByRecommendCount(keyword, page, size)
+                filter == "webtoon" && sortBy == "recent" ->
+                    searchService.searchByWebtoonName(keyword, page, size)
+                    
+                // 필터 적용 (user 필터)
+                filter == "user" && sortBy == "recommend" ->
+                    searchService.searchByNicknameOrderByRecommendCount(keyword, page, size)
+                filter == "user" && sortBy == "recent" ->
+                    searchService.searchByNickname(keyword, page, size)
+                    
+                // 필터 적용 (review 필터)
+                filter == "review" && sortBy == "recommend" ->
+                    searchService.searchByReviewContentOrderByRecommendCount(keyword, page, size)
+                filter == "review" && sortBy == "recent" ->
+                    searchService.searchByReviewContent(keyword, page, size)
+                    
+                // 일반 검색 (필터 없음)
                 sortBy == "recommend" -> 
                     searchService.searchOrderByRecommendCount(keyword, page, size)
-                // 그 외의 경우 (일반 검색이고 최신순으로 정렬)
                 else -> 
                     searchService.search(keyword, page, size)
             }
-        )
+            
+            log.info("검색 결과: keyword={}, resultCount={}", keyword, result.results.size)
+            return ResponseEntity.ok(result)
+        } catch (e: Exception) {
+            log.error("검색 중 오류 발생: keyword={}, error={}", keyword, e.message, e)
+            throw e
+        }
     }
     
-    // GET 방식의 "/search/recommendations" 요청을 처리하는 메서드입니다.
+    /**
+     * 추천수 기준으로 정렬된 검색을 수행합니다.
+     */
     @GetMapping("/recommendations")
-    fun searchOrderByRecommendations(
-        // 검색어를 파라미터로 받습니다.
+    suspend fun searchOrderByRecommendations(
         @RequestParam keyword: String,
-        // 페이지 번호를 파라미터로 받습니다. 기본값은 0입니다.
         @RequestParam(defaultValue = "0") page: Int,
-        // 한 페이지에 표시할 결과 수를 파라미터로 받습니다. 기본값은 10입니다.
         @RequestParam(defaultValue = "10") size: Int,
-        // 검색 타입을 파라미터로 받습니다. 필수가 아닙니다.
-        @RequestParam(required = false) searchType: String?
+        @RequestParam(required = false) searchType: String?,
+        @RequestParam(defaultValue = "all") filter: String
     ): ResponseEntity<SearchResponseDto> {
-        // 기존의 search 메서드를 호출하고 정렬 방식을 "recommend"로 지정합니다.
-        return search(keyword, page, size, searchType, "recommend")
+        log.info("추천수 기준 검색 요청: keyword={}, searchType={}, filter={}, page={}, size={}", 
+                keyword, searchType, filter, page, size)
+        
+        // 기존의 search 메서드를 호출하고 정렬 방식을 "recommend"로 지정
+        return search(keyword, page, size, searchType, "recommend", filter)
     }
     
-    // GET 방식의 "/search/suggestions" 요청을 처리하는 메서드입니다.
+    /**
+     * 자동완성 제안을 가져옵니다.
+     */
     @GetMapping("/suggestions")
-    fun getSearchSuggestions(
+    suspend fun getSearchSuggestions(
         @RequestParam prefix: String,
         @RequestParam(required = false) suggestionType: String?,
         @RequestParam(defaultValue = "recommend") sortBy: String
     ): ResponseEntity<SearchSuggestionDto> {
-        // suggestionType에 따라 적절한 서비스 메서드를 호출
-        val result = when (suggestionType?.uppercase()) {
-            "WEBTOONNAME", "WEBTOON", "WEBTOON_NAME" -> autocompleteService.getWebtoonNameSuggestions(prefix)
-            "NICKNAME", "NICK", "NICK_NAME" -> autocompleteService.getNicknameSuggestions(prefix)
-            else -> autocompleteService.getSearchSuggestions(prefix, sortBy)
-        }
+        log.info("자동완성 제안 요청: prefix={}, suggestionType={}, sortBy={}", prefix, suggestionType, sortBy)
         
-        return ResponseEntity.ok(result)
+        try {
+            // suggestionType에 따라 적절한 서비스 메서드를 호출
+            val result = when (suggestionType?.uppercase()) {
+                "WEBTOONNAME", "WEBTOON", "WEBTOON_NAME" -> {
+                    log.debug("웹툰 이름 자동완성 제안 요청")
+                    autocompleteService.getWebtoonNameSuggestions(prefix)
+                }
+                "NICKNAME", "NICK", "NICK_NAME" -> {
+                    log.debug("닉네임 자동완성 제안 요청")
+                    autocompleteService.getNicknameSuggestions(prefix)
+                }
+                "REVIEWCONTENT", "REVIEW", "REVIEW_CONTENT" -> {
+                    log.debug("리뷰 내용 자동완성 제안 요청")
+                    autocompleteService.getReviewContentSuggestions(prefix)
+                }
+                else -> {
+                    log.debug("일반 자동완성 제안 요청")
+                    autocompleteService.getSearchSuggestions(prefix, sortBy)
+                }
+            }
+            
+            log.info("자동완성 제안 결과: prefix={}, suggestionCount={}", prefix, result.suggestions.size)
+            return ResponseEntity.ok(result)
+        } catch (e: Exception) {
+            log.error("자동완성 제안 중 오류 발생: prefix={}, error={}", prefix, e.message, e)
+            throw e
+        }
+    }
+    
+    /**
+     * 인기 검색어 목록을 가져옵니다.
+     */
+    @GetMapping("/popular")
+    suspend fun getPopularSearchTerms(): ResponseEntity<SearchSuggestionDto> {
+        log.info("인기 검색어 목록 요청")
+        
+        try {
+            // 빈 접두사로 검색하면 인기 검색어가 반환됨
+            val result = autocompleteService.getSearchSuggestions("", "recommend")
+            
+            log.info("인기 검색어 목록 결과: count={}", result.suggestions.size)
+            return ResponseEntity.ok(result)
+        } catch (e: Exception) {
+            log.error("인기 검색어 목록 조회 중 오류 발생: error={}", e.message, e)
+            throw e
+        }
     }
 } 

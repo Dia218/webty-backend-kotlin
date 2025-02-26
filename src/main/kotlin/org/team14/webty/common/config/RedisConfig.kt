@@ -1,5 +1,7 @@
 package org.team14.webty.common.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -12,6 +14,7 @@ import org.springframework.data.redis.listener.adapter.MessageListenerAdapter
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
 import org.team14.webty.common.redis.RedisSubscriber
+import org.team14.webty.review.entity.Review
 
 /**
  * Redis 관련 설정을 담당하는 설정 클래스입니다.
@@ -37,15 +40,19 @@ class RedisConfig(
      * 검색 결과 캐싱과 자동완성 기능에 사용됩니다.
      */
     @Bean(name = ["searchRedisTemplate"])
-    fun searchRedisTemplate(): RedisTemplate<String, String> {
-        val template = RedisTemplate<String, String>()
+    fun searchRedisTemplate(objectMapper: ObjectMapper): RedisTemplate<String, Any> {
+        val template = RedisTemplate<String, Any>()
         template.setConnectionFactory(redisConnectionFactory())
         
         val stringSerializer = StringRedisSerializer()
         template.keySerializer = stringSerializer
-        template.valueSerializer = stringSerializer
+        
+        // 값은 JSON으로 직렬화하여 저장
+        val jsonSerializer = Jackson2JsonRedisSerializer(objectMapper, Any::class.java)
+        template.valueSerializer = jsonSerializer
+        
         template.hashKeySerializer = stringSerializer
-        template.hashValueSerializer = stringSerializer
+        template.hashValueSerializer = jsonSerializer
         
         template.afterPropertiesSet()
         return template
@@ -83,5 +90,4 @@ class RedisConfig(
             addMessageListener(listenerAdapter, PatternTopic("vote-results")) // 구독 채널 지정
         }
     }
-
 }

@@ -100,4 +100,29 @@ interface SearchRepository : JpaRepository<Review, Long> {
         ) DESC
     """)
     fun searchByNicknameOrderByRecommendCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
+    
+    // 리뷰 내용 및 제목으로 검색
+    @Query("""
+        SELECT DISTINCT r FROM Review r
+        JOIN FETCH r.user u
+        JOIN FETCH r.webtoon w
+        WHERE LOWER(r.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+              LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        ORDER BY r.reviewId DESC
+    """)
+    fun searchByReviewContent(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
+    
+    // 리뷰 내용 및 제목으로 검색 (추천수 정렬)
+    @Query(value = """
+        SELECT DISTINCT r FROM Review r
+        JOIN FETCH r.user u
+        JOIN FETCH r.webtoon w
+        WHERE LOWER(r.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+              LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+        ORDER BY (
+            SELECT COUNT(rec.recommendId) FROM Recommend rec 
+            WHERE rec.review.reviewId = r.reviewId AND rec.likeType = 'LIKE'
+        ) DESC
+    """)
+    fun searchByReviewContentOrderByRecommendCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
 } 
