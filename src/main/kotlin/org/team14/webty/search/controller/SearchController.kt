@@ -48,7 +48,7 @@ class SearchController(
         log.info("검색 요청: keyword={}, searchType={}, sortBy={}, filter={}, page={}, size={}", 
                 keyword, searchType, sortBy, filter, page, size)
     
-        try {
+        return runCatching {
             // 검색 타입 결정
             val searchTypeEnum = when {
                 searchType == "webtoonName" || filter == "webtoon" -> SearchType.WEBTOON_NAME
@@ -68,11 +68,11 @@ class SearchController(
             val result = searchService.search(keyword, page, size, searchTypeEnum, sortTypeEnum)
             
             log.info("검색 결과: keyword={}, resultCount={}", keyword, result.results.size)
-            return ResponseEntity.ok(result)
-        } catch (e: Exception) {
+            ResponseEntity.ok(result)
+        }.onFailure { e ->
             log.error("검색 중 오류 발생: keyword={}, error={}", keyword, e.message, e)
             throw e
-        }
+        }.getOrThrow()
     }
     
     /**
@@ -104,7 +104,7 @@ class SearchController(
     ): ResponseEntity<SearchSuggestionDto> {
         log.info("자동완성 제안 요청: prefix={}, suggestionType={}, sortBy={}", prefix, suggestionType, sortBy)
         
-        try {
+        return runCatching {
             // suggestionType에 따라 적절한 서비스 메서드를 호출
             val result = when (suggestionType?.uppercase()) {
                 "WEBTOONNAME", "WEBTOON", "WEBTOON_NAME" -> {
@@ -126,11 +126,11 @@ class SearchController(
             }
             
             log.info("자동완성 제안 결과: prefix={}, suggestionCount={}", prefix, result.suggestions.size)
-            return ResponseEntity.ok(result)
-        } catch (e: Exception) {
+            ResponseEntity.ok(result)
+        }.onFailure { e ->
             log.error("자동완성 제안 중 오류 발생: prefix={}, error={}", prefix, e.message, e)
             throw e
-        }
+        }.getOrThrow()
     }
     
     /**
@@ -140,15 +140,15 @@ class SearchController(
     suspend fun getPopularSearchTerms(): ResponseEntity<SearchSuggestionDto> {
         log.info("인기 검색어 목록 요청")
         
-        try {
+        return runCatching {
             // 빈 접두사로 검색하면 인기 검색어가 반환됨
             val result = autocompleteService.getSearchSuggestions("", "recommend")
             
             log.info("인기 검색어 목록 결과: count={}", result.suggestions.size)
-            return ResponseEntity.ok(result)
-        } catch (e: Exception) {
+            ResponseEntity.ok(result)
+        }.onFailure { e ->
             log.error("인기 검색어 목록 조회 중 오류 발생: error={}", e.message, e)
             throw e
-        }
+        }.getOrThrow()
     }
 } 

@@ -29,13 +29,13 @@ class SearchCacheService(
      */
     @Cacheable(value = ["search"], key = "#cacheKey", unless = "#result == null || #result.isEmpty()")
     fun getFromCache(cacheKey: String): List<Review>? {
-        return try {
+        return runCatching {
             val valueOps = redisTemplate.opsForValue()
             val cachedValue = valueOps.get(cacheKey)
             
             if (cachedValue == null) {
                 log.debug("캐시에서 결과를 찾을 수 없음: $cacheKey")
-                return null
+                return@runCatching null
             }
             
             // 문자열인 경우 (이전 방식과의 호환성)
@@ -51,7 +51,7 @@ class SearchCacheService(
                 val typeRef = object : TypeReference<List<Review>>() {}
                 val reviews = objectMapper.readValue(jsonString, typeRef)
                 
-                return reviews
+                return@runCatching reviews
             } 
             // 리스트인 경우 (직접 객체 저장)
             else if (cachedValue is List<*>) {
@@ -70,15 +70,14 @@ class SearchCacheService(
                     }
                 }
                 
-                return reviews
+                return@runCatching reviews
             }
             
             log.warn("캐시에서 예상치 못한 타입의 데이터 발견: ${cachedValue.javaClass.name}")
             null
-        } catch (e: Exception) {
+        }.onFailure { e ->
             log.error("캐시된 검색 결과를 가져오는 중 오류 발생: ${e.message}", e)
-            null
-        }
+        }.getOrNull()
     }
 
     /**
@@ -88,7 +87,7 @@ class SearchCacheService(
      * @param isPopular 인기 검색어 여부
      */
     fun cacheResults(cacheKey: String, resultList: List<Review>, isPopular: Boolean = false) {
-        try {
+        runCatching {
             // 인기 검색어는 더 오래 캐싱
             val ttl = if (isPopular) POPULAR_CACHE_TTL else CACHE_TTL
             
@@ -105,7 +104,7 @@ class SearchCacheService(
             redisTemplate.opsForValue().set(cacheKey, valueToStore, ttl)
             
             log.info("검색 결과를 캐시에 저장했습니다: $cacheKey (${resultList.size}개 항목)")
-        } catch (e: Exception) {
+        }.onFailure { e ->
             log.error("검색 결과를 캐시하는 중 오류 발생: ${e.message}", e)
         }
     }
@@ -116,13 +115,13 @@ class SearchCacheService(
      */
     @CacheEvict(value = ["search"], allEntries = true)
     fun invalidateCache(pattern: String) {
-        try {
+        runCatching {
             val keys = redisTemplate.keys(pattern)
             if (keys.isNotEmpty()) {
                 redisTemplate.delete(keys)
                 log.info("캐시에서 ${keys.size}개 항목 삭제: $pattern")
             }
-        } catch (e: Exception) {
+        }.onFailure { e ->
             log.error("캐시를 무효화하는 중 오류 발생: ${e.message}", e)
         }
     }

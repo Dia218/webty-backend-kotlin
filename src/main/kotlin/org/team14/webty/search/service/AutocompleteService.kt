@@ -62,7 +62,7 @@ class AutocompleteService(
      * 리뷰 내용 및 제목에서 추출한 키워드를 자동완성 제안에 추가합니다.
      */
     suspend fun addReviewContentToSuggestions(reviewContent: String, reviewTitle: String) = withContext(Dispatchers.IO) {
-        try {
+        runCatching {
             // 리뷰 제목은 그대로 추가
             if (reviewTitle.length >= SearchConstants.MIN_PREFIX_LENGTH) {
                 suggestionProcessor.addSuggestion(reviewTitle, SearchConstants.REVIEW_CONTENT_SUGGESTION_KEY)
@@ -76,7 +76,7 @@ class AutocompleteService(
                 }
             
             log.info("리뷰 내용 및 제목을 자동완성 제안에 추가")
-        } catch (e: Exception) {
+        }.onFailure { e ->
             log.error("리뷰 내용 및 제목을 자동완성 제안에 추가하는 중 오류 발생: ${e.message}", e)
         }
     }

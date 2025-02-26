@@ -40,7 +40,7 @@ class SearchExecutor(
         cacheKey: String,
         searchFunction: suspend (String, Pageable) -> Page<Review>
     ): SearchResponseDto = withContext(Dispatchers.IO) {
-        try {
+        runCatching {
             // 검색어 인기도 추적
             trackSearchPopularity(keyword)
             
@@ -52,7 +52,7 @@ class SearchExecutor(
             if (cachedResults != null) {
                 log.info("캐시에서 검색 결과 반환: $keyword (캐시 키: $cacheKey)")
                 val reviewIds = cachedResults.mapNotNull { review -> review.reviewId }
-                return@withContext searchResponseMapper.buildSearchResponseFromReviews(keyword, cachedResults, reviewIds)
+                return@runCatching searchResponseMapper.buildSearchResponseFromReviews(keyword, cachedResults, reviewIds)
             }
             
             // 캐시에 없으면 DB에서 검색
@@ -66,14 +66,14 @@ class SearchExecutor(
             
             val reviewIds = resultList.mapNotNull { review -> review.reviewId }
             searchResponseMapper.buildSearchResponseFromReviews(keyword, resultList, reviewIds)
-        } catch (e: Exception) {
+        }.onFailure { e ->
             log.error("검색 실행 중 오류 발생: ${e.message}", e)
-            // 오류 발생 시 빈 결과 반환
+        }.getOrDefault(
             SearchResponseDto(
                 keyword = keyword,
                 results = emptyList()
             )
-        }
+        )
     }
     
     /**

@@ -21,7 +21,7 @@ class SuggestionProcessor(
      * 키워드를 지정된 키의 자동완성 제안에 추가합니다.
      */
     fun addSuggestion(keyword: String, suggestionKey: String, addToGeneral: Boolean = true) {
-        try {
+        runCatching {
             if (keyword.length >= SearchConstants.MIN_PREFIX_LENGTH) {
                 redisTemplate.opsForSet().add(suggestionKey, keyword)
                 
@@ -33,7 +33,7 @@ class SuggestionProcessor(
                 updateSuggestionScore(keyword)
                 log.info("키워드를 자동완성 제안에 추가: $keyword (키: $suggestionKey)")
             }
-        } catch (e: Exception) {
+        }.onFailure { e ->
             log.error("키워드를 자동완성 제안에 추가하는 중 오류 발생: ${e.message}", e)
         }
     }
@@ -60,7 +60,7 @@ class SuggestionProcessor(
      * 접두사에 해당하는 제안을 가져옵니다.
      */
     fun getSuggestions(prefix: String, suggestionKey: String, searchUrlTemplate: String): SearchSuggestionDto {
-        try {
+        return runCatching {
             val operations = redisTemplate.opsForSet()
             val allSuggestions = operations.members(suggestionKey) ?: emptySet()
             
@@ -91,13 +91,12 @@ class SuggestionProcessor(
             
             log.info("최종 제안 결과 - 접두사: {}, 제안 수: {}", prefix, limitedSuggestions.size)
             
-            return SearchSuggestionDto(
+            SearchSuggestionDto(
                 suggestions = limitedSuggestions,
                 searchUrl = searchUrlTemplate.replace("{keyword}", prefix)
             )
-        } catch (e: Exception) {
+        }.onFailure { e ->
             log.error("제안 조회 중 오류 발생: {}", e.message, e)
-            return SearchSuggestionDto(suggestions = emptyList())
-        }
+        }.getOrDefault(SearchSuggestionDto(suggestions = emptyList()))
     }
 } 
