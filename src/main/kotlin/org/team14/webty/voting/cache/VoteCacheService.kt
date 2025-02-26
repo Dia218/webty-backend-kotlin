@@ -39,7 +39,7 @@ class VoteCacheService(private val redisTemplate: RedisTemplate<String, String>)
         return redisTemplate.opsForValue().get("vote:user:$userId:$similarId") != null
     }
 
-    fun deleteUserVote(similarId: Long, userId: Long) {
+    fun deleteUserVote(similarId: Long, userId: Long) { // 사용자별 투표 여부 삭제
         val key = "vote:user:$userId:$similarId"
         redisTemplate.delete(key)
     }
