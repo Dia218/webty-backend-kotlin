@@ -5,4 +5,6 @@ data class SimilarResponse(
     val similarThumbnailUrl: String,
     val similarResult: Long,
     val similarWebtoonId: Long // webtoon-detail 페이지 이동 시 필요
+    val agreeCount: Long,
+    val disagreeCount: Long
 )

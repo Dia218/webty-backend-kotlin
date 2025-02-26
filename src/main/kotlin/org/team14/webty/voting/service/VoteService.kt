@@ -10,6 +10,7 @@ import org.team14.webty.common.mapper.PageMapper
 import org.team14.webty.common.redis.RedisPublisher
 import org.team14.webty.security.authentication.AuthWebtyUserProvider
 import org.team14.webty.security.authentication.WebtyUserDetails
+import org.team14.webty.voting.cache.VoteCacheService
 import org.team14.webty.voting.entity.Similar
 import org.team14.webty.voting.enums.VoteType
 import org.team14.webty.voting.mapper.SimilarMapper
@@ -24,7 +25,8 @@ class VoteService(
     private val similarRepository: SimilarRepository,
     private val authWebtyUserProvider: AuthWebtyUserProvider,
     private val webtoonRepository: WebtoonRepository,
-    private val redisPublisher: RedisPublisher
+    private val redisPublisher: RedisPublisher,
+    private val voteCacheService: VoteCacheService
 ) {
     // 유사 투표
     @Transactional
@@ -39,13 +41,18 @@ class VoteService(
         val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val similar = similarRepository.findById(similarId)
             .orElseThrow { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!
-        // 중복 투표 방지
-        if (voteRepository.existsByUserIdAndSimilar(webtyUser.userId!!, similar)) {
+
+        // 중복 투표 방지 (DB -> Redis)
+        if (voteCacheService.getVoteCount(similarId, VoteType.valueOf(voteType)) > 0) {
             throw BusinessException(ErrorCode.VOTE_ALREADY_EXISTS)
         }
+
         val vote = toEntity(webtyUser, similar, voteType)
         voteRepository.save(vote)
+
+        voteCacheService.incrementVote(similarId, vote.voteType)
         updateSimilarResult(similar)
+
         publish(similar, pageable)
     }
 
@@ -59,18 +66,22 @@ class VoteService(
         val vote = voteRepository.findBySimilarAndUserId(similar, webtyUser.userId!!)
             .orElseThrow { BusinessException(ErrorCode.VOTE_NOT_FOUND) }
         voteRepository.delete(vote)
+
+        voteCacheService.decrementVote(similarId, vote.voteType)
+        voteCacheService.deleteVotesForSimilar(similarId) // 캐시 삭제
         updateSimilarResult(vote.similar)
+
         publish(similar, pageable)
     }
 
-    private fun updateSimilarResult(existingSimilar: Similar) {
+    private fun updateSimilarResult(existingSimilar: Similar) { // DB조회 -> Redis 조회로 변경
         // agree 및 disagree 투표 개수 가져오기
-        val agreeCount = voteRepository.countBySimilarAndVoteType(existingSimilar, VoteType.AGREE) // 동의 수
-        val disagreeCount = voteRepository.countBySimilarAndVoteType(existingSimilar, VoteType.DISAGREE) // 비동의 수
+        val agreeCount = voteCacheService.getVoteCount(existingSimilar.similarId!!, VoteType.AGREE) // 동의 수
+        val disagreeCount = voteCacheService.getVoteCount(existingSimilar.similarId!!, VoteType.DISAGREE)  // 비동의 수
 
         // similarResult 업데이트
         val updateSimilar = existingSimilar.copy(similarResult = agreeCount - disagreeCount)
-        similarRepository.save<Similar>(updateSimilar)
+        similarRepository.save(updateSimilar)
     }
 
     private fun publish(
@@ -79,10 +90,15 @@ class VoteService(
     ) {
         val similars = similarRepository.findAllByTargetWebtoon(similar.targetWebtoon, pageable)
         val similarResponsePageDto = similars.map { mapSimilar: Similar ->
-            SimilarMapper.toResponse(
+            val agreeCount = voteCacheService.getVoteCount(mapSimilar.similarId!!, VoteType.AGREE) // 동의 수
+            val disagreeCount = voteCacheService.getVoteCount(mapSimilar.similarId!!, VoteType.DISAGREE)  // 비동의 수
+
+            SimilarMapper.toResponse( // 투표결과 + 투표 수 포함
                 mapSimilar,
                 webtoonRepository.findById(mapSimilar.similarWebtoonId)
-                    .orElseThrow { BusinessException(ErrorCode.WEBTOON_NOT_FOUND) }
+                    .orElseThrow { BusinessException(ErrorCode.WEBTOON_NOT_FOUND) },
+                agreeCount,
+                disagreeCount
             )
         }.let { PageMapper.toPageDto(it) }
 
