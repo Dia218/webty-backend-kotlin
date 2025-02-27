@@ -14,12 +14,14 @@ object SimilarMapper {
         )
     }
 
-    fun toResponse(similar: Similar, similarWebtoon: Webtoon): SimilarResponse {
+    fun toResponse(similar: Similar, similarWebtoon: Webtoon, agreeCount: Long, disagreeCount: Long): SimilarResponse {
         return SimilarResponse(
             similarId = similar.similarId!!,
             similarThumbnailUrl = similarWebtoon.thumbnailUrl,
             similarResult = similar.similarResult,
-            similarWebtoonId = similarWebtoon.webtoonId!!
+            similarWebtoonId = similarWebtoon.webtoonId!!,
+            agreeCount = agreeCount,
+            disagreeCount = disagreeCount
         )
     }
 }

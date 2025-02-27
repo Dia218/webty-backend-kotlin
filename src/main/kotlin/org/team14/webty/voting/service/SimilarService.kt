@@ -10,8 +10,10 @@ import org.team14.webty.common.exception.BusinessException
 import org.team14.webty.common.exception.ErrorCode
 import org.team14.webty.security.authentication.AuthWebtyUserProvider
 import org.team14.webty.security.authentication.WebtyUserDetails
+import org.team14.webty.voting.cache.VoteCacheService
 import org.team14.webty.voting.dto.SimilarResponse
 import org.team14.webty.voting.entity.Similar
+import org.team14.webty.voting.enums.VoteType
 import org.team14.webty.voting.mapper.SimilarMapper.toEntity
 import org.team14.webty.voting.mapper.SimilarMapper.toResponse
 import org.team14.webty.voting.repository.SimilarRepository
@@ -25,7 +27,8 @@ class SimilarService(
     private val similarRepository: SimilarRepository,
     private val webtoonService: WebtoonService,
     private val authWebtyUserProvider: AuthWebtyUserProvider,
-    private val voteRepository: VoteRepository
+    private val voteRepository: VoteRepository,
+    private val voteCacheService: VoteCacheService
 ) {
     // 유사 웹툰 등록
     @Transactional
@@ -43,16 +46,18 @@ class SimilarService(
         }
 
 
-        val similar = toEntity(webtyUser.userId!!,
-               choiceWebtoon.webtoonId?: throw BusinessException(ErrorCode.WEBTOON_NOT_FOUND),
-                                  targetWebtoon)
+        val similar = toEntity(
+            webtyUser.userId!!,
+            choiceWebtoon.webtoonId ?: throw BusinessException(ErrorCode.WEBTOON_NOT_FOUND),
+            targetWebtoon
+        )
         try {
             similarRepository.save(similar)
         } catch (e: DataIntegrityViolationException) {
             // 데이터베이스에서 UNIQUE 제약 조건 위반 발생 시 처리
             throw BusinessException(ErrorCode.SIMILAR_DUPLICATION_ERROR)
         }
-        return toResponse(similar, choiceWebtoon)
+        return toResponse(similar, choiceWebtoon, 0, 0)
     }
 
     // 유사 웹툰 삭제
@@ -76,10 +81,14 @@ class SimilarService(
         val similars = similarRepository.findAllByTargetWebtoon(targetWebtoon, pageable)
 
         return similars.map { similar: Similar? ->
+            val agreeCount = voteCacheService.getVoteCount(similar!!.similarId!!, VoteType.AGREE) // 동의 수
+            val disagreeCount = voteCacheService.getVoteCount(similar.similarId!!, VoteType.DISAGREE)  // 비동의 수
             toResponse(
-                similar!!, webtoonService.findWebtoon(
+                similar, webtoonService.findWebtoon(
                     similar.similarWebtoonId
-                )
+                ),
+                agreeCount,
+                disagreeCount
             )
         }
     }

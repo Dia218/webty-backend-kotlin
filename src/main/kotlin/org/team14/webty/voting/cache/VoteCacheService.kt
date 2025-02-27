@@ -31,6 +31,19 @@ class VoteCacheService(private val redisTemplate: RedisTemplate<String, String>)
         redisTemplate.opsForValue().set(key, count.toString())
     }
 
+    fun setUserVote(similarId: Long, userId: Long) { // 사용자별 투표 여부 저장
+        redisTemplate.opsForValue().set("vote:user:$userId:$similarId", "1")
+    }
+
+    fun hasUserVoted(similarId: Long, userId: Long): Boolean { // 사용자별 투표 여부 확인
+        return redisTemplate.opsForValue().get("vote:user:$userId:$similarId") != null
+    }
+
+    fun deleteUserVote(similarId: Long, userId: Long) { // 사용자별 투표 여부 삭제
+        val key = "vote:user:$userId:$similarId"
+        redisTemplate.delete(key)
+    }
+
     fun deleteVotesForSimilar(similarId: Long) { // 선택한 similar 관련 투표 전체 삭제
         VoteType.entries.forEach { voteType ->
             val key = getKey(similarId, voteType)

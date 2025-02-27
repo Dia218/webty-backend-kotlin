@@ -13,6 +13,11 @@ class VoteCacheInitializer(
 
     override fun run(args: ApplicationArguments?) {
         val votes = voteRepository.findAll()
+
+        votes.forEach { vote ->
+            voteCacheService.setUserVote(vote.similar.similarId!!, vote.userId)
+        }
+
         votes.groupBy { it.similar.similarId!! to it.voteType }
             .forEach { (key, voteList) ->
                 val (similarId, voteType) = key
