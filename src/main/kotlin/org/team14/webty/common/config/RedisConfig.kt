@@ -31,6 +31,22 @@ class RedisConfig(
     @Bean
     fun redisConnectionFactory(): RedisConnectionFactory = LettuceConnectionFactory(host, port)
 
+    
+
+    //-------------------
+    // 투표 관련 설정
+    //-------------------
+
+    /**
+     * 투표용 RedisTemplate입니다.
+     */
+    @Bean
+    fun redisTemplate(): RedisTemplate<String, Any> = RedisTemplate<String, Any>().apply {
+        keySerializer = StringRedisSerializer()
+        valueSerializer = StringRedisSerializer()
+        setConnectionFactory(redisConnectionFactory())
+    }
+
     //-------------------
     // 검색 관련 설정
     //-------------------
@@ -57,21 +73,7 @@ class RedisConfig(
         template.afterPropertiesSet()
         return template
     }
-
-    //-------------------
-    // 투표 관련 설정
-    //-------------------
-
-    /**
-     * 투표용 RedisTemplate입니다.
-     */
-    @Bean
-    fun redisTemplate(): RedisTemplate<String, Any> = RedisTemplate<String, Any>().apply {
-        keySerializer = StringRedisSerializer()
-        valueSerializer = StringRedisSerializer()
-        setConnectionFactory(redisConnectionFactory())
-    }
-
+    
     /**
      * 투표 결과를 구독하기 위한 메시지 리스너 설정입니다.
      */
