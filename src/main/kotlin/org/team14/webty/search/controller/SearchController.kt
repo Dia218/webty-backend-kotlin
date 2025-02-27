@@ -10,8 +10,7 @@ import org.team14.webty.search.dto.SearchResponseDto
 import org.team14.webty.search.dto.SearchSuggestionDto
 import org.team14.webty.search.service.SearchService
 import org.team14.webty.search.service.AutocompleteService
-import org.team14.webty.search.enums.SearchType
-import org.team14.webty.search.enums.SortType
+import org.team14.webty.search.service.SearchRequestProcessor
 
 // REST API를 제공하는 컨트롤러임을 나타냅니다.
 @RestController
@@ -21,7 +20,9 @@ class SearchController(
     // 핵심 검색 서비스를 주입받아 사용합니다.
     private val searchService: SearchService,
     // 자동완성 서비스를 주입받아 사용합니다.
-    private val autocompleteService: AutocompleteService
+    private val autocompleteService: AutocompleteService,
+    // 검색 요청 처리 서비스를 주입받아 사용합니다.
+    private val searchRequestProcessor: SearchRequestProcessor
 ) {
     private val log = LoggerFactory.getLogger(SearchController::class.java)
     
@@ -49,23 +50,10 @@ class SearchController(
                 keyword, searchType, sortBy, filter, page, size)
     
         return runCatching {
-            // 검색 타입 결정
-            val searchTypeEnum = when {
-                searchType == "webtoonName" || filter == "webtoon" -> SearchType.WEBTOON_NAME
-                searchType == "nickname" || filter == "user" -> SearchType.NICKNAME
-                searchType == "reviewContent" || filter == "review" -> SearchType.REVIEW_CONTENT
-                else -> SearchType.ALL
-            }
-            
-            // 정렬 방식 결정
-            val sortTypeEnum = when (sortBy) {
-                "recommend" -> SortType.RECOMMEND
-                "viewCount" -> SortType.VIEW_COUNT
-                else -> SortType.LATEST
-            }
-            
-            // 검색 서비스 호출
-            val result = searchService.search(keyword, page, size, searchTypeEnum, sortTypeEnum)
+            // 검색 요청 처리 서비스를 통해 검색 수행
+            val result = searchRequestProcessor.processSearchRequest(
+                keyword, page, size, searchType, sortBy, filter
+            )
             
             log.info("검색 결과: keyword={}, resultCount={}", keyword, result.results.size)
             ResponseEntity.ok(result)
@@ -105,25 +93,8 @@ class SearchController(
         log.info("자동완성 제안 요청: prefix={}, suggestionType={}, sortBy={}", prefix, suggestionType, sortBy)
         
         return runCatching {
-            // suggestionType에 따라 적절한 서비스 메서드를 호출
-            val result = when (suggestionType?.uppercase()) {
-                "WEBTOONNAME", "WEBTOON", "WEBTOON_NAME" -> {
-                    log.debug("웹툰 이름 자동완성 제안 요청")
-                    autocompleteService.getWebtoonNameSuggestions(prefix)
-                }
-                "NICKNAME", "NICK", "NICK_NAME" -> {
-                    log.debug("닉네임 자동완성 제안 요청")
-                    autocompleteService.getNicknameSuggestions(prefix)
-                }
-                "REVIEWCONTENT", "REVIEW", "REVIEW_CONTENT" -> {
-                    log.debug("리뷰 내용 자동완성 제안 요청")
-                    autocompleteService.getReviewContentSuggestions(prefix)
-                }
-                else -> {
-                    log.debug("일반 자동완성 제안 요청")
-                    autocompleteService.getSearchSuggestions(prefix, sortBy)
-                }
-            }
+            // 자동완성 요청 처리를 서비스에 위임
+            val result = autocompleteService.getSuggestions(prefix, suggestionType, sortBy)
             
             log.info("자동완성 제안 결과: prefix={}, suggestionCount={}", prefix, result.suggestions.size)
             ResponseEntity.ok(result)
@@ -141,8 +112,8 @@ class SearchController(
         log.info("인기 검색어 목록 요청")
         
         return runCatching {
-            // 빈 접두사로 검색하면 인기 검색어가 반환됨
-            val result = autocompleteService.getSearchSuggestions("", "recommend")
+            // 인기 검색어 목록 조회를 서비스에 위임
+            val result = autocompleteService.getPopularSearchTerms()
             
             log.info("인기 검색어 목록 결과: count={}", result.suggestions.size)
             ResponseEntity.ok(result)

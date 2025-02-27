@@ -126,4 +126,53 @@ class AutocompleteService(
     suspend fun getReviewContentSuggestions(prefix: String): SearchSuggestionDto = withContext(Dispatchers.IO) {
         suggestionProcessor.getSuggestions(prefix, SearchConstants.REVIEW_CONTENT_SUGGESTION_KEY, "/search?keyword={keyword}&searchType=reviewContent")
     }
+    
+    /**
+     * 자동완성 제안을 가져옵니다.
+     * 
+     * @param prefix 검색어 접두사
+     * @param suggestionType 자동완성 타입
+     * @param sortBy 정렬 방식
+     * @return 자동완성 제안 DTO
+     */
+    suspend fun getSuggestions(
+        prefix: String,
+        suggestionType: String?,
+        sortBy: String
+    ): SearchSuggestionDto {
+        log.debug("자동완성 제안 처리 시작: prefix={}, suggestionType={}, sortBy={}", 
+                prefix, suggestionType, sortBy)
+        
+        // suggestionType에 따라 적절한 서비스 메서드를 호출
+        return when (suggestionType?.uppercase()) {
+            "WEBTOONNAME", "WEBTOON", "WEBTOON_NAME" -> {
+                log.debug("웹툰 이름 자동완성 제안 요청")
+                getWebtoonNameSuggestions(prefix)
+            }
+            "NICKNAME", "NICK", "NICK_NAME" -> {
+                log.debug("닉네임 자동완성 제안 요청")
+                getNicknameSuggestions(prefix)
+            }
+            "REVIEWCONTENT", "REVIEW", "REVIEW_CONTENT" -> {
+                log.debug("리뷰 내용 자동완성 제안 요청")
+                getReviewContentSuggestions(prefix)
+            }
+            else -> {
+                log.debug("일반 자동완성 제안 요청")
+                getSearchSuggestions(prefix, sortBy)
+            }
+        }
+    }
+    
+    /**
+     * 인기 검색어 목록을 가져옵니다.
+     * 
+     * @return 인기 검색어 목록 DTO
+     */
+    suspend fun getPopularSearchTerms(): SearchSuggestionDto {
+        log.debug("인기 검색어 목록 조회 시작")
+        
+        // 빈 접두사로 검색하면 인기 검색어가 반환됨
+        return getSearchSuggestions("", "recommend")
+    }
 } 
