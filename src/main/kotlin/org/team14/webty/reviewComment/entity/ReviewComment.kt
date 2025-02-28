@@ -2,11 +2,10 @@
 package org.team14.webty.reviewComment.entity
 
 // 필요한 의존성들을 임포트
+import jakarta.persistence.*
 import org.team14.webty.common.entity.BaseEntity
 import org.team14.webty.review.entity.Review
 import org.team14.webty.user.entity.WebtyUser
-import jakarta.persistence.*
-import java.time.LocalDateTime
 
 // JPA 엔티티임을 나타내는 어노테이션
 @Entity
@@ -17,7 +16,9 @@ import java.time.LocalDateTime
         // 리뷰 ID, 댓글 깊이, 댓글 ID 내림차순으로 인덱스 생성 (계층 구조 조회 최적화)
         Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
         // 부모 댓글 ID, 댓글 ID 오름차순으로 인덱스 생성 (대댓글 조회 최적화)
-        Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC")
+        Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC"),
+        // 단순 리뷰 ID로만 검색 (현재 reviewComment를 따로 반환하기 때문에)
+        Index(name = "idx_review_comment_simple", columnList = "review_id")
     ]
 )
 class ReviewComment(

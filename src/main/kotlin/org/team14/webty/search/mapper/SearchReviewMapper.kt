@@ -1,11 +1,10 @@
 package org.team14.webty.search.mapper
 
 import org.springframework.stereotype.Component
-import org.team14.webty.review.entity.Review
 import org.team14.webty.review.dto.ReviewItemResponse
+import org.team14.webty.review.entity.Review
 import org.team14.webty.review.mapper.ReviewMapper
 import org.team14.webty.review.repository.ReviewImageRepository
-import org.team14.webty.reviewComment.dto.CommentResponse
 
 @Component
 class SearchReviewMapper(
@@ -36,7 +35,7 @@ class SearchReviewMapper(
         // ReviewMapper의 toResponse 메서드를 활용
         return ReviewMapper.toResponse(
             review = review,
-            comments = emptyList<CommentResponse>(), // 검색 결과에서는 댓글 목록이 필요 없음
+            commentCount = recommendCount, // 검색 결과에서는 댓글 목록이 필요 없음
             imageUrls = imageUrls,
             likeCount = recommendCount
         )
