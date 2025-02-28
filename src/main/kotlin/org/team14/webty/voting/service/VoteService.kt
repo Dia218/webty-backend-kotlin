@@ -1,6 +1,8 @@
 package org.team14.webty.voting.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.redis.RedisConnectionFailureException
@@ -28,12 +30,14 @@ class VoteService(
     private val authWebtyUserProvider: AuthWebtyUserProvider,
     private val webtoonRepository: WebtoonRepository,
     private val redisPublisher: RedisPublisher,
-    private val voteCacheService: VoteCacheService
+    private val voteCacheService: VoteCacheService,
+    private val requestChannel: Channel<Unit>
 ) {
 
     private val logger = KotlinLogging.logger {}
 
     // 유사 투표
+    @OptIn(DelicateCoroutinesApi::class)
     @Transactional
     fun vote(
         webtyUserDetails: WebtyUserDetails,
@@ -59,27 +63,19 @@ class VoteService(
             voteCacheService.incrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
-            publish(similar, pageable)
-        }.onFailure { e ->
-            when (e) {
-                is BusinessException -> {
-                    logger.info { "BusinessException 발생" }
-                }
-
-                is RedisConnectionFailureException -> {
-                    logger.info { "Redis 연결 오류 발생" }
-                }
-
-                else -> {
-                    logger.info { "알 수 없는 오류 발생" }
-                }
+            // 실행 중이어도 큐에 추가
+            if (!requestChannel.isClosedForSend) {
+                requestChannel.trySend(Unit)
             }
+        }.onFailure { e ->
+            handleFailure(e)
             voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 삭제
             throw e
         }
     }
 
     // 투표 취소
+    @OptIn(DelicateCoroutinesApi::class)
     @Transactional
     fun cancel(webtyUserDetails: WebtyUserDetails, similarId: Long, page: Int, size: Int) {
         val pageable: Pageable = PageRequest.of(page, size)
@@ -95,21 +91,12 @@ class VoteService(
             voteCacheService.decrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
-            publish(similar, pageable)
-        }.onFailure { e ->
-            when (e) {
-                is BusinessException -> {
-                    logger.info { "BusinessException 발생" }
-                }
-
-                is RedisConnectionFailureException -> {
-                    logger.info { "Redis 연결 오류 발생" }
-                }
-
-                else -> {
-                    logger.info { "알 수 없는 오류 발생" }
-                }
+            // 실행 중이어도 큐에 추가
+            if (!requestChannel.isClosedForSend) {
+                requestChannel.trySend(Unit)
             }
+        }.onFailure { e ->
+            handleFailure(e)
             voteCacheService.setUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 복구
             throw e
         }
@@ -125,24 +112,40 @@ class VoteService(
         similarRepository.save(updateSimilar)
     }
 
-    private fun publish(
-        similar: Similar,
+    fun publish(
         pageable: Pageable
     ) {
-        val similars = similarRepository.findAllByTargetWebtoon(similar.targetWebtoon, pageable)
+        val similars = similarRepository.findAllOrderBySimilarResultAndSimilarId(pageable)
         val similarResponsePageDto = similars.map { mapSimilar: Similar ->
             val agreeCount = voteCacheService.getVoteCount(mapSimilar.similarId!!, VoteType.AGREE) // 동의 수
             val disagreeCount = voteCacheService.getVoteCount(mapSimilar.similarId!!, VoteType.DISAGREE)  // 비동의 수
 
-            SimilarMapper.toResponse( // 투표결과 + 투표 수 포함
+            val similarResponse = SimilarMapper.toResponse( // 투표결과 + 투표 수 포함
                 mapSimilar,
                 webtoonRepository.findById(mapSimilar.similarWebtoonId)
                     .orElseThrow { BusinessException(ErrorCode.WEBTOON_NOT_FOUND) },
                 agreeCount,
                 disagreeCount
-            )
+            ).copy(similarResult = agreeCount - disagreeCount)
+            similarResponse
         }.let { PageMapper.toPageDto(it) }
 
         redisPublisher.publish("vote-results", similarResponsePageDto)
+    }
+
+    private fun handleFailure(e: Throwable) {
+        when (e) {
+            is BusinessException -> {
+                logger.info { "BusinessException 발생" }
+            }
+
+            is RedisConnectionFailureException -> {
+                logger.info { "Redis 연결 오류 발생" }
+            }
+
+            else -> {
+                logger.info { "알 수 없는 오류 발생" }
+            }
+        }
     }
 }
