@@ -43,4 +43,12 @@ interface ReviewCommentRepository : JpaRepository<ReviewComment, Long> {
     fun findAllByReviewIds(
         @Param("reviewIds") reviewIds: List<Long>
     ): List<ReviewComment>
+
+    // 리뷰의 댓글 개수만 반환
+    @Query("""SELECT rc.review.reviewId, COUNT(rc) 
+    FROM ReviewComment rc 
+    WHERE rc.review.reviewId IN :reviewIds 
+    GROUP BY rc.review.reviewId""")
+    fun countByReviewIds(@Param("reviewIds") reviewIds: List<Long>): List<Array<Any>>
+
 }

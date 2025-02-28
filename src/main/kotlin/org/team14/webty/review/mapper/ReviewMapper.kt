@@ -25,7 +25,7 @@ object ReviewMapper {
     }
 
     fun toResponse(
-        review: Review, comments: List<CommentResponse>,
+        review: Review, commentCount: Long,
         imageUrls: List<String>?, likeCount: Long
     ): ReviewItemResponse {
         return ReviewItemResponse(
@@ -37,7 +37,7 @@ object ReviewMapper {
             spoilerStatus = review.isSpoiler,
             webtoon = WebtoonApiResponseMapper.toSummaryDto(review.webtoon),
             imageUrls = imageUrls,
-            commentCount = comments.size,
+            commentCount = commentCount,
             recommendCount = likeCount
         )
     }

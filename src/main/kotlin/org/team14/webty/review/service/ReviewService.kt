@@ -253,11 +253,17 @@ class ReviewService(
         reviewRepository.patchIsSpoiler(id)
     }
 
+    // JPA가 맵으로 반환을 안해서 변환하는 함수를 사용 (타입캐스팅도 필요)
+    fun getCommentCountMap(reviewIds: List<Long>): Map<Long, Long> {
+        return reviewCommentRepository.countByReviewIds(reviewIds)
+            .associate { (reviewId, count) -> (reviewId as Long) to (count as Long) }
+    }
+
     private fun mapReviewResponse(reviews: Page<Review>): Page<ReviewItemResponse> {
         // 모든 리뷰 ID 리스트 추출
         val reviewIds = reviews.mapNotNull { it.reviewId }
         // 리뷰 ID를 기반으로 한 번의 쿼리로 모든 댓글 조회
-        val commentMap = getReviewMap(reviewIds)
+        val commentCounts = getCommentCountMap(reviewIds)
         // 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 리뷰 이미지 조회
         val reviewImageMap = getReviewImageMap(reviewIds)
         // 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
@@ -265,7 +271,7 @@ class ReviewService(
         return reviews.map { review: Review ->
             ReviewMapper.toResponse(
                 review,
-                commentMap.getOrDefault(review.reviewId, emptyList()),
+                commentCounts[review.reviewId] ?: 0,
                 reviewImageMap.getOrDefault(review.reviewId, emptyList()),
                 likeCounts[review.reviewId]!!
             )
