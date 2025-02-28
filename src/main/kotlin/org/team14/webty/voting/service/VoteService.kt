@@ -1,6 +1,8 @@
 package org.team14.webty.voting.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.redis.RedisConnectionFailureException
@@ -28,14 +30,14 @@ class VoteService(
     private val authWebtyUserProvider: AuthWebtyUserProvider,
     private val webtoonRepository: WebtoonRepository,
     private val redisPublisher: RedisPublisher,
-    private val voteCacheService: VoteCacheService
+    private val voteCacheService: VoteCacheService,
+    private val requestChannel: Channel<Unit>
 ) {
 
     private val logger = KotlinLogging.logger {}
 
-    var onChangeCallback: (() -> Unit)? = null // 변경 발생시 실행
-
     // 유사 투표
+    @OptIn(DelicateCoroutinesApi::class)
     @Transactional
     fun vote(
         webtyUserDetails: WebtyUserDetails,
@@ -61,7 +63,10 @@ class VoteService(
             voteCacheService.incrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
-            checkChanged()
+            // 실행 중이어도 큐에 추가
+            if (!requestChannel.isClosedForSend) {
+                requestChannel.trySend(Unit)
+            }
         }.onFailure { e ->
             handleFailure(e)
             voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 삭제
@@ -70,6 +75,7 @@ class VoteService(
     }
 
     // 투표 취소
+    @OptIn(DelicateCoroutinesApi::class)
     @Transactional
     fun cancel(webtyUserDetails: WebtyUserDetails, similarId: Long, page: Int, size: Int) {
         val pageable: Pageable = PageRequest.of(page, size)
@@ -85,7 +91,10 @@ class VoteService(
             voteCacheService.decrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
-            checkChanged()
+            // 실행 중이어도 큐에 추가
+            if (!requestChannel.isClosedForSend) {
+                requestChannel.trySend(Unit)
+            }
         }.onFailure { e ->
             handleFailure(e)
             voteCacheService.setUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 복구
@@ -122,11 +131,6 @@ class VoteService(
         }.let { PageMapper.toPageDto(it) }
 
         redisPublisher.publish("vote-results", similarResponsePageDto)
-    }
-
-    // 변경 발생 시 호출할 함수
-    private fun checkChanged() {
-        onChangeCallback?.invoke() // 등록된 콜백이 있으면 실행
     }
 
     private fun handleFailure(e: Throwable) {
