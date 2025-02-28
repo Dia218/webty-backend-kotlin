@@ -33,6 +33,8 @@ class VoteService(
 
     private val logger = KotlinLogging.logger {}
 
+    var onChangeCallback: (() -> Unit)? = null // 변경 발생시 실행
+
     // 유사 투표
     @Transactional
     fun vote(
@@ -59,21 +61,9 @@ class VoteService(
             voteCacheService.incrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
-            publish(similar, pageable)
+            checkChanged()
         }.onFailure { e ->
-            when (e) {
-                is BusinessException -> {
-                    logger.info { "BusinessException 발생" }
-                }
-
-                is RedisConnectionFailureException -> {
-                    logger.info { "Redis 연결 오류 발생" }
-                }
-
-                else -> {
-                    logger.info { "알 수 없는 오류 발생" }
-                }
-            }
+            handleFailure(e)
             voteCacheService.deleteUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 삭제
             throw e
         }
@@ -95,21 +85,9 @@ class VoteService(
             voteCacheService.decrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
-            publish(similar, pageable)
+            checkChanged()
         }.onFailure { e ->
-            when (e) {
-                is BusinessException -> {
-                    logger.info { "BusinessException 발생" }
-                }
-
-                is RedisConnectionFailureException -> {
-                    logger.info { "Redis 연결 오류 발생" }
-                }
-
-                else -> {
-                    logger.info { "알 수 없는 오류 발생" }
-                }
-            }
+            handleFailure(e)
             voteCacheService.setUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 복구
             throw e
         }
@@ -125,24 +103,45 @@ class VoteService(
         similarRepository.save(updateSimilar)
     }
 
-    private fun publish(
-        similar: Similar,
+    fun publish(
         pageable: Pageable
     ) {
-        val similars = similarRepository.findAllByTargetWebtoon(similar.targetWebtoon, pageable)
+        val similars = similarRepository.findAllOrderBySimilarResultAndSimilarId(pageable)
         val similarResponsePageDto = similars.map { mapSimilar: Similar ->
             val agreeCount = voteCacheService.getVoteCount(mapSimilar.similarId!!, VoteType.AGREE) // 동의 수
             val disagreeCount = voteCacheService.getVoteCount(mapSimilar.similarId!!, VoteType.DISAGREE)  // 비동의 수
 
-            SimilarMapper.toResponse( // 투표결과 + 투표 수 포함
+            val similarResponse = SimilarMapper.toResponse( // 투표결과 + 투표 수 포함
                 mapSimilar,
                 webtoonRepository.findById(mapSimilar.similarWebtoonId)
                     .orElseThrow { BusinessException(ErrorCode.WEBTOON_NOT_FOUND) },
                 agreeCount,
                 disagreeCount
-            )
+            ).copy(similarResult = agreeCount - disagreeCount)
+            similarResponse
         }.let { PageMapper.toPageDto(it) }
 
         redisPublisher.publish("vote-results", similarResponsePageDto)
+    }
+
+    // 변경 발생 시 호출할 함수
+    private fun checkChanged() {
+        onChangeCallback?.invoke() // 등록된 콜백이 있으면 실행
+    }
+
+    private fun handleFailure(e: Throwable) {
+        when (e) {
+            is BusinessException -> {
+                logger.info { "BusinessException 발생" }
+            }
+
+            is RedisConnectionFailureException -> {
+                logger.info { "Redis 연결 오류 발생" }
+            }
+
+            else -> {
+                logger.info { "알 수 없는 오류 발생" }
+            }
+        }
     }
 }

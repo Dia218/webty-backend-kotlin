@@ -18,4 +18,7 @@ interface SimilarRepository : JpaRepository<Similar, Long> {
 
     @Query("SELECT s FROM Similar s WHERE s.targetWebtoon = :targetWebtoon ORDER BY s.similarResult DESC")
     fun findAllByTargetWebtoon(targetWebtoon: Webtoon, pageable: Pageable): Page<Similar>
+
+    @Query("SELECT s FROM Similar s ORDER BY s.similarResult DESC, s.similarId DESC")
+    fun findAllOrderBySimilarResultAndSimilarId(pageable: Pageable): Page<Similar>
 }
