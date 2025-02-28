@@ -67,6 +67,10 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    // kotlinx
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+    // kotlin jackson
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
 }
 
 kotlin {
