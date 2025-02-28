@@ -17,7 +17,7 @@ import org.team14.webty.user.entity.WebtyUser
         Index(name = "idx_review_comment", columnList = "review_id, depth, comment_id DESC"),
         // 부모 댓글 ID, 댓글 ID 오름차순으로 인덱스 생성 (대댓글 조회 최적화)
         Index(name = "idx_parent_comment", columnList = "parent_id, comment_id ASC"),
-        // 단순 리뷰 ID로만 검색 (현재 reviewComment를 따로 반환하기 때문에)
+        // 단순 리뷰 ID로만 검색
         Index(name = "idx_review_comment_simple", columnList = "review_id")
     ]
 )
