@@ -3,6 +3,7 @@ package org.team14.webty.search.controller
 import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
@@ -11,6 +12,7 @@ import org.team14.webty.search.dto.SearchSuggestionDto
 import org.team14.webty.search.service.SearchService
 import org.team14.webty.search.service.AutocompleteService
 import org.team14.webty.search.service.SearchRequestProcessor
+import org.team14.webty.search.service.SearchCacheService
 
 // REST API를 제공하는 컨트롤러임을 나타냅니다.
 @RestController
@@ -22,7 +24,9 @@ class SearchController(
     // 자동완성 서비스를 주입받아 사용합니다.
     private val autocompleteService: AutocompleteService,
     // 검색 요청 처리 서비스를 주입받아 사용합니다.
-    private val searchRequestProcessor: SearchRequestProcessor
+    private val searchRequestProcessor: SearchRequestProcessor,
+    // 검색 캐시 서비스를 주입받아 사용합니다.
+    private val searchCacheService: SearchCacheService
 ) {
     private val log = LoggerFactory.getLogger(SearchController::class.java)
     
@@ -59,6 +63,25 @@ class SearchController(
             ResponseEntity.ok(result)
         }.onFailure { e ->
             log.error("검색 중 오류 발생: keyword={}, error={}", keyword, e.message, e)
+            throw e
+        }.getOrThrow()
+    }
+    
+    /**
+     * 검색 캐시를 초기화합니다.
+     */
+    @PostMapping("/clear-cache")
+    suspend fun clearCache(): ResponseEntity<Map<String, String>> {
+        log.info("검색 캐시 초기화 요청")
+        
+        return runCatching {
+            // 모든 검색 관련 캐시 제거
+            searchCacheService.invalidateCache("search:*")
+            
+            log.info("검색 캐시 초기화 완료")
+            ResponseEntity.ok(mapOf("message" to "검색 캐시가 성공적으로 초기화되었습니다."))
+        }.onFailure { e ->
+            log.error("검색 캐시 초기화 중 오류 발생: error={}", e.message, e)
             throw e
         }.getOrThrow()
     }

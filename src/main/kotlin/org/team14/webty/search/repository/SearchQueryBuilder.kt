@@ -22,6 +22,7 @@ object SearchQueryBuilder {
         WHERE (:keyword IS NULL OR 
             LOWER(w.webtoonName) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
             LOWER(r.content) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
+            LOWER(r.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR 
             LOWER(u.nickname) LIKE LOWER(CONCAT('%', :keyword, '%')))
     """
     
