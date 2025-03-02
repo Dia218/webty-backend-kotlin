@@ -20,10 +20,10 @@ import org.team14.webty.webtoon.service.WebtoonService
 class WebtoonController(
     private val webtoonService: WebtoonService
 ) {
-    // @GetMapping("/fetch") // 초기화 할 때만 사용
-    // fun fetchWebtoons() {
-    //     webtoonService.saveWebtoons()
-    // }
+    @GetMapping("/fetch") // 초기화 할 때만 사용
+    fun fetchWebtoons() {
+        webtoonService.saveWebtoons()
+    }
 
     @GetMapping("/{id}")
     fun findWebtoon(@PathVariable("id") @Min(1) id: Long): ResponseEntity<WebtoonDetailDto> {

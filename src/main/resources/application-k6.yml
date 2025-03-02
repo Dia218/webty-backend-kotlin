@@ -1,9 +1,9 @@
-# MySQL
+# application-k6.yml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/webty_db
-    username: webty_user
-    password: webty
+    url: jdbc:mysql://mysql-k6:3306/webty_k6_db
+    username: k6_user
+    password: k6_password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -17,5 +17,5 @@ spring:
 
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
+      host: ${REDIS_HOST:webty-k6-redis}
       port: ${REDIS_PORT:6379}
