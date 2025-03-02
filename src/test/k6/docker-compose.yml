@@ -1,4 +1,3 @@
-# docker-compose.yml
 services:
   k6:
     container_name: webty-k6
@@ -38,7 +37,10 @@ services:
 
   webty-k6-backend:
     container_name: webty-k6-backend
-    image: webty-backend  # 미리 빌드된 백엔드 이미지
+    build:
+      context: ../../..  # 프로젝트 루트 디렉토리를 빌드 컨텍스트로 설정
+      dockerfile: Dockerfile  # Dockerfile을 루트 디렉토리에서 참조
+    image: webty-backend  # 빌드된 이미지를 사용
     restart: always
     environment:
       - SPRING_PROFILES_ACTIVE=k6  # 프로파일을 k6로 활성화하여 application-k6.yml 사용
