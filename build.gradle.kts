@@ -71,6 +71,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
     // kotlin jackson
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
+    //elastic-search
+    implementation ("org.springframework.data:spring-data-elasticsearch:5.4.0")
 }
 
 kotlin {
