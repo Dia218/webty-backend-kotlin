@@ -11,8 +11,8 @@ spring:
     name: webty
   data:
     redis:
-      port: 6379
-      host: localhost
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   servlet:
     multipart:
       max-file-size: 10MB

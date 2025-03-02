@@ -1,0 +1,69 @@
+# docker-compose.yml
+services:
+  k6:
+    container_name: webty-k6
+    image: grafana/k6:latest
+    volumes:
+      - .:/scripts
+    working_dir: /scripts
+    environment:
+      - API_BASE_URL=http://webty-k6-backend:8080  # 백엔드 테스트 URL
+      - DB_HOST=mysql-k6
+      - DB_PORT=3306
+      - DB_USER=k6_user
+      - DB_PASSWORD=k6_password
+      - DB_NAME=webty_k6_db
+      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보
+      - REDIS_PORT=6379   # Redis 포트
+    command: run /scripts/load-test.js
+    depends_on:
+      - webty-k6-backend  # 백엔드가 실행된 후 K6 실행
+      - webty-k6-redis    # Redis가 실행된 후 K6 실행
+    networks:
+      - k6-webty-net
+
+  mysql-k6:
+    container_name: webty-k6-mysql-container
+    image: mysql:8
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=webty_k6_db
+      - MYSQL_USER=k6_user
+      - MYSQL_PASSWORD=k6_password
+    ports:
+      - "3307:3306"
+    networks:
+      - k6-webty-net
+
+  webty-k6-backend:
+    container_name: webty-k6-backend
+    image: webty-backend  # 미리 빌드된 백엔드 이미지
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=k6  # 프로파일을 k6로 활성화하여 application-k6.yml 사용
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-k6:3306/webty_k6_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=k6_user
+      - SPRING_DATASOURCE_PASSWORD=k6_password
+      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보 (백엔드에서 Redis 사용할 경우)
+      - REDIS_PORT=6379   # Redis 포트
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql-k6  # MySQL이 실행된 후 백엔드 실행
+      - webty-k6-redis  # Redis가 실행된 후 백엔드 실행
+    networks:
+      - k6-webty-net
+
+  webty-k6-redis:
+    container_name: webty-k6-redis
+    image: redis
+    restart: always
+    ports:
+      - "6379:6379"  # Redis 포트 매핑
+    networks:
+      - k6-webty-net
+
+networks:
+  k6-webty-net:
+    driver: bridge
