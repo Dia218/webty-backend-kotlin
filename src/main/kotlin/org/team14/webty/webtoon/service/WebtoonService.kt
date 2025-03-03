@@ -69,7 +69,7 @@ class WebtoonService(
         }
     }
 
-    @Scheduled(cron = "50 52 19 * * ?", zone = "Asia/Seoul")
+    @Scheduled(cron = "0 0 6 * * ?", zone = "Asia/Seoul")
     fun updateWebtoons() {
         log.info("웹툰 데이터 업데이트 시작 (비동기)")
         val futures = Platform.values().map { provider ->
@@ -81,9 +81,7 @@ class WebtoonService(
 
     @Transactional
     fun updateWebtoonsByProvider(provider: Platform) {
-        val existingWebtoonKeys = webtoonRepository.findAll()
-            .map { generateWebtoonKey(it) }
-            .toSet()
+        val existingWebtoonKeys = webtoonRepository.findExistingWebtoonKeys(provider)
 
         var page = DEFAULT_PAGE_NUMBER
         var isLastPage = false
