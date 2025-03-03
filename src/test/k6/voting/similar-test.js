@@ -49,6 +49,12 @@ export function setup() {
     return {createdSimilarIds};
 }
 
+export default function (data) {
+    register(data);  // 등록
+    find(data);      // 조회
+    remove(data);    // 삭제
+}
+
 // ✅ 1️⃣ 유사 웹툰 등록 (50번 실행)
 export function register(data) {
     const targetWebtoonId = getNextTargetId();
