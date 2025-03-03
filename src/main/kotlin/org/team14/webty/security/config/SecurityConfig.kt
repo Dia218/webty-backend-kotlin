@@ -4,6 +4,7 @@ import org.springframework.boot.autoconfigure.security.servlet.PathRequest
 import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -25,7 +26,8 @@ import org.team14.webty.security.oauth2.LogoutSuccessHandler
 class SecurityConfig(
     private val loginSuccessHandler: LoginSuccessHandler,
     private val customAuthenticationFilter: CustomAuthenticationFilter,
-    private val logoutSuccessHandler: LogoutSuccessHandler
+    private val logoutSuccessHandler: LogoutSuccessHandler,
+    private val environment: Environment
 ) {
 
     @Bean
@@ -48,17 +50,23 @@ class SecurityConfig(
 
     @Bean
     fun webSecurityCustomizer(): WebSecurityCustomizer {
-        return WebSecurityCustomizer {
-            it.ignoring().requestMatchers(
+        return WebSecurityCustomizer { web ->
+            val ignoringConfigurer = web.ignoring()
+            // 공통으로 무시할 URL 패턴들
+            ignoringConfigurer.requestMatchers(
                 "/v3/**", "/swagger-ui/**", "/api/logistics",
-                "h2-console/**", "/error",
+                "/error",
                 "/webtoons/**", "/reviews/{id:\\d+}", "/reviews", "/reviews/view-count-desc",
                 "/reviews/search", "/reviews/webtoon/{id:\\d+}",
                 "/reviews/spoiler/{id:\\d+}", "/search/**"
             )
-                .requestMatchers(HttpMethod.GET, "/similar")
-                .requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments")
-                .requestMatchers(PathRequest.toH2Console())
+            // 'application-test' 일 때, H2 콘솔 관련 매처 추가
+            if (environment.activeProfiles.contains("test")) {
+                ignoringConfigurer.requestMatchers("h2-console/**")
+                ignoringConfigurer.requestMatchers(PathRequest.toH2Console())
+            }
+            ignoringConfigurer.requestMatchers(HttpMethod.GET, "/similar")
+            ignoringConfigurer.requestMatchers(HttpMethod.GET, "/reviews/{reviewId}/comments")
         }
     }
 
