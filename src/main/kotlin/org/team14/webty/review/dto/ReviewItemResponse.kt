@@ -13,6 +13,6 @@ data class ReviewItemResponse(
     val spoilerStatus: SpoilerStatus,
     val webtoon: WebtoonSummaryDto,
     val imageUrls: List<String>? = null,
-    val commentCount: Int,
+    val commentCount: Long,
     val recommendCount: Long
 )
