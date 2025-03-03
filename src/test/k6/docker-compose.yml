@@ -23,7 +23,7 @@ services:
 
   mysql-k6:
     container_name: webty-k6-mysql-container
-    image: mysql:8
+    image: mysql:latest
     restart: always
     environment:
       - MYSQL_ROOT_PASSWORD=root
@@ -59,7 +59,7 @@ services:
 
   webty-k6-redis:
     container_name: webty-k6-redis
-    image: redis
+    image: redis:latest
     restart: always
     ports:
       - "6379:6379"  # Redis 포트 매핑
