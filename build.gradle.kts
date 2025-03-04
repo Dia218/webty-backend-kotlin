@@ -86,3 +86,7 @@ kotlin {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks.bootJar {
+    mainClass.set("org.team14.webty.WebtyApplicationKt")
+}
