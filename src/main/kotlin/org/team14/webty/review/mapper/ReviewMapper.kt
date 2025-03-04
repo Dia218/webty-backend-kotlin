@@ -68,4 +68,16 @@ object ReviewMapper {
             review = review
         )
     }
+
+    fun toDetailWithUpdatedViewCount(
+        review: Review,
+        commentResponses: PageDto<CommentResponse>,
+        reviewImages: List<ReviewImage>,
+        recommendCounts: Map<String, Long>,
+        updatedViewCount: Int
+    ): ReviewDetailResponse {
+        // 기존 toDetail 로직에서 조회수만 업데이트
+        val response = toDetail(review, commentResponses, reviewImages, recommendCounts)
+        return response.copy(viewCount = updatedViewCount)
+    }
 }

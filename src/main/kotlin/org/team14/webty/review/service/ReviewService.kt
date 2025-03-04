@@ -13,6 +13,7 @@ import org.team14.webty.common.exception.ErrorCode
 import org.team14.webty.common.mapper.PageMapper
 import org.team14.webty.common.util.FileStorageUtil
 import org.team14.webty.recommend.repository.RecommendRepository
+import org.team14.webty.review.cache.ViewCountCacheService
 import org.team14.webty.review.dto.ReviewDetailResponse
 import org.team14.webty.review.dto.ReviewItemResponse
 import org.team14.webty.review.dto.ReviewRequest
@@ -41,7 +42,8 @@ class ReviewService(
     private val authWebtyUserProvider: AuthWebtyUserProvider,
     private val fileStorageUtil: FileStorageUtil,
     private val reviewImageRepository: ReviewImageRepository,
-    private val recommendRepository: RecommendRepository
+    private val recommendRepository: RecommendRepository,
+    private val viewCountCacheService: ViewCountCacheService
 ) {
 
     // 리뷰 상세 조회
@@ -51,18 +53,21 @@ class ReviewService(
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
 
-        // 조회수 증가 때문에 LastModified 수정되는점 우회
-        reviewRepository.incrementViewCount(id)
+        // Redis를 사용하여 조회수 증가
+        viewCountCacheService.incrementViewCount(id)
+
+        // 캐시된 조회수를 포함한 최신 조회수 가져오기
+        val currentViewCount = viewCountCacheService.getCurrentViewCount(id, review.viewCount)
 
         val comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable)
         val commentResponses = PageMapper.toPageDto(comments.map { comment: ReviewComment ->
-            ReviewCommentMapper.toResponse(
-                comment
-            )
+            ReviewCommentMapper.toResponse(comment)
         })
         val reviewImages = reviewImageRepository.findAllByReview(review)
         val recommendCounts = recommendRepository.getRecommendCounts(id)
-        return ReviewMapper.toDetail(review, commentResponses, reviewImages, recommendCounts)
+
+        // 최신 조회수가 포함된 응답 생성
+        return ReviewMapper.toDetailWithUpdatedViewCount(review, commentResponses, reviewImages, recommendCounts, currentViewCount)
     }
 
     // 전체 리뷰 조회
