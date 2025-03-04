@@ -71,10 +71,16 @@ class SearchRequestProcessor(
      * @return 정렬 방식 열거형
      */
     private fun determineSortType(sortBy: String): SortType {
-        return when (sortBy) {
+        log.info("정렬 방식 결정: 원본={}, 변환={}",
+            sortBy, sortBy.lowercase())
+
+        val sortType = when (sortBy.lowercase()) {
             "recommend" -> SortType.RECOMMEND
-            "viewCount" -> SortType.VIEW_COUNT
+            "viewcount" -> SortType.VIEW_COUNT
             else -> SortType.LATEST
         }
+        
+        log.info("결정된 정렬 타입: {}", sortType)
+        return sortType
     }
 } 

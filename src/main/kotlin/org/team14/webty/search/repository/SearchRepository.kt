@@ -33,6 +33,10 @@ interface SearchRepository : JpaRepository<Review, Long> {
     @Query(value = SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.WEBTOON_NAME_CONDITION + SearchQueryBuilder.RECOMMEND_COUNT_ORDER_BY)
     fun searchByWebtoonNameOrderByRecommendCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
     
+    // 웹툰 이름으로 검색 (조회수 정렬)
+    @Query(value = SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.WEBTOON_NAME_CONDITION + SearchQueryBuilder.VIEW_COUNT_ORDER_BY)
+    fun searchByWebtoonNameOrderByViewCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
+    
     // 사용자 닉네임으로 검색
     @Query(SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.NICKNAME_CONDITION + SearchQueryBuilder.LATEST_ORDER_BY)
     fun searchByNickname(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
@@ -41,6 +45,10 @@ interface SearchRepository : JpaRepository<Review, Long> {
     @Query(value = SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.NICKNAME_CONDITION + SearchQueryBuilder.RECOMMEND_COUNT_ORDER_BY)
     fun searchByNicknameOrderByRecommendCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
     
+    // 사용자 닉네임으로 검색 (조회수 정렬)
+    @Query(value = SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.NICKNAME_CONDITION + SearchQueryBuilder.VIEW_COUNT_ORDER_BY)
+    fun searchByNicknameOrderByViewCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
+    
     // 리뷰 내용 및 제목으로 검색
     @Query(SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.REVIEW_CONTENT_CONDITION + SearchQueryBuilder.LATEST_ORDER_BY)
     fun searchByReviewContent(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
@@ -48,4 +56,8 @@ interface SearchRepository : JpaRepository<Review, Long> {
     // 리뷰 내용 및 제목으로 검색 (추천수 정렬)
     @Query(value = SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.REVIEW_CONTENT_CONDITION + SearchQueryBuilder.RECOMMEND_COUNT_ORDER_BY)
     fun searchByReviewContentOrderByRecommendCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
+    
+    // 리뷰 내용 및 제목으로 검색 (조회수 정렬)
+    @Query(value = SearchQueryBuilder.BASE_QUERY + SearchQueryBuilder.REVIEW_CONTENT_CONDITION + SearchQueryBuilder.VIEW_COUNT_ORDER_BY)
+    fun searchByReviewContentOrderByViewCount(@Param("keyword") keyword: String?, pageable: Pageable): Page<Review>
 } 
