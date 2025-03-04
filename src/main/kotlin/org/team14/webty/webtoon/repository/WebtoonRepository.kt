@@ -31,4 +31,7 @@ interface WebtoonRepository : JpaRepository<Webtoon, Long> {
     ): Page<Webtoon>
 
     fun findByWebtoonName(similarWebtoonName: String): Optional<Webtoon>
+
+    @Query("SELECT CONCAT(w.webtoonName, '|', w.platform, '|', w.authors) FROM Webtoon w WHERE w.platform = :platform")
+    fun findExistingWebtoonKeys(@Param("platform") platform: Platform): Set<String>
 }

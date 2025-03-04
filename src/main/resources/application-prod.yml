@@ -1,7 +1,7 @@
 # MySQL
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/webty_db
+    url: jdbc:mysql://localhost:3306/webty_db?rewriteBatchedStatements=true
     username: webty_user
     password: webty
     driver-class-name: com.mysql.cj.jdbc.Driver
