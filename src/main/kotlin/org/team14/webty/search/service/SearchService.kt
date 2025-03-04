@@ -56,6 +56,7 @@ class SearchService(
                 when (sortType) {
                     SortType.LATEST -> searchByWebtoonName(keyword, page, size)
                     SortType.RECOMMEND -> searchByWebtoonNameOrderByRecommendCount(keyword, page, size)
+                    SortType.VIEW_COUNT -> searchByWebtoonNameOrderByViewCount(keyword, page, size)
                     else -> searchByWebtoonName(keyword, page, size)
                 }
             }
@@ -63,6 +64,7 @@ class SearchService(
                 when (sortType) {
                     SortType.LATEST -> searchByNickname(keyword, page, size)
                     SortType.RECOMMEND -> searchByNicknameOrderByRecommendCount(keyword, page, size)
+                    SortType.VIEW_COUNT -> searchByNicknameOrderByViewCount(keyword, page, size)
                     else -> searchByNickname(keyword, page, size)
                 }
             }
@@ -70,6 +72,7 @@ class SearchService(
                 when (sortType) {
                     SortType.LATEST -> searchByReviewContent(keyword, page, size)
                     SortType.RECOMMEND -> searchByReviewContentOrderByRecommendCount(keyword, page, size)
+                    SortType.VIEW_COUNT -> searchByReviewContentOrderByViewCount(keyword, page, size)
                     else -> searchByReviewContent(keyword, page, size)
                 }
             }
@@ -172,6 +175,39 @@ class SearchService(
         val cacheKey = "${SearchConstants.SEARCH_CACHE_KEY_PREFIX}review:${keyword}:recommend:${page}:${size}"
         return searchExecutor.executeSearch(keyword, page, size, cacheKey) { k, p ->
             searchRepository.searchByReviewContentOrderByRecommendCount(k, p)
+        }
+    }
+    
+    /**
+     * 리뷰 내용 및 제목으로 검색하고 조회수로 정렬합니다.
+     */
+    @Transactional(readOnly = true)
+    private suspend fun searchByReviewContentOrderByViewCount(keyword: String, page: Int, size: Int): SearchResponseDto {
+        val cacheKey = "${SearchConstants.SEARCH_CACHE_KEY_PREFIX}review:${keyword}:viewCount:${page}:${size}"
+        return searchExecutor.executeSearch(keyword, page, size, cacheKey) { k, p ->
+            searchRepository.searchByReviewContentOrderByViewCount(k, p)
+        }
+    }
+    
+    /**
+     * 닉네임으로 검색하고 조회수로 정렬합니다.
+     */
+    @Transactional(readOnly = true)
+    private suspend fun searchByNicknameOrderByViewCount(keyword: String, page: Int, size: Int): SearchResponseDto {
+        val cacheKey = "${SearchConstants.SEARCH_CACHE_KEY_PREFIX}nickname:${keyword}:viewCount:${page}:${size}"
+        return searchExecutor.executeSearch(keyword, page, size, cacheKey) { k, p ->
+            searchRepository.searchByNicknameOrderByViewCount(k, p)
+        }
+    }
+    
+    /**
+     * 웹툰 이름으로 검색하고 조회수로 정렬합니다.
+     */
+    @Transactional(readOnly = true)
+    private suspend fun searchByWebtoonNameOrderByViewCount(keyword: String, page: Int, size: Int): SearchResponseDto {
+        val cacheKey = "${SearchConstants.SEARCH_CACHE_KEY_PREFIX}webtoon:${keyword}:viewCount:${page}:${size}"
+        return searchExecutor.executeSearch(keyword, page, size, cacheKey) { k, p ->
+            searchRepository.searchByWebtoonNameOrderByViewCount(k, p)
         }
     }
 }
