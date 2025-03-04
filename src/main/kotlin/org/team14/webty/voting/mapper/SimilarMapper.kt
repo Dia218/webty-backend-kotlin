@@ -17,6 +17,7 @@ object SimilarMapper {
     fun toResponse(similar: Similar, similarWebtoon: Webtoon, agreeCount: Long, disagreeCount: Long): SimilarResponse {
         return SimilarResponse(
             similarId = similar.similarId!!,
+            similarWebtoonName = similarWebtoon.webtoonName,
             similarThumbnailUrl = similarWebtoon.thumbnailUrl,
             similarResult = similar.similarResult,
             similarWebtoonId = similarWebtoon.webtoonId!!,
