@@ -1,27 +1,5 @@
 services:
-  k6:
-    container_name: webty-k6
-    image: grafana/k6:latest
-    volumes:
-      - .:/scripts
-    working_dir: /scripts
-    environment:
-      - API_BASE_URL=http://webty-k6-backend:8080  # 백엔드 테스트 URL
-      - DB_HOST=mysql-k6
-      - DB_PORT=3306
-      - DB_USER=k6_user
-      - DB_PASSWORD=k6_password
-      - DB_NAME=webty_k6_db
-      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보
-      - REDIS_PORT=6379   # Redis 포트
-    command: run /scripts/load-test.js
-    depends_on:
-      - webty-k6-backend  # 백엔드가 실행된 후 K6 실행
-      - webty-k6-redis    # Redis가 실행된 후 K6 실행
-    networks:
-      - k6-webty-net
-
-  mysql-k6:
+  mysql:
     container_name: webty-k6-mysql-container
     image: mysql:latest
     restart: always
@@ -31,41 +9,103 @@ services:
       - MYSQL_USER=k6_user
       - MYSQL_PASSWORD=k6_password
     ports:
-      - "3307:3306"
+      - "3307:3306" # MySQL 포트
     networks:
       - k6-webty-net
 
-  webty-k6-backend:
-    container_name: webty-k6-backend
-    build:
-      context: ../../..  # 프로젝트 루트 디렉토리를 빌드 컨텍스트로 설정
-      dockerfile: Dockerfile  # Dockerfile을 루트 디렉토리에서 참조
-    image: webty-backend  # 빌드된 이미지를 사용
-    restart: always
-    environment:
-      - SPRING_PROFILES_ACTIVE=k6  # 프로파일을 k6로 활성화하여 application-k6.yml 사용
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-k6:3306/webty_k6_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-      - SPRING_DATASOURCE_USERNAME=k6_user
-      - SPRING_DATASOURCE_PASSWORD=k6_password
-      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보 (백엔드에서 Redis 사용할 경우)
-      - REDIS_PORT=6379   # Redis 포트
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mysql-k6  # MySQL이 실행된 후 백엔드 실행
-      - webty-k6-redis  # Redis가 실행된 후 백엔드 실행
-    networks:
-      - k6-webty-net
-
-  webty-k6-redis:
+  redis:
     container_name: webty-k6-redis
     image: redis:latest
     restart: always
     ports:
-      - "6379:6379"  # Redis 포트 매핑
+      - "6380:6379"  # Redis 포트
+    networks:
+      - k6-webty-net
+
+  backend:
+    container_name: webty-k6-backend
+    build:
+      context: ../../..  # 프로젝트 루트 디렉토리를 빌드 컨텍스트로 설정
+      dockerfile: Dockerfile  # Dockerfile (경로)
+    image: webty-backend  # 백엔드 도커 이미지
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=k6  # application-k6.yml 사용
+      - SPRING_DATASOURCE_URL=jdbc:mysql://webty-k6-mysql-container:3306/webty_k6_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8 # MySQL 연결 정보
+      - SPRING_DATASOURCE_USERNAME=k6_user
+      - SPRING_DATASOURCE_PASSWORD=k6_password
+      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보
+      - REDIS_PORT=6379
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql  # MySQL이 실행된 후 백엔드 실행
+      - redis  # Redis가 실행된 후 백엔드 실행
+    networks:
+      - k6-webty-net
+
+  influxdb:
+    container_name: webty-k6-influxdb-container
+    image: influxdb:2.0
+    restart: always
+    environment:
+      - INFLUXDB_ADMIN_USER=influx_admin
+      - INFLUXDB_ADMIN_PASSWORD=influx_pw
+      - INFLUXDB_DB=webty_k6_influx
+      - INFLUXDB_ORG=webty_team14
+      - INFLUXDB_BUCKET=webty_k6_influx
+      - INFLUXDB_USER=influx_admin
+      - INFLUXDB_PASSWORD=influx_pw
+      - INFLUXDB_HTTP_BIND_ADDRESS=:8086
+    ports:
+      - "8087:8086"  # InfluxDB 포트
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - k6-webty-net
+
+  grafana:
+    container_name: webty-k6-grafana
+    image: grafana/grafana:latest
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=grafana_admin
+    ports:
+      - "3002:3001"  # Grafana 포트
+    depends_on:
+      - influxdb  # InfluxDB가 실행된 후 Grafana 실행
+    networks:
+      - k6-webty-net
+
+  k6:
+    container_name: webty-k6
+    image: grafana/k6:latest
+    entrypoint: [ "sleep", "infinity" ]  # 무한 대기
+    volumes:
+      - .:/scripts
+    working_dir: /scripts
+    environment:
+      - API_BASE_URL=http://webty-k6-backend:8080  # 백엔드 서버 연결 정보
+      - DB_HOST=webty-k6-mysql # mysql 연결 정보
+      - DB_PORT=3306
+      - DB_USER=k6_user
+      - DB_PASSWORD=k6_password
+      - DB_NAME=webty_k6_db
+      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보
+      - REDIS_PORT=6379
+      - INFLUXDB_URL=http://webty-k6-influxdb-container:8086  # InfluxDB 연결 정보
+      - INFLUXDB_USER=influx_admin
+      - INFLUXDB_PASSWORD=influx_pw
+    depends_on:
+      - backend  # 백엔드가 실행된 후 K6 실행
+      - redis    # Redis가 실행된 후 K6 실행
+      - influxdb # InfluxDB가 실행된 후 K6 실행
     networks:
       - k6-webty-net
 
 networks:
   k6-webty-net:
     driver: bridge
+    
+volumes:
+  influxdb_data:
