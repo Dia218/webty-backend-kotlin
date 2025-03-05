@@ -55,22 +55,6 @@ services:
     environment:
       - ELASTICSEARCH_HOSTS=http://webty-elasticsearch:9200
 
-  mysql-init:
-    image: curlimages/curl:latest
-    container_name: webty-mysql-init
-    depends_on:
-      - mysql
-    entrypoint: >
-      /bin/sh -c "
-        until mysqladmin -h mysql -u root -proot ping --silent; do
-          echo 'Waiting for MySQL to be ready...'
-          sleep 2
-        done
-        echo 'MySQL is ready, calling fetchWebtoons API...'
-        curl http://webty-backend:8080/webtoons/fetch"
-    networks:
-      - webty-network
-
 networks:
   webty-network:
     driver: bridge
