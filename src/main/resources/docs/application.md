@@ -17,6 +17,8 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
+  elasticsearch:
+    uris: http://localhost:9200
 
   security:
     oauth2:
