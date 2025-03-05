@@ -1,4 +1,7 @@
 # k6 테스트용 환경 설정
+server:
+  url: http://localhost:8081/
+
 spring:
   elasticsearch:
     uris: http://webty-k6-elasticsearch:9200
@@ -28,4 +31,4 @@ spring:
       client:
         registration:
           kakao:
-            redirect-uri: http://localhost:8081${security.oauth2.client.registration.kakao.redirect-uri.substring(24)}
+            redirect-uri: ${server.url}${app.oauth2.redirect-uri-suffix}
