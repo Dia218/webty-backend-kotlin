@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.*
 import org.team14.webty.security.authentication.WebtyUserDetails
+import org.team14.webty.voting.dto.VoteStatusResponse
 import org.team14.webty.voting.service.VoteService
 
 @RestController
@@ -39,5 +40,16 @@ class VoteController(
         voteService.cancel(webtyUserDetails, similarId, page, size)
         logger.info { "VoteService 투표 취소 로그" }
         return ResponseEntity.ok().build() // 응답은 WebSocket통해서 받아오므로 상태값만 전달
+    }
+
+    // 투표 상태
+    @GetMapping("/{similarId}/status")
+    fun status(
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
+        @PathVariable(value = "similarId") similarId: Long
+    ): ResponseEntity<VoteStatusResponse> {
+        val vote = voteService.getVoteStatus(webtyUserDetails, similarId)
+        logger.info { "VoteService 투표 상태 조회 로그" }
+        return ResponseEntity.ok(VoteStatusResponse(vote?.voteType?.name))
     }
 }
