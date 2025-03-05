@@ -1,7 +1,9 @@
-# application-k6.yml
+# k6 테스트용 환경 설정
 spring:
+  elasticsearch:
+    uris: http://webty-k6-elasticsearch:9200
   datasource:
-    url: jdbc:mysql://mysql-k6:3306/webty_k6_db
+    url: jdbc:mysql://webty-mysql-k6:3306/webty_k6_db
     username: k6_user
     password: k6_password
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -19,3 +21,10 @@ spring:
     redis:
       host: ${REDIS_HOST:webty-k6-redis}
       port: ${REDIS_PORT:6379}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: http://localhost:8081/login/oauth2/code/kakao

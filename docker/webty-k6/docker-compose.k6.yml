@@ -1,6 +1,6 @@
 services:
   mysql:
-    container_name: webty-k6-mysql-container
+    container_name: webty-k6-mysql
     image: mysql:latest
     restart: always
     environment:
@@ -9,7 +9,7 @@ services:
       - MYSQL_USER=k6_user
       - MYSQL_PASSWORD=k6_password
     ports:
-      - "3307:3306" # MySQL 포트
+      - "3307:3306"
     networks:
       - k6-webty-net
 
@@ -18,35 +18,66 @@ services:
     image: redis:latest
     restart: always
     ports:
-      - "6380:6379"  # Redis 포트
+      - "6380:6379"
     networks:
       - k6-webty-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
+    container_name: webty-k6-elasticsearch
+    networks:
+      - k6-webty-net
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9201:9200"
+      - "9301:9300"
+    restart: unless-stopped
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.2
+    container_name: webty-k6-kibana
+    networks:
+      - k6-webty-net
+    ports:
+      - "5602:5601"
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://webty-k6-elasticsearch:9200
 
   backend:
     container_name: webty-k6-backend
     build:
-      context: ../../..  # 프로젝트 루트 디렉토리를 빌드 컨텍스트로 설정
-      dockerfile: Dockerfile  # Dockerfile (경로)
-    image: webty-backend  # 백엔드 도커 이미지
+      context: ../..
+      dockerfile: docker/Dockerfile
+    image: webty-backend
     restart: always
     environment:
       - SPRING_PROFILES_ACTIVE=k6  # application-k6.yml 사용
-      - SPRING_DATASOURCE_URL=jdbc:mysql://webty-k6-mysql-container:3306/webty_k6_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8 # MySQL 연결 정보
+      - SPRING_DATASOURCE_URL=jdbc:mysql://webty-k6-mysql:3306/webty_k6_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
       - SPRING_DATASOURCE_USERNAME=k6_user
       - SPRING_DATASOURCE_PASSWORD=k6_password
-      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보
+      - REDIS_HOST=webty-k6-redis
       - REDIS_PORT=6379
+      - ELASTICSEARCH_HOST=webty-k6-elasticsearch:9200
     ports:
       - "8081:8080"
     depends_on:
-      - mysql  # MySQL이 실행된 후 백엔드 실행
-      - redis  # Redis가 실행된 후 백엔드 실행
+      - mysql
+      - redis
+      - elasticsearch
+      - kibana
     networks:
       - k6-webty-net
 
   influxdb:
-    container_name: webty-k6-influxdb-container
-    image: influxdb:2.0
+    container_name: webty-k6-influxdb
+    image: influxdb:latest
     restart: always
     environment:
       - INFLUXDB_ADMIN_USER=influx_admin
@@ -58,7 +89,7 @@ services:
       - INFLUXDB_PASSWORD=influx_pw
       - INFLUXDB_HTTP_BIND_ADDRESS=:8086
     ports:
-      - "8087:8086"  # InfluxDB 포트
+      - "8087:8086"
     volumes:
       - influxdb_data:/var/lib/influxdb2
     networks:
@@ -71,9 +102,9 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=grafana_admin
     ports:
-      - "3002:3001"  # Grafana 포트
+      - "3002:3001"
     depends_on:
-      - influxdb  # InfluxDB가 실행된 후 Grafana 실행
+      - influxdb
     networks:
       - k6-webty-net
 
@@ -82,30 +113,36 @@ services:
     image: grafana/k6:latest
     entrypoint: [ "sleep", "infinity" ]  # 무한 대기
     volumes:
-      - .:/scripts
+      - ../../src/test/k6:/scripts
     working_dir: /scripts
     environment:
-      - API_BASE_URL=http://webty-k6-backend:8080  # 백엔드 서버 연결 정보
-      - DB_HOST=webty-k6-mysql # mysql 연결 정보
+      - API_BASE_URL=http://webty-k6-backend:8080
+      - DB_HOST=webty-k6-mysql
       - DB_PORT=3306
       - DB_USER=k6_user
       - DB_PASSWORD=k6_password
       - DB_NAME=webty_k6_db
-      - REDIS_HOST=webty-k6-redis  # Redis 연결 정보
+      - REDIS_HOST=webty-k6-redis
       - REDIS_PORT=6379
-      - INFLUXDB_URL=http://webty-k6-influxdb-container:8086  # InfluxDB 연결 정보
+      - INFLUXDB_URL=http://webty-k6-influxdb:8086
       - INFLUXDB_USER=influx_admin
       - INFLUXDB_PASSWORD=influx_pw
     depends_on:
-      - backend  # 백엔드가 실행된 후 K6 실행
-      - redis    # Redis가 실행된 후 K6 실행
-      - influxdb # InfluxDB가 실행된 후 K6 실행
+      - backend
+      - influxdb
+      - grafana
     networks:
       - k6-webty-net
 
 networks:
   k6-webty-net:
     driver: bridge
-    
+
 volumes:
   influxdb_data:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
