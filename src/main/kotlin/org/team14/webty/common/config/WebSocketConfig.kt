@@ -5,7 +5,6 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer
-import org.team14.webty.common.interceptor.WebSocketAuthInterceptor
 
 @Configuration
 @EnableWebSocketMessageBroker
@@ -18,7 +17,6 @@ class WebSocketConfig : WebSocketMessageBrokerConfigurer {
     override fun registerStompEndpoints(registry: StompEndpointRegistry) {
         registry.addEndpoint("/websocket") // 웹소켓 엔드포인트
             .setAllowedOriginPatterns("*")
-            .addInterceptors(WebSocketAuthInterceptor())
             .withSockJS()
     }
 }
