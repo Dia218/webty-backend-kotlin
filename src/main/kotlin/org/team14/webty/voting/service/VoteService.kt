@@ -68,7 +68,7 @@ class VoteService(
                 object : TransactionSynchronization {
                     override fun afterCommit() {
                         if (!requestChannel.isClosedForSend) {
-                            val result = requestChannel.trySend(Unit)
+                            requestChannel.trySend(Unit)
                         }
                     }
                 }
@@ -102,7 +102,7 @@ class VoteService(
                 object : TransactionSynchronization {
                     override fun afterCommit() {
                         if (!requestChannel.isClosedForSend) {
-                            val result = requestChannel.trySend(Unit)
+                            requestChannel.trySend(Unit)
                         }
                     }
                 }
