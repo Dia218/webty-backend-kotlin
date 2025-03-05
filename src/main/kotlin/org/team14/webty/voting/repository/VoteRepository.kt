@@ -19,4 +19,6 @@ interface VoteRepository : JpaRepository<Vote, Long> {
     fun findAllBySimilar(similar: Similar): List<Vote>
 
     fun countBySimilarAndVoteType(similar: Similar, voteType: VoteType): Long
+
+    fun findByUserIdAndSimilar_SimilarId(userId: Long, similarId: Long): Optional<Vote>
 }
