@@ -107,12 +107,11 @@ class VoteService(
                     }
                 }
             )
+        }.onFailure { e ->
+            handleFailure(e)
+            voteCacheService.setUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 복구
+            throw e
         }
-            .onFailure { e ->
-                handleFailure(e)
-                voteCacheService.setUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 복구
-                throw e
-            }
     }
 
     // 투표 상태
