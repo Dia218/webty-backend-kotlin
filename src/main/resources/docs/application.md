@@ -4,6 +4,9 @@ api:
   description: 좋아하는 웹툰을 이야기해보세요!
   version: 1.0.0
 
+server:
+  url: http://localhost:8080
+
 spring:
   profiles:
     active: prod
@@ -11,8 +14,8 @@ spring:
     name: webty
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      host: localhost
+      port: 6379
   servlet:
     multipart:
       max-file-size: 10MB
@@ -28,7 +31,7 @@ spring:
             client-id: ${OAUTH_KAKAO_CLIENT_ID}
             client-secret: ${OAUTH_KAKAO_CLIENT_SECRET}
             authorization-grant-type: authorization_code
-            redirect-uri: ${OAUTH_KAKAO_REDIRECT_URI}
+            redirect-uri: ${server.url}${app.oauth2.redirect-uri-suffix}
             client-name: Kakao
             client-authentication-method: client_secret_post
 
@@ -38,6 +41,10 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
+
+app:
+  oauth2:
+    redirect-uri-suffix: ${OAUTH_KAKAO_REDIRECT_URI_SUFFIX}
 
 jwt:
   secret: V4r8jL3wqCz7oP7Y7Jl2kJcB9QxZlH4sRmGgqT9PZ8fF0e1yP1zDgT3zK7Qw3Fw

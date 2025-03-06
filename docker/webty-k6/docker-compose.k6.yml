@@ -1,0 +1,148 @@
+services:
+  mysql:
+    container_name: webty-k6-mysql
+    image: mysql:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=webty_k6_db
+      - MYSQL_USER=k6_user
+      - MYSQL_PASSWORD=k6_password
+    ports:
+      - "3307:3306"
+    networks:
+      - k6-webty-net
+
+  redis:
+    container_name: webty-k6-redis
+    image: redis:latest
+    restart: always
+    ports:
+      - "6380:6379"
+    networks:
+      - k6-webty-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.2
+    container_name: webty-k6-elasticsearch
+    networks:
+      - k6-webty-net
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9201:9200"
+      - "9301:9300"
+    restart: unless-stopped
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.13.2
+    container_name: webty-k6-kibana
+    networks:
+      - k6-webty-net
+    ports:
+      - "5602:5601"
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_HOSTS=http://webty-k6-elasticsearch:9200
+
+  backend:
+    container_name: webty-k6-backend
+    build:
+      context: ../..
+      dockerfile: docker/Dockerfile
+    image: webty-backend
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=k6  # application-k6.yml 사용
+      - SPRING_DATASOURCE_URL=jdbc:mysql://webty-k6-mysql:3306/webty_k6_db?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      - SPRING_DATASOURCE_USERNAME=k6_user
+      - SPRING_DATASOURCE_PASSWORD=k6_password
+      - REDIS_HOST=webty-k6-redis
+      - REDIS_PORT=6379
+      - ELASTICSEARCH_HOST=webty-k6-elasticsearch:9200
+    ports:
+      - "8081:8080"
+    depends_on:
+      - mysql
+      - redis
+      - elasticsearch
+      - kibana
+    networks:
+      - k6-webty-net
+
+  influxdb:
+    container_name: webty-k6-influxdb
+    image: influxdb:latest
+    restart: always
+    environment:
+      - INFLUXDB_ADMIN_USER=influx_admin
+      - INFLUXDB_ADMIN_PASSWORD=influx_pw
+      - INFLUXDB_DB=webty_k6_influx
+      - INFLUXDB_ORG=webty_team14
+      - INFLUXDB_BUCKET=webty_k6_influx
+      - INFLUXDB_USER=influx_admin
+      - INFLUXDB_PASSWORD=influx_pw
+      - INFLUXDB_HTTP_BIND_ADDRESS=:8086
+    ports:
+      - "8087:8086"
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+    networks:
+      - k6-webty-net
+
+  grafana:
+    container_name: webty-k6-grafana
+    image: grafana/grafana:latest
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=grafana_admin
+    ports:
+      - "3002:3001"
+    depends_on:
+      - influxdb
+    networks:
+      - k6-webty-net
+
+  k6:
+    container_name: webty-k6
+    image: grafana/k6:latest
+    entrypoint: [ "sleep", "infinity" ]  # 무한 대기
+    volumes:
+      - ../../src/test/k6:/scripts
+    working_dir: /scripts
+    environment:
+      - API_BASE_URL=http://webty-k6-backend:8080
+      - DB_HOST=webty-k6-mysql
+      - DB_PORT=3306
+      - DB_USER=k6_user
+      - DB_PASSWORD=k6_password
+      - DB_NAME=webty_k6_db
+      - REDIS_HOST=webty-k6-redis
+      - REDIS_PORT=6379
+      - INFLUXDB_URL=http://webty-k6-influxdb:8086
+      - INFLUXDB_USER=influx_admin
+      - INFLUXDB_PASSWORD=influx_pw
+    depends_on:
+      - backend
+      - influxdb
+      - grafana
+    networks:
+      - k6-webty-net
+
+networks:
+  k6-webty-net:
+    driver: bridge
+
+volumes:
+  influxdb_data:
+  mysql_data:
+    driver: local
+  redis_data:
+    driver: local
+  elasticsearch_data:
+    driver: local

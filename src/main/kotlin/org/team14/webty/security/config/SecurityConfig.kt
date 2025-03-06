@@ -77,7 +77,7 @@ class SecurityConfig(
     @Bean
     fun corsConfigurationSource(): CorsConfigurationSource = UrlBasedCorsConfigurationSource().apply {
         registerCorsConfiguration("/**", CorsConfiguration().apply {
-            allowedOrigins = listOf("http://localhost:3000", "http://host.docker.internal:8080")
+            allowedOrigins = listOf("http://localhost:3000", "http://host.docker.internal:8081")
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "PATCH")
             allowedHeaders = listOf("*")
             allowCredentials = true

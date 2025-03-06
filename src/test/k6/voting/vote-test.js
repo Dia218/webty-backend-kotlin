@@ -1,7 +1,7 @@
 import {check, sleep} from 'k6';
 import http from 'k6/http';
 
-const baseUrl = 'http://host.docker.internal:8080/vote';
+const baseUrl = 'http://host.docker.internal:8081/vote';
 const token = __ENV.K6_TOKEN;
 
 export const options = {

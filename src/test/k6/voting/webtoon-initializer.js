@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import {check} from 'k6';
 
-const webtoonBaseUrl = 'http://host.docker.internal:8080/webtoons';
+const webtoonBaseUrl = 'http://host.docker.internal:8081/webtoons';
 
 export default function () {
     const response = http.get(`${webtoonBaseUrl}/fetch`, {

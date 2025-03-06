@@ -1,4 +1,4 @@
-# h2
+# JUnit 테스트 환경 설정
 spring:
   h2:
     console:
@@ -14,8 +14,3 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
-
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}

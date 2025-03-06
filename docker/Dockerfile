@@ -5,16 +5,16 @@ FROM openjdk:21-jdk-slim AS build
 WORKDIR /app
 
 # Gradle Wrapper 파일과 설정 파일 복사
-COPY gradlew /app/
-COPY gradle /app/gradle
-COPY build.gradle.kts /app/
-COPY settings.gradle.kts /app/
+COPY ../gradlew /app/
+COPY ../gradle /app/gradle
+COPY ../build.gradle.kts /app/
+COPY ../settings.gradle.kts /app/
 
 # 의존성 설치
 RUN ./gradlew dependencies --no-daemon
 
 # 애플리케이션 소스 코드 복사
-COPY src /app/src
+COPY ../src /app/src
 
 # 의존성 빌드 (테스트를 건너뛰고 빌드)
 RUN ./gradlew build --no-daemon -x test
