@@ -25,11 +25,12 @@ class SearchExecutor(
     
     /**
      * 검색을 실행하고 결과를 반환합니다.
+     * 캐시 사용을 비활성화하고 항상 데이터베이스에서 최신 결과를 가져옵니다.
      * 
      * @param keyword 검색 키워드
      * @param page 페이지 번호
      * @param size 페이지 크기
-     * @param cacheKey 캐시 키
+     * @param cacheKey 캐시 키 (사용하지 않음)
      * @param searchFunction 실제 검색을 수행하는 함수
      * @return 검색 결과
      */
@@ -46,25 +47,16 @@ class SearchExecutor(
             
             val pageable: Pageable = PageRequest.of(page, size)
             
-            // 캐시에서 결과 확인
-            val cachedResults = searchCacheService.getFromCache(cacheKey)
-            
-            if (cachedResults != null) {
-                log.info("캐시에서 검색 결과 반환: $keyword (캐시 키: $cacheKey)")
-                val reviewIds = cachedResults.mapNotNull { review -> review.reviewId }
-                return@runCatching searchResponseMapper.buildSearchResponseFromReviews(keyword, cachedResults, reviewIds)
-            }
-            
-            // 캐시에 없으면 DB에서 검색
-            log.info("데이터베이스에서 검색 실행: $keyword (캐시 키: $cacheKey)")
+            // 캐시를 사용하지 않고 항상 DB에서 최신 검색 결과를 가져옴
+            log.info("데이터베이스에서 검색 실행: $keyword (캐시 사용 안함)")
             val searchResults = searchFunction(keyword, pageable)
             
-            // 검색 결과를 캐시에 저장 (인기 검색어 여부에 따라 TTL 다르게 적용)
             val resultList = searchResults.content
-            val isPopular = isPopularSearch(keyword)
-            searchCacheService.cacheResults(cacheKey, resultList, isPopular)
-            
             val reviewIds = resultList.mapNotNull { review -> review.reviewId }
+            
+            // 검색결과를 캐싱하지 않음
+            log.debug("캐시 기능이 비활성화되어 검색 결과를 캐싱하지 않습니다: $keyword")
+            
             searchResponseMapper.buildSearchResponseFromReviews(keyword, resultList, reviewIds)
         }.onFailure { e ->
             log.error("검색 실행 중 오류 발생: ${e.message}", e)
