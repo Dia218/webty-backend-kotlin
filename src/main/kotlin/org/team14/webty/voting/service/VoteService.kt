@@ -2,6 +2,7 @@ package org.team14.webty.voting.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.context.ApplicationEventPublisher
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Pageable
 import org.springframework.data.redis.RedisConnectionFailureException
 import org.springframework.data.repository.findByIdOrNull
@@ -140,6 +141,10 @@ class VoteService(
 
             is RedisConnectionFailureException -> {
                 logger.info { "Redis 연결 오류 발생" }
+            }
+
+            is DataIntegrityViolationException -> {
+                logger.info { "유니크 제약조건 위반 오류 발생" }
             }
 
             else -> {
