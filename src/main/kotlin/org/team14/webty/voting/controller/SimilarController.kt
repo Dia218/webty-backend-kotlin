@@ -24,7 +24,7 @@ class SimilarController(
         return ResponseEntity.ok()
             .body(
                 similarService.createSimilar(
-                    webtyUserDetails,
+                    webtyUserDetails.webtyUser,
                     similarRequest.targetWebtoonId,
                     similarRequest.choiceWebtoonId
                 )
@@ -37,7 +37,7 @@ class SimilarController(
         @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
         @PathVariable(value = "similarId") similarId: Long
     ): ResponseEntity<Void> {
-        similarService.deleteSimilar(webtyUserDetails, similarId)
+        similarService.deleteSimilar(webtyUserDetails.webtyUser, similarId)
         return ResponseEntity.ok().build()
     }
 

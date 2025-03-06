@@ -8,8 +8,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.common.exception.BusinessException
 import org.team14.webty.common.exception.ErrorCode
-import org.team14.webty.security.authentication.AuthWebtyUserProvider
-import org.team14.webty.security.authentication.WebtyUserDetails
+import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.voting.cache.VoteCacheService
 import org.team14.webty.voting.dto.SimilarResponse
 import org.team14.webty.voting.entity.Similar
@@ -26,17 +25,15 @@ import java.util.function.Supplier
 class SimilarService(
     private val similarRepository: SimilarRepository,
     private val webtoonService: WebtoonService,
-    private val authWebtyUserProvider: AuthWebtyUserProvider,
     private val voteRepository: VoteRepository,
     private val voteCacheService: VoteCacheService
 ) {
     // 유사 웹툰 등록
     @Transactional
     fun createSimilar(
-        webtyUserDetails: WebtyUserDetails, targetWebtoonId: Long,
+        webtyUser: WebtyUser, targetWebtoonId: Long,
         choiceWebtoonId: Long
     ): SimilarResponse {
-        val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
         val targetWebtoon = webtoonService.findWebtoon(targetWebtoonId)
         val choiceWebtoon = webtoonService.findWebtoon(choiceWebtoonId)
 
@@ -62,8 +59,7 @@ class SimilarService(
 
     // 유사 웹툰 삭제
     @Transactional
-    fun deleteSimilar(webtyUserDetails: WebtyUserDetails, similarId: Long) {
-        val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
+    fun deleteSimilar(webtyUser: WebtyUser, similarId: Long) {
         val similar = similarRepository.findByUserIdAndSimilarId(
             webtyUser.userId!!,
             similarId
