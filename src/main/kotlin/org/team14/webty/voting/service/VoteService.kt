@@ -16,6 +16,7 @@ import org.team14.webty.voting.dto.VoteFailureEvent
 import org.team14.webty.voting.dto.VoteSuccessEvent
 import org.team14.webty.voting.entity.Similar
 import org.team14.webty.voting.entity.Vote
+import org.team14.webty.voting.enums.VoteFailureType
 import org.team14.webty.voting.enums.VoteType
 import org.team14.webty.voting.mapper.SimilarMapper
 import org.team14.webty.voting.mapper.VoteMapper.toEntity
@@ -62,7 +63,7 @@ class VoteService(
             eventPublisher.publishEvent(VoteSuccessEvent(similarId, webtyUser.userId!!))
         }.onFailure { e ->
             handleFailure(e)
-            eventPublisher.publishEvent(VoteFailureEvent(similarId, webtyUser.userId!!))
+            eventPublisher.publishEvent(VoteFailureEvent(similarId, webtyUser.userId!!, VoteFailureType.VOTE_FAILURE))
             throw e
         }
     }
@@ -84,7 +85,13 @@ class VoteService(
             eventPublisher.publishEvent(VoteSuccessEvent(similarId, webtyUser.userId!!))
         }.onFailure { e ->
             handleFailure(e)
-            eventPublisher.publishEvent(VoteFailureEvent(similarId, webtyUser.userId!!))
+            eventPublisher.publishEvent(
+                VoteFailureEvent(
+                    similarId,
+                    webtyUser.userId!!,
+                    VoteFailureType.VOTE_CANCEL_FAILURE
+                )
+            )
             throw e
         }
     }

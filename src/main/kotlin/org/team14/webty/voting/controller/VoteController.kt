@@ -24,7 +24,7 @@ class VoteController(
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int,
     ): ResponseEntity<Void> {
-        voteService.vote(webtyUserDetails, similarId, voteType, page, size)
+        voteService.vote(webtyUserDetails.webtyUser, similarId, voteType, page, size)
         logger.info { "VoteService 투표 실행 로그" }
         return ResponseEntity.ok().build() // 응답은 WebSocket통해서 받아오므로 상태값만 전달
     }
@@ -37,7 +37,7 @@ class VoteController(
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int
     ): ResponseEntity<Void> {
-        voteService.cancel(webtyUserDetails, similarId, page, size)
+        voteService.cancel(webtyUserDetails.webtyUser, similarId, page, size)
         logger.info { "VoteService 투표 취소 로그" }
         return ResponseEntity.ok().build() // 응답은 WebSocket통해서 받아오므로 상태값만 전달
     }
@@ -48,7 +48,7 @@ class VoteController(
         @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
         @PathVariable(value = "similarId") similarId: Long
     ): ResponseEntity<VoteStatusResponse> {
-        val vote = voteService.getVoteStatus(webtyUserDetails, similarId)
+        val vote = voteService.getVoteStatus(webtyUserDetails.webtyUser, similarId)
         logger.info { "VoteService 투표 상태 조회 로그" }
         return ResponseEntity.ok(VoteStatusResponse(vote?.voteType?.name))
     }
