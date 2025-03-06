@@ -6,9 +6,9 @@ package org.team14.webty.search.constants
 object SearchConstants {
     // 캐시 관련 상수
     const val SEARCH_CACHE_KEY_PREFIX = "search:"
-    const val SEARCH_CACHE_TTL_MINUTES = 10L
-    const val POPULAR_CACHE_TTL_HOURS = 48L
-    const val NORMAL_CACHE_TTL_HOURS = 24L
+    const val SEARCH_CACHE_TTL_MINUTES = 0L  // 캐시 TTL을 0으로 설정하여 캐싱 비활성화
+    const val POPULAR_CACHE_TTL_HOURS = 0L   // 캐시 TTL을 0으로 설정하여 캐싱 비활성화
+    const val NORMAL_CACHE_TTL_HOURS = 0L    // 캐시 TTL을 0으로 설정하여 캐싱 비활성화
     const val COMPRESSION_THRESHOLD = 1024 // 1KB
     
     // 자동완성 관련 상수
