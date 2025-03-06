@@ -1,4 +1,4 @@
-package org.team14.webty.common.redis
+package org.team14.webty.voting.redis
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging

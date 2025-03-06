@@ -1,26 +1,25 @@
 package org.team14.webty.voting.service
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.channels.Channel
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.data.domain.Pageable
 import org.springframework.data.redis.RedisConnectionFailureException
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.transaction.support.TransactionSynchronization
-import org.springframework.transaction.support.TransactionSynchronizationManager
 import org.team14.webty.common.exception.BusinessException
 import org.team14.webty.common.exception.ErrorCode
 import org.team14.webty.common.mapper.PageMapper
-import org.team14.webty.common.redis.RedisPublisher
-import org.team14.webty.security.authentication.AuthWebtyUserProvider
-import org.team14.webty.security.authentication.WebtyUserDetails
+import org.team14.webty.user.entity.WebtyUser
 import org.team14.webty.voting.cache.VoteCacheService
+import org.team14.webty.voting.dto.VoteFailureEvent
+import org.team14.webty.voting.dto.VoteSuccessEvent
 import org.team14.webty.voting.entity.Similar
 import org.team14.webty.voting.entity.Vote
 import org.team14.webty.voting.enums.VoteType
 import org.team14.webty.voting.mapper.SimilarMapper
 import org.team14.webty.voting.mapper.VoteMapper.toEntity
+import org.team14.webty.voting.redis.RedisPublisher
 import org.team14.webty.voting.repository.SimilarRepository
 import org.team14.webty.voting.repository.VoteRepository
 import org.team14.webty.webtoon.repository.WebtoonRepository
@@ -29,28 +28,25 @@ import org.team14.webty.webtoon.repository.WebtoonRepository
 class VoteService(
     private val voteRepository: VoteRepository,
     private val similarRepository: SimilarRepository,
-    private val authWebtyUserProvider: AuthWebtyUserProvider,
     private val webtoonRepository: WebtoonRepository,
     private val redisPublisher: RedisPublisher,
     private val voteCacheService: VoteCacheService,
-    private val requestChannel: Channel<Unit>
+    private val eventPublisher: ApplicationEventPublisher
 ) {
 
     private val logger = KotlinLogging.logger {}
 
     // 유사 투표
-    @OptIn(DelicateCoroutinesApi::class)
     @Transactional
     fun vote(
-        webtyUserDetails: WebtyUserDetails,
+        webtyUser: WebtyUser,
         similarId: Long,
         voteType: String,
         page: Int,
         size: Int
     ) {
-        val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
-        val similar = similarRepository.findById(similarId)
-            .orElseThrow { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }!!
+        val similar =
+            similarRepository.findByIdOrNull(similarId) ?: throw BusinessException(ErrorCode.SIMILAR_NOT_FOUND)
 
         if (voteCacheService.hasUserVoted(similarId, webtyUser.userId!!)) {
             throw BusinessException(ErrorCode.VOTE_ALREADY_EXISTS)
@@ -62,29 +58,18 @@ class VoteService(
             voteCacheService.setUserVote(similarId, webtyUser.userId!!)
             voteCacheService.incrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
-        }.onSuccess {
-            // 트랜잭션이 커밋된 후에 메시지를 requestChannel에 전송
-            TransactionSynchronizationManager.registerSynchronization(
-                object : TransactionSynchronization {
-                    override fun afterCommit() {
-                        if (!requestChannel.isClosedForSend) {
-                            requestChannel.trySend(Unit)
-                        }
-                    }
-                }
-            )
+
+            eventPublisher.publishEvent(VoteSuccessEvent(similarId, webtyUser.userId!!))
         }.onFailure { e ->
             handleFailure(e)
-            voteCacheService.deleteUserVote(similarId, webtyUser.userId!!)
+            eventPublisher.publishEvent(VoteFailureEvent(similarId, webtyUser.userId!!))
             throw e
         }
     }
 
     // 투표 취소
-    @OptIn(DelicateCoroutinesApi::class)
     @Transactional
-    fun cancel(webtyUserDetails: WebtyUserDetails, similarId: Long, page: Int, size: Int) {
-        val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
+    fun cancel(webtyUser: WebtyUser, similarId: Long, page: Int, size: Int) {
         val similar =
             similarRepository.findById(similarId).orElseThrow { BusinessException(ErrorCode.SIMILAR_NOT_FOUND) }
         val vote = voteRepository.findBySimilarAndUserId(similar, webtyUser.userId!!)
@@ -96,28 +81,17 @@ class VoteService(
             voteCacheService.decrementVote(similarId, vote.voteType)
             updateSimilarResult(similar)
 
-        }.onSuccess {
-            // 트랜잭션이 커밋된 후에 메시지를 requestChannel에 전송
-            TransactionSynchronizationManager.registerSynchronization(
-                object : TransactionSynchronization {
-                    override fun afterCommit() {
-                        if (!requestChannel.isClosedForSend) {
-                            requestChannel.trySend(Unit)
-                        }
-                    }
-                }
-            )
+            eventPublisher.publishEvent(VoteSuccessEvent(similarId, webtyUser.userId!!))
         }.onFailure { e ->
             handleFailure(e)
-            voteCacheService.setUserVote(similarId, webtyUser.userId!!) // 예외 발생시 user 투표 캐시 복구
+            eventPublisher.publishEvent(VoteFailureEvent(similarId, webtyUser.userId!!))
             throw e
         }
     }
 
     // 투표 상태
     @Transactional
-    fun getVoteStatus(webtyUserDetails: WebtyUserDetails, similarId: Long): Vote? {
-        val webtyUser = authWebtyUserProvider.getAuthenticatedWebtyUser(webtyUserDetails)
+    fun getVoteStatus(webtyUser: WebtyUser, similarId: Long): Vote? {
         return voteRepository.findByUserIdAndSimilar_SimilarId(webtyUser.userId!!, similarId).orElse(null)
     }
 
