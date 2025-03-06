@@ -1,4 +1,4 @@
-package org.team14.webty.voting.redis
+package org.team14.webty.voting.message
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 
 @Component
-class RedisPublisher(
+class VotingMessagePublisher(
     private val redisTemplate: RedisTemplate<String, Any>,
     private val objectMapper: ObjectMapper
 ) {

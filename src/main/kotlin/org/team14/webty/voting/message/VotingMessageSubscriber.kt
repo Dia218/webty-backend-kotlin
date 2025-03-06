@@ -1,4 +1,4 @@
-package org.team14.webty.voting.redis
+package org.team14.webty.voting.message
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -11,7 +11,7 @@ import org.team14.webty.common.dto.PageDto
 import org.team14.webty.voting.dto.SimilarResponse
 
 @Component
-class RedisSubscriber(
+class VotingMessageSubscriber(
     private val simpMessagingTemplate: SimpMessagingTemplate,
     private val objectMapper: ObjectMapper
 ) : MessageListener {

@@ -12,7 +12,7 @@ import org.springframework.data.redis.listener.RedisMessageListenerContainer
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer
 import org.springframework.data.redis.serializer.StringRedisSerializer
-import org.team14.webty.voting.redis.RedisSubscriber
+import org.team14.webty.voting.message.VotingMessageSubscriber
 
 /**
  * Redis 관련 설정을 담당하는 설정 클래스입니다.
@@ -75,7 +75,7 @@ class RedisConfig(
      * 투표 결과를 구독하기 위한 메시지 리스너 설정입니다.
      */
     @Bean
-    fun messageListenerAdapter(subscriber: RedisSubscriber): MessageListenerAdapter {
+    fun messageListenerAdapter(subscriber: VotingMessageSubscriber): MessageListenerAdapter {
         return MessageListenerAdapter(subscriber) // RedisSubscriber를 Listener로 등록
     }
 
