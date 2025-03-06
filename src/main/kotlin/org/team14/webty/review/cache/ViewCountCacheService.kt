@@ -11,7 +11,10 @@ class ViewCountCacheService(
     private val reviewRepository: ReviewRepository
 ) {
     // Redis 키 패턴
-    private fun getViewCountKey(reviewId: Long): String = "review:viewCount:$reviewId"
+    companion object {
+        private const val VIEW_COUNT_KEY_PREFIX = "review:viewCount:"
+        private fun getViewCountKey(reviewId: Long) = "$VIEW_COUNT_KEY_PREFIX$reviewId"
+    }
 
     /**
      * 조회수 증가 메서드
