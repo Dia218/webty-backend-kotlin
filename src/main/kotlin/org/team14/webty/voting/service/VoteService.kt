@@ -21,7 +21,7 @@ import org.team14.webty.voting.enums.VoteFailureType
 import org.team14.webty.voting.enums.VoteType
 import org.team14.webty.voting.mapper.SimilarMapper
 import org.team14.webty.voting.mapper.VoteMapper.toEntity
-import org.team14.webty.voting.redis.RedisPublisher
+import org.team14.webty.voting.message.VotingMessagePublisher
 import org.team14.webty.voting.repository.SimilarRepository
 import org.team14.webty.voting.repository.VoteRepository
 import org.team14.webty.webtoon.repository.WebtoonRepository
@@ -31,7 +31,7 @@ class VoteService(
     private val voteRepository: VoteRepository,
     private val similarRepository: SimilarRepository,
     private val webtoonRepository: WebtoonRepository,
-    private val redisPublisher: RedisPublisher,
+    private val votingMessagePublisher: VotingMessagePublisher,
     private val voteCacheService: VoteCacheService,
     private val eventPublisher: ApplicationEventPublisher
 ) {
@@ -130,7 +130,7 @@ class VoteService(
             )
         }.let { PageMapper.toPageDto(it) }
 
-        redisPublisher.publish("vote-results", similarResponsePageDto)
+        votingMessagePublisher.publish("vote-results", similarResponsePageDto)
     }
 
     private fun handleFailure(e: Throwable) {
