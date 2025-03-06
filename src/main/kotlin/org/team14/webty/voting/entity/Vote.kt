@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import org.team14.webty.voting.enums.VoteType
 
 @Entity
+@Table(name = "vote", uniqueConstraints = [UniqueConstraint(columnNames = ["userId", "similarId"])])
 class Vote(
     val userId: Long,
 
