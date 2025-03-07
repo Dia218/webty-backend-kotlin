@@ -5,10 +5,12 @@ import org.team14.webty.review.dto.ReviewItemResponse
 import org.team14.webty.review.entity.Review
 import org.team14.webty.review.mapper.ReviewMapper
 import org.team14.webty.review.repository.ReviewImageRepository
+import org.team14.webty.reviewComment.repository.ReviewCommentRepository
 
 @Component
 class SearchReviewMapper(
-    private val reviewImageRepository: ReviewImageRepository
+    private val reviewImageRepository: ReviewImageRepository,
+    private val reviewCommentRepository: ReviewCommentRepository
 ) {
     /**
      * 리뷰 엔티티를 ReviewItemResponse DTO로 변환합니다.
@@ -32,10 +34,18 @@ class SearchReviewMapper(
             null
         }
         
+        // 댓글 개수 가져오기
+        val commentCount = review.reviewId?.let { reviewId ->
+            reviewCommentRepository.countByReviewIds(listOf(reviewId))
+                .firstOrNull()
+                ?.let { it[1] as Long }
+                ?: 0L
+        } ?: 0L
+        
         // ReviewMapper의 toResponse 메서드를 활용
         return ReviewMapper.toResponse(
             review = review,
-            commentCount = recommendCount, // 검색 결과에서는 댓글 목록이 필요 없음
+            commentCount = commentCount, // 정확한 댓글 개수 사용
             imageUrls = imageUrls,
             likeCount = recommendCount
         )
