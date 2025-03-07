@@ -75,6 +75,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.0")
     //elastic-search
     implementation ("org.springframework.data:spring-data-elasticsearch:5.4.0")
+    //WebClient
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 }
 
 kotlin {

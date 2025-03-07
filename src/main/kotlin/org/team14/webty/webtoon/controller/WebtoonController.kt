@@ -21,7 +21,7 @@ class WebtoonController(
     private val webtoonService: WebtoonService
 ) {
     @GetMapping("/fetch") // 초기화 할 때만 사용
-    fun fetchWebtoons() {
+    suspend fun fetchWebtoons() {
         webtoonService.saveWebtoons()
     }
 
