@@ -43,45 +43,46 @@ class ReviewController(private val reviewService: ReviewService) {
     // 리뷰 생성
     @PostMapping(value = ["/create"], consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createReview(
-        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails?,
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
         @RequestPart(value = "reviewRequest") reviewRequest: ReviewRequest,
         @RequestPart(value = "images", required = false) images: List<MultipartFile>?
     ): ResponseEntity<Long> {
         reviewRequest.images = images
-        return ResponseEntity.ok(reviewService.createFeedReview(webtyUserDetails, reviewRequest))
+        return ResponseEntity.ok(reviewService.createFeedReview(webtyUserDetails.webtyUser, reviewRequest))
     }
 
     //리뷰 삭제
     @DeleteMapping("/delete/{reviewId}")
     fun deleteFeedReview(
-        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails?,
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
         @PathVariable(value = "reviewId") reviewId: Long
     ): ResponseEntity<Void> {
-        reviewService.deleteFeedReview(webtyUserDetails, reviewId)
+        reviewService.deleteFeedReview(webtyUserDetails.webtyUser, reviewId)
         return ResponseEntity.ok().build()
     }
 
     //리뷰 수정
     @PutMapping("/put/{reviewId}")
     fun updateFeedReview(
-        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails?, @PathVariable(value = "reviewId") reviewId: Long,
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails, @PathVariable(value = "reviewId") reviewId: Long,
         @RequestPart(value = "reviewRequest") reviewRequest: ReviewRequest,
         @RequestPart(value = "images", required = false) images: List<MultipartFile>?
     ): ResponseEntity<Long> {
         reviewRequest.images = images
-        return ResponseEntity.ok().body(reviewService.updateFeedReview(webtyUserDetails, reviewId, reviewRequest))
+        return ResponseEntity.ok()
+            .body(reviewService.updateFeedReview(webtyUserDetails.webtyUser, reviewId, reviewRequest))
     }
 
     // 특정 사용자의 리뷰 목록 조회
     @GetMapping("/me")
     fun getReviewsByUser(
-        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails?,
+        @AuthenticationPrincipal webtyUserDetails: WebtyUserDetails,
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int
     ): ResponseEntity<PageDto<ReviewItemResponse>> {
         return ResponseEntity.ok(
             PageMapper.toPageDto(
-                reviewService.getReviewsByUser(webtyUserDetails, page, size)
+                reviewService.getReviewsByUser(webtyUserDetails.webtyUser, page, size)
             )
         )
     }
@@ -101,8 +102,8 @@ class ReviewController(private val reviewService: ReviewService) {
 
     // 특정 사용자의 리뷰 개수 조회
     @GetMapping("/me/count")
-    fun getReviewCountByUser(@AuthenticationPrincipal webtyUserDetails: WebtyUserDetails?): ResponseEntity<Long> {
-        return ResponseEntity.ok(reviewService.getReviewCountByUser(webtyUserDetails))
+    fun getReviewCountByUser(@AuthenticationPrincipal webtyUserDetails: WebtyUserDetails): ResponseEntity<Long> {
+        return ResponseEntity.ok(reviewService.getReviewCountByUser(webtyUserDetails.webtyUser))
     }
 
     // 리뷰 검색 결과 반환
@@ -110,7 +111,7 @@ class ReviewController(private val reviewService: ReviewService) {
     fun searchReview(
         @RequestParam(defaultValue = "0", value = "page") page: Int,
         @RequestParam(defaultValue = "10", value = "size") size: Int,
-        @RequestParam(defaultValue = "", value = "title") title: String?
+        @RequestParam(defaultValue = "", value = "title") title: String
     ): ResponseEntity<PageDto<ReviewItemResponse>> {
         return ResponseEntity.ok(
             PageMapper.toPageDto(

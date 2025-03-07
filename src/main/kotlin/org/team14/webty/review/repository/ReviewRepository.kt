@@ -46,4 +46,8 @@ interface ReviewRepository : JpaRepository<Review, Long> {
     @Modifying
     @Query("UPDATE Review r SET r.isSpoiler = 'TRUE' WHERE r.reviewId = :reviewId")
     fun patchIsSpoiler(@Param("reviewId") reviewId: Long?)
+
+    @Modifying
+    @Query("UPDATE Review r SET r.viewCount = r.viewCount + :count WHERE r.reviewId = :reviewId")
+    fun bulkIncrementViewCount(@Param("reviewId") reviewId: Long, @Param("count") count: Int)
 }

@@ -13,6 +13,7 @@ import org.team14.webty.common.exception.ErrorCode
 import org.team14.webty.common.mapper.PageMapper
 import org.team14.webty.common.util.FileStorageUtil
 import org.team14.webty.recommend.repository.RecommendRepository
+import org.team14.webty.review.cache.ViewCountCacheService
 import org.team14.webty.review.dto.ReviewDetailResponse
 import org.team14.webty.review.dto.ReviewItemResponse
 import org.team14.webty.review.dto.ReviewRequest
@@ -41,7 +42,8 @@ class ReviewService(
     private val authWebtyUserProvider: AuthWebtyUserProvider,
     private val fileStorageUtil: FileStorageUtil,
     private val reviewImageRepository: ReviewImageRepository,
-    private val recommendRepository: RecommendRepository
+    private val recommendRepository: RecommendRepository,
+    private val viewCountCacheService: ViewCountCacheService
 ) {
 
     // 리뷰 상세 조회
@@ -51,18 +53,27 @@ class ReviewService(
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
 
-        // 조회수 증가 때문에 LastModified 수정되는점 우회
-        reviewRepository.incrementViewCount(id)
+        // Redis를 사용하여 조회수 증가
+        viewCountCacheService.incrementViewCount(id)
+
+        // 캐시된 조회수를 포함한 최신 조회수 가져오기
+        val currentViewCount = viewCountCacheService.getCurrentViewCount(id, review.viewCount)
 
         val comments = reviewCommentRepository.findAllByReviewIdOrderByDepthAndCommentId(id, pageable)
         val commentResponses = PageMapper.toPageDto(comments.map { comment: ReviewComment ->
-            ReviewCommentMapper.toResponse(
-                comment
-            )
+            ReviewCommentMapper.toResponse(comment)
         })
         val reviewImages = reviewImageRepository.findAllByReview(review)
         val recommendCounts = recommendRepository.getRecommendCounts(id)
-        return ReviewMapper.toDetail(review, commentResponses, reviewImages, recommendCounts)
+
+        // 최신 조회수가 포함된 응답 생성
+        return ReviewMapper.toDetailWithUpdatedViewCount(
+            review,
+            commentResponses,
+            reviewImages,
+            recommendCounts,
+            currentViewCount
+        )
     }
 
     // 전체 리뷰 조회
@@ -77,9 +88,7 @@ class ReviewService(
 
     // 리뷰 생성
     @Transactional
-    fun createFeedReview(webtyUserDetails: WebtyUserDetails?, reviewRequest: ReviewRequest): Long {
-        val webtyUser = getAuthenticatedUser(webtyUserDetails)
-
+    fun createFeedReview(webtyUser: WebtyUser, reviewRequest: ReviewRequest): Long {
         val webtoon = webtoonRepository.findById(reviewRequest.webtoonId)
             .orElseThrow { BusinessException(ErrorCode.WEBTOON_NOT_FOUND) }
 
@@ -95,9 +104,7 @@ class ReviewService(
 
     // 리뷰 삭제
     @Transactional
-    fun deleteFeedReview(webtyUserDetails: WebtyUserDetails?, id: Long) {
-        val webtyUser = getAuthenticatedUser(webtyUserDetails)
-
+    fun deleteFeedReview(webtyUser: WebtyUser, id: Long) {
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
 
@@ -115,11 +122,9 @@ class ReviewService(
     // 리뷰 수정
     @Transactional
     fun updateFeedReview(
-        webtyUserDetails: WebtyUserDetails?, id: Long,
+        webtyUser: WebtyUser, id: Long,
         reviewRequest: ReviewRequest
     ): Long {
-        val webtyUser = getAuthenticatedUser(webtyUserDetails)
-
         val review = reviewRepository.findById(id)
             .orElseThrow { BusinessException(ErrorCode.REVIEW_NOT_FOUND) }!!
 
@@ -146,8 +151,7 @@ class ReviewService(
 
     // 특정 사용자의 리뷰 목록 조회
     @Transactional(readOnly = true)
-    fun getReviewsByUser(webtyUserDetails: WebtyUserDetails?, page: Int, size: Int): Page<ReviewItemResponse> {
-        val webtyUser = getAuthenticatedUser(webtyUserDetails)
+    fun getReviewsByUser(webtyUser: WebtyUser, page: Int, size: Int): Page<ReviewItemResponse> {
         val pageable: Pageable = PageRequest.of(page, size)
         val reviews = reviewRepository.findReviewByWebtyUser(webtyUser, pageable)
         return mapReviewResponse(reviews)
@@ -163,8 +167,7 @@ class ReviewService(
 
     // 특정 사용자의 리뷰 개수 조회
     @Transactional(readOnly = true)
-    fun getReviewCountByUser(webtyUserDetails: WebtyUserDetails?): Long {
-        val webtyUser = getAuthenticatedUser(webtyUserDetails)
+    fun getReviewCountByUser(webtyUser: WebtyUser): Long {
         return reviewRepository.countReviewByWebtyUser(webtyUser)
     }
 
@@ -184,7 +187,7 @@ class ReviewService(
 
         // 리뷰 ID를 기준으로 부모 댓글을 매핑하는 Map 생성
         return parentComments.groupBy(
-            { it.review!!.reviewId!! },
+            { it.review.reviewId!! },
             { ReviewCommentMapper.toResponse(it) }
         )
     }
