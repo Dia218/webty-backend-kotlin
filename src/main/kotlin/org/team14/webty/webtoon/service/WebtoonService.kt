@@ -1,40 +1,34 @@
 package org.team14.webty.webtoon.service
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.jdbc.core.JdbcTemplate
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.client.RestClientException
-import org.springframework.web.client.RestTemplate
-import org.team14.webty.webtoon.api.WebtoonApiResponse
-import org.team14.webty.webtoon.api.WebtoonPageApiResponse
 import org.team14.webty.webtoon.entity.Webtoon
 import org.team14.webty.webtoon.enums.Platform
 import org.team14.webty.webtoon.enums.WebtoonSort
+import org.team14.webty.webtoon.infrastructure.WebtoonApiClient
 import org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper
 import org.team14.webty.webtoon.mapper.WebtoonApiResponseMapper.formatAuthors
 import org.team14.webty.webtoon.repository.WebtoonRepository
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 @Service
 class WebtoonService(
     private val webtoonRepository: WebtoonRepository,
-    private val restTemplate: RestTemplate,
+    private val webtoonApiClient: WebtoonApiClient,
     private val jdbcTemplate: JdbcTemplate
 ) {
     private val log = LoggerFactory.getLogger(WebtoonService::class.java)
-    private val executor: ExecutorService = Executors.newFixedThreadPool(5)
+    //private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     companion object {
-        private const val URL_QUERY_TEMPLATE =
-            "https://korea-webtoon-api-cc7dda2f0d77.herokuapp.com/webtoons?page=%s&perPage=%s&sort=%s&provider=%s"
         private const val DEFAULT_PAGE_SIZE = 100
         private const val DEFAULT_PAGE_NUMBER = 1
         private const val DEFAULT_SORT = "ASC"
@@ -42,21 +36,20 @@ class WebtoonService(
         private const val PAGE_BATCH_SIZE = 5
     }
 
-    fun saveWebtoons() {
-        val futures = Platform.values().map { provider ->
-            CompletableFuture.runAsync({ saveWebtoonsByProvider(provider) }, executor)
-        }
-        CompletableFuture.allOf(*futures.toTypedArray()).join()
+    suspend fun saveWebtoons() = coroutineScope {
+        Platform.values().map { provider ->
+            async { saveWebtoonsByProvider(provider) }
+        }.awaitAll()
         log.info("모든 데이터 저장 완료")
     }
 
     @Transactional
-    fun saveWebtoonsByProvider(provider: Platform) {
+    suspend fun saveWebtoonsByProvider(provider: Platform) {
         var page = DEFAULT_PAGE_NUMBER
         var isLastPage = false
 
         while (!isLastPage) {
-            val webtoonPageApiResponse = getWebtoonPageApiResponse(page, DEFAULT_PAGE_SIZE, DEFAULT_SORT, provider)
+            val webtoonPageApiResponse = webtoonApiClient.getWebtoonPageApiResponse(page, DEFAULT_PAGE_SIZE, DEFAULT_SORT, provider)
                 ?: break
 
             val webtoons = webtoonPageApiResponse.webtoonApiResponses
@@ -69,56 +62,51 @@ class WebtoonService(
         }
     }
 
-    @Scheduled(cron = "0 0 6 * * ?", zone = "Asia/Seoul")
-    fun updateWebtoons() {
-        log.info("웹툰 데이터 업데이트 시작 (비동기)")
-        val futures = Platform.values().map { provider ->
-            CompletableFuture.runAsync({ updateWebtoonsByProvider(provider) }, executor)
-        }
-        CompletableFuture.allOf(*futures.toTypedArray()).join()
-        log.info("웹툰 데이터 업데이트 요청 완료")
-    }
-
     @Transactional
-    fun updateWebtoonsByProvider(provider: Platform) {
+    suspend fun updateWebtoonsByProvider(provider: Platform) {
         val existingWebtoonKeys = webtoonRepository.findExistingWebtoonKeys(provider)
-
         var page = DEFAULT_PAGE_NUMBER
         var isLastPage = false
+        val newWebtoons = mutableListOf<Webtoon>()
 
         while (!isLastPage) {
-            val webtoonResponses = mutableListOf<WebtoonApiResponse>()
-
-            repeat(PAGE_BATCH_SIZE) {
-                val webtoonPageApiResponse = getWebtoonPageApiResponse(page, DEFAULT_PAGE_SIZE, DEFAULT_SORT, provider)
-                    ?: return@repeat  // API 응답이 없으면 반복문 탈출
-
-                webtoonResponses.addAll(webtoonPageApiResponse.webtoonApiResponses)
-
-                isLastPage = webtoonPageApiResponse.isLastPage
-                page++
-                if (isLastPage) return@repeat
+            val webtoonResponses = coroutineScope {
+                (0 until PAGE_BATCH_SIZE).map {
+                    async { webtoonApiClient.getWebtoonPageApiResponse(page + it, DEFAULT_PAGE_SIZE, DEFAULT_SORT, provider) }
+                }.awaitAll().filterNotNull().flatMap { it.webtoonApiResponses }
             }
 
-            val newWebtoons = webtoonResponses
-                .filter { dto ->
-                    val webtoonKey = generateWebtoonKey(dto.title, provider, formatAuthors(dto.authors))
-                    !existingWebtoonKeys.contains(webtoonKey)
-                }
-                .map(WebtoonApiResponseMapper::toEntity)
+            isLastPage = webtoonResponses.size < (PAGE_BATCH_SIZE * DEFAULT_PAGE_SIZE)
 
-            if (newWebtoons.isNotEmpty()) {
+            newWebtoons.addAll(
+                webtoonResponses
+                    .filter { dto ->
+                        val webtoonKey = generateWebtoonKey(dto.title, provider, formatAuthors(dto.authors))
+                        !existingWebtoonKeys.contains(webtoonKey)
+                    }
+                    .map(WebtoonApiResponseMapper::toEntity)
+            )
+
+            if (newWebtoons.size >= BATCH_SIZE) {
                 batchInsertWebtoons(newWebtoons)
                 log.info("새로운 웹툰 {}개 추가 완료 - Provider: {}", newWebtoons.size, provider)
+                newWebtoons.clear()
             }
+
+            page += PAGE_BATCH_SIZE
+        }
+
+        if (newWebtoons.isNotEmpty()) {
+            batchInsertWebtoons(newWebtoons)
+            log.info("마지막 배치 저장 완료 - Provider: {}", provider)
         }
     }
 
     @Transactional
-    fun batchInsertWebtoons(webtoons: List<Webtoon>) {
+    suspend fun batchInsertWebtoons(webtoons: List<Webtoon>) {
         val sql = "INSERT INTO webtoon (webtoon_name, platform, webtoon_link, thumbnail_url, authors, finished) VALUES (?, ?, ?, ?, ?, ?)"
 
-        webtoons.chunked(500).forEach { batch ->
+        webtoons.chunked(BATCH_SIZE).forEach { batch ->
             jdbcTemplate.batchUpdate(sql, batch.map { webtoon ->
                 arrayOf(
                     webtoon.webtoonName,
@@ -130,22 +118,6 @@ class WebtoonService(
                 )
             })
         }
-    }
-
-    private fun getWebtoonPageApiResponse(
-        page: Int, perPage: Int, sort: String, provider: Platform
-    ): WebtoonPageApiResponse? {
-        val url = String.format(URL_QUERY_TEMPLATE, page, perPage, sort, provider.platformName)
-        return try {
-            restTemplate.getForObject(url, WebtoonPageApiResponse::class.java)
-        } catch (e: RestClientException) {
-            log.error("API 요청 실패 - URL: {}, Error: {}", url, e.message, e)
-            null
-        }
-    }
-
-    private fun generateWebtoonKey(webtoon: Webtoon): String {
-        return "${webtoon.webtoonName}|${webtoon.platform.name}|${webtoon.authors}"
     }
 
     private fun generateWebtoonKey(title: String, platform: Platform, authors: String): String {
