@@ -5,26 +5,8 @@ const baseUrl = 'http://host.docker.internal:8081/similar';
 const token = __ENV.K6_TOKEN;
 
 export const options = {
-    scenarios: {
-        register: {
-            executor: 'per-vu-iterations',
-            vus: 1,
-            iterations: 50,
-            startTime: '0s',
-        },
-        find: {
-            executor: 'per-vu-iterations',
-            vus: 1,
-            iterations: 50,
-            startTime: '10s',
-        },
-        remove: {
-            executor: 'per-vu-iterations',
-            vus: 1,
-            iterations: 50,
-            startTime: '20s',
-        },
-    },
+    vus: 1,
+    iterations: 50,
 };
 
 let targetIdCounter = 1;
@@ -45,18 +27,14 @@ function getNextChoiceId() {
 // 등록된 ID들을 저장할 배열
 const createdSimilarIds = [];
 
-export function setup() {
-    return {createdSimilarIds};
-}
-
-export default function (data) {
-    register(data);  // 등록
-    find(data);      // 조회
-    remove(data);    // 삭제
+export default function () {
+    register();  // 등록
+    find();      // 조회
+    remove();    // 삭제
 }
 
 // ✅ 1️⃣ 유사 웹툰 등록 (50번 실행)
-export function register(data) {
+export function register() {
     const targetWebtoonId = getNextTargetId();
     const choiceWebtoonId = getNextChoiceId();
 
@@ -70,6 +48,7 @@ export function register(data) {
         },
     });
 
+
     check(res, {
         'createSimilar should return status 200': (r) => r.status === 200,
         'createSimilar should return a valid response body': (r) => r.body.includes('similarId'),
@@ -78,22 +57,23 @@ export function register(data) {
     if (res.status === 200) {
         const responseBody = JSON.parse(res.body);
         if (responseBody.similarId) {
-            data.createdSimilarIds.push(responseBody.similarId);
+            createdSimilarIds.push(responseBody.similarId);
         }
     }
     sleep(0.2);
 }
 
 // ✅ 2️⃣ 유사 웹툰 조회 (50번 실행, 등록된 ID 사용)
-export function find(data) {
-    if (data.createdSimilarIds.length === 0) return;
+export function find() {
+    if (createdSimilarIds.length === 0) return;
 
-    const targetWebtoonId = getNextTargetId();
+    const targetWebtoonId = getNextTargetId() - 1;
     const res = http.get(`${baseUrl}?targetWebtoonId=${targetWebtoonId}&page=0&size=10`, {
         headers: {
             'Authorization': `Bearer ${token}`,
         },
     });
+
 
     check(res, {
         'findAll should return status 200': (r) => r.status === 200,
@@ -104,9 +84,10 @@ export function find(data) {
 
 // ✅ 3️⃣ 유사 웹툰 삭제 (50번 실행, 등록된 ID 사용)
 export function remove(data) {
-    if (data.createdSimilarIds.length === 0) return;
+    if (createdSimilarIds.length === 0) return;
 
-    const similarId = data.createdSimilarIds.pop();
+    const similarId = createdSimilarIds.pop();
+    console.log('similarId', similarId)
     const res = http.del(`${baseUrl}/${similarId}`, null, {
         headers: {
             'Content-Type': 'application/json',
