@@ -13,6 +13,7 @@ build/
 
 ### 기타 ###
 **/naver-intellij-formatter.xml
+**/summary.json
 
 ### STS ###
 .apt_generated

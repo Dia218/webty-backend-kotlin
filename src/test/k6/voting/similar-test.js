@@ -100,3 +100,10 @@ export function remove(data) {
     });
     sleep(0.2);
 }
+
+// ✅ 4️⃣ 테스트 결과 요약 (InfluxDB 저장)
+export function handleSummary(data) {
+    return {
+        "summary.json": JSON.stringify(data, null, 2), // JSON 저장
+    };
+}
