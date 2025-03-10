@@ -14,14 +14,17 @@ import org.team14.webty.search.service.AutocompleteService
 import org.team14.webty.search.service.SearchRequestProcessor
 import org.team14.webty.search.service.SearchCacheService
 
-// REST API를 제공하는 컨트롤러임을 나타냅니다.
+/**
+ * 검색 관련 API를 제공하는 컨트롤러입니다.
+ * 검색, 자동완성, 인기 검색어 등의 기능을 제공합니다.
+ */
 @RestController
-// "/search" 경로로 들어오는 모든 요청을 이 컨트롤러에서 처리합니다.
 @RequestMapping("/search")
 class SearchController(
     // 핵심 검색 서비스를 주입받아 사용합니다.
     private val searchService: SearchService,
     // 자동완성 서비스를 주입받아 사용합니다.
+    // 내부적으로 SuggestionProcessor를 사용하여 실제 자동완성 처리를 수행합니다.
     private val autocompleteService: AutocompleteService,
     // 검색 요청 처리 서비스를 주입받아 사용합니다.
     private val searchRequestProcessor: SearchRequestProcessor,
@@ -106,18 +109,27 @@ class SearchController(
     
     /**
      * 자동완성 제안을 가져옵니다.
+     * AutocompleteService를 통해 SuggestionProcessor의 기능을 활용합니다.
+     * 
+     * @param prefix 검색어 접두사
+     * @param suggestionType 제안 타입 (webtoonName, nickname, reviewContent, null)
+     * @param sortBy 정렬 방식 (recommend, recent)
+     * @param minMatchScore 최소 유사도 점수 (0.0 ~ 1.0)
+     * @return 자동완성 제안 결과
      */
     @GetMapping("/suggestions")
     suspend fun getSearchSuggestions(
         @RequestParam prefix: String,
         @RequestParam(required = false) suggestionType: String?,
-        @RequestParam(defaultValue = "recommend") sortBy: String
+        @RequestParam(defaultValue = "recommend") sortBy: String,
+        @RequestParam(defaultValue = "0.5") minMatchScore: Double
     ): ResponseEntity<SearchSuggestionDto> {
-        log.info("자동완성 제안 요청: prefix={}, suggestionType={}, sortBy={}", prefix, suggestionType, sortBy)
+        log.info("자동완성 제안 요청: prefix={}, suggestionType={}, sortBy={}, minMatchScore={}", 
+                prefix, suggestionType, sortBy, minMatchScore)
         
         return runCatching {
             // 자동완성 요청 처리를 서비스에 위임
-            val result = autocompleteService.getSuggestions(prefix, suggestionType, sortBy)
+            val result = autocompleteService.getSuggestions(prefix, suggestionType, sortBy, minMatchScore)
             
             log.info("자동완성 제안 결과: prefix={}, suggestionCount={}", prefix, result.suggestions.size)
             ResponseEntity.ok(result)
@@ -129,6 +141,9 @@ class SearchController(
     
     /**
      * 인기 검색어 목록을 가져옵니다.
+     * AutocompleteService를 통해 SuggestionProcessor의 인기 검색어 관리 기능을 활용합니다.
+     * 
+     * @return 인기 검색어 목록
      */
     @GetMapping("/popular")
     suspend fun getPopularSearchTerms(): ResponseEntity<SearchSuggestionDto> {

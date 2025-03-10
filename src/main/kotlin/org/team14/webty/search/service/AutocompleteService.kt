@@ -11,9 +11,12 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Service
 import org.team14.webty.search.dto.SearchSuggestionDto
 import org.team14.webty.search.constants.SearchConstants
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
+/**
+ * 자동완성 기능을 제공하는 서비스 클래스입니다.
+ * SuggestionProcessor를 활용하여 실제 자동완성 처리를 수행합니다.
+ */
 @Service
 class AutocompleteService(
     @Qualifier("searchRedisTemplate") private val redisTemplate: RedisTemplate<String, Any>,
@@ -21,21 +24,6 @@ class AutocompleteService(
 ) {
     private val log = LoggerFactory.getLogger(AutocompleteService::class.java)
     private val suggestionProcessor = SuggestionProcessor(redisTemplate)
-    
-    // 자동완성 제안 관련 상수
-    companion object {
-        const val MAX_SUGGESTIONS = 10
-        const val MIN_PREFIX_LENGTH = 2
-        const val POPULAR_THRESHOLD = 3
-        const val SEARCH_SUGGESTION_KEY = "search:suggestions"
-        const val WEBTOON_NAME_SUGGESTION_KEY = "search:suggestions:webtoonName"
-        const val NICKNAME_SUGGESTION_KEY = "search:suggestions:nickname"
-        const val REVIEW_CONTENT_SUGGESTION_KEY = "search:suggestions:reviewContent"
-        const val POPULAR_SUGGESTION_THRESHOLD = 5
-    }
-    
-    // 제안 인기도를 추적하기 위한 맵
-    private val suggestionScoreMap = ConcurrentHashMap<String, Int>()
     
     /**
      * 검색어를 자동완성 제안에 추가합니다.
@@ -82,49 +70,64 @@ class AutocompleteService(
     }
     
     /**
-     * 제안이 추가되었을 때 점수를 업데이트합니다.
-     */
-    private fun updateSuggestionScore(suggestion: String) {
-        suggestionScoreMap.compute(suggestion) { _, score -> (score ?: 0) + 1 }
-        
-        if (isPopularSuggestion(suggestion)) {
-            log.info("인기 제안 감지: {}, 점수: {}", suggestion, suggestionScoreMap[suggestion])
-        }
-    }
-    
-    /**
-     * 제안이 인기 있는지 확인합니다.
-     */
-    private fun isPopularSuggestion(keyword: String): Boolean {
-        return (suggestionScoreMap[keyword] ?: 0) >= POPULAR_THRESHOLD
-    }
-    
-    /**
      * 접두사에 해당하는 검색 제안을 가져옵니다.
      */
-    suspend fun getSearchSuggestions(prefix: String, sortBy: String = "recommend"): SearchSuggestionDto = withContext(Dispatchers.IO) {
-        suggestionProcessor.getSuggestions(prefix, SearchConstants.SEARCH_SUGGESTION_KEY, "/search?keyword={keyword}&sortBy=$sortBy")
+    suspend fun getSearchSuggestions(
+        prefix: String, 
+        sortBy: String = "recommend",
+        minMatchScore: Double = SearchConstants.DEFAULT_MIN_MATCH_SCORE
+    ): SearchSuggestionDto = withContext(Dispatchers.IO) {
+        suggestionProcessor.getSuggestions(
+            prefix, 
+            SearchConstants.SEARCH_SUGGESTION_KEY, 
+            "/search?keyword={keyword}&sortBy=$sortBy",
+            minMatchScore
+        )
     }
     
     /**
      * 접두사에 해당하는 웹툰 이름 제안을 가져옵니다.
      */
-    suspend fun getWebtoonNameSuggestions(prefix: String): SearchSuggestionDto = withContext(Dispatchers.IO) {
-        suggestionProcessor.getSuggestions(prefix, SearchConstants.WEBTOON_SUGGESTION_KEY, "/search?keyword={keyword}&searchType=webtoonName")
+    suspend fun getWebtoonNameSuggestions(
+        prefix: String,
+        minMatchScore: Double = SearchConstants.DEFAULT_MIN_MATCH_SCORE
+    ): SearchSuggestionDto = withContext(Dispatchers.IO) {
+        suggestionProcessor.getSuggestions(
+            prefix, 
+            SearchConstants.WEBTOON_SUGGESTION_KEY, 
+            "/search?keyword={keyword}&searchType=webtoonName",
+            minMatchScore
+        )
     }
     
     /**
      * 접두사에 해당하는 닉네임 제안을 가져옵니다.
      */
-    suspend fun getNicknameSuggestions(prefix: String): SearchSuggestionDto = withContext(Dispatchers.IO) {
-        suggestionProcessor.getSuggestions(prefix, SearchConstants.NICKNAME_SUGGESTION_KEY, "/search?keyword={keyword}&searchType=nickname")
+    suspend fun getNicknameSuggestions(
+        prefix: String,
+        minMatchScore: Double = SearchConstants.DEFAULT_MIN_MATCH_SCORE
+    ): SearchSuggestionDto = withContext(Dispatchers.IO) {
+        suggestionProcessor.getSuggestions(
+            prefix, 
+            SearchConstants.NICKNAME_SUGGESTION_KEY, 
+            "/search?keyword={keyword}&searchType=nickname",
+            minMatchScore
+        )
     }
     
     /**
      * 접두사에 해당하는 리뷰 내용 및 제목 제안을 가져옵니다.
      */
-    suspend fun getReviewContentSuggestions(prefix: String): SearchSuggestionDto = withContext(Dispatchers.IO) {
-        suggestionProcessor.getSuggestions(prefix, SearchConstants.REVIEW_CONTENT_SUGGESTION_KEY, "/search?keyword={keyword}&searchType=reviewContent")
+    suspend fun getReviewContentSuggestions(
+        prefix: String,
+        minMatchScore: Double = SearchConstants.DEFAULT_MIN_MATCH_SCORE
+    ): SearchSuggestionDto = withContext(Dispatchers.IO) {
+        suggestionProcessor.getSuggestions(
+            prefix, 
+            SearchConstants.REVIEW_CONTENT_SUGGESTION_KEY, 
+            "/search?keyword={keyword}&searchType=reviewContent",
+            minMatchScore
+        )
     }
     
     /**
@@ -133,33 +136,35 @@ class AutocompleteService(
      * @param prefix 검색어 접두사
      * @param suggestionType 자동완성 타입
      * @param sortBy 정렬 방식
+     * @param minMatchScore 최소 유사도 점수
      * @return 자동완성 제안 DTO
      */
     suspend fun getSuggestions(
         prefix: String,
         suggestionType: String?,
-        sortBy: String
+        sortBy: String,
+        minMatchScore: Double = SearchConstants.DEFAULT_MIN_MATCH_SCORE
     ): SearchSuggestionDto {
-        log.debug("자동완성 제안 처리 시작: prefix={}, suggestionType={}, sortBy={}", 
-                prefix, suggestionType, sortBy)
+        log.debug("자동완성 제안 처리 시작: prefix={}, suggestionType={}, sortBy={}, minMatchScore={}", 
+                prefix, suggestionType, sortBy, minMatchScore)
         
         // suggestionType에 따라 적절한 서비스 메서드를 호출
         return when (suggestionType?.uppercase()) {
             "WEBTOONNAME", "WEBTOON", "WEBTOON_NAME" -> {
                 log.debug("웹툰 이름 자동완성 제안 요청")
-                getWebtoonNameSuggestions(prefix)
+                getWebtoonNameSuggestions(prefix, minMatchScore)
             }
             "NICKNAME", "NICK", "NICK_NAME" -> {
                 log.debug("닉네임 자동완성 제안 요청")
-                getNicknameSuggestions(prefix)
+                getNicknameSuggestions(prefix, minMatchScore)
             }
             "REVIEWCONTENT", "REVIEW", "REVIEW_CONTENT" -> {
                 log.debug("리뷰 내용 자동완성 제안 요청")
-                getReviewContentSuggestions(prefix)
+                getReviewContentSuggestions(prefix, minMatchScore)
             }
             else -> {
                 log.debug("일반 자동완성 제안 요청")
-                getSearchSuggestions(prefix, sortBy)
+                getSearchSuggestions(prefix, sortBy, minMatchScore)
             }
         }
     }
