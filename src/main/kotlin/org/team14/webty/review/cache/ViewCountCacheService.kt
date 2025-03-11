@@ -62,4 +62,10 @@ class ViewCountCacheService(
         // JPA의 벌크 업데이트 쿼리 사용
         reviewRepository.bulkIncrementViewCount(reviewId, count)
     }
+
+    fun getCurrentViewCounts(reviewIds: List<Long>): Map<Long, Int> {
+        return reviewIds.associateWith { id ->
+            getCurrentViewCount(id, 0)
+        }
+    }
 }

@@ -26,14 +26,15 @@ object ReviewMapper {
 
     fun toResponse(
         review: Review, commentCount: Long,
-        imageUrls: List<String>?, likeCount: Long
+        imageUrls: List<String>?, likeCount: Long,
+        viewCount: Int
     ): ReviewItemResponse {
         return ReviewItemResponse(
             reviewId = review.reviewId!!,
             userDataResponse = UserDataResponseMapper.toDto(review.user),
             content = review.content,
             title = review.title,
-            viewCount = review.viewCount,
+            viewCount = viewCount,
             spoilerStatus = review.isSpoiler,
             webtoon = WebtoonApiResponseMapper.toSummaryDto(review.webtoon),
             imageUrls = imageUrls,
