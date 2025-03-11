@@ -1,8 +1,6 @@
 package org.team14.webty.webtoon.service
 
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.*
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -26,7 +24,7 @@ class WebtoonService(
     private val jdbcTemplate: JdbcTemplate
 ) {
     private val log = LoggerFactory.getLogger(WebtoonService::class.java)
-    //private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val coroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     companion object {
         private const val DEFAULT_PAGE_SIZE = 100
@@ -38,28 +36,9 @@ class WebtoonService(
 
     suspend fun saveWebtoons() = coroutineScope {
         Platform.values().map { provider ->
-            async { saveWebtoonsByProvider(provider) }
+            async { updateWebtoonsByProvider(provider) }
         }.awaitAll()
         log.info("모든 데이터 저장 완료")
-    }
-
-    @Transactional
-    suspend fun saveWebtoonsByProvider(provider: Platform) {
-        var page = DEFAULT_PAGE_NUMBER
-        var isLastPage = false
-
-        while (!isLastPage) {
-            val webtoonPageApiResponse = webtoonApiClient.getWebtoonPageApiResponse(page, DEFAULT_PAGE_SIZE, DEFAULT_SORT, provider)
-                ?: break
-
-            val webtoons = webtoonPageApiResponse.webtoonApiResponses
-                .map(WebtoonApiResponseMapper::toEntity)
-
-            batchInsertWebtoons(webtoons)
-
-            isLastPage = webtoonPageApiResponse.isLastPage
-            page++
-        }
     }
 
     @Transactional
