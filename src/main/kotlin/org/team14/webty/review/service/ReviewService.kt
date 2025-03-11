@@ -271,12 +271,14 @@ class ReviewService(
         val reviewImageMap = getReviewImageMap(reviewIds)
         // 리뷰 ID 리스트를 기반으로 한 번의 쿼리로 모든 추천수 조회
         val likeCounts = getLikesMap(reviewIds)
+        val viewCounts = viewCountCacheService.getCurrentViewCounts(reviewIds)
         return reviews.map { review: Review ->
             ReviewMapper.toResponse(
                 review,
                 commentCounts[review.reviewId] ?: 0,
                 reviewImageMap.getOrDefault(review.reviewId, emptyList()),
-                likeCounts[review.reviewId]!!
+                likeCounts[review.reviewId]!!,
+                viewCounts[review.reviewId]!!
             )
         }
     }

@@ -1,6 +1,7 @@
 package org.team14.webty.search.mapper
 
 import org.springframework.stereotype.Component
+import org.team14.webty.review.cache.ViewCountCacheService
 import org.team14.webty.review.dto.ReviewItemResponse
 import org.team14.webty.review.entity.Review
 import org.team14.webty.review.mapper.ReviewMapper
@@ -10,7 +11,8 @@ import org.team14.webty.reviewComment.repository.ReviewCommentRepository
 @Component
 class SearchReviewMapper(
     private val reviewImageRepository: ReviewImageRepository,
-    private val reviewCommentRepository: ReviewCommentRepository
+    private val reviewCommentRepository: ReviewCommentRepository,
+    private val reviewViewCountCacheService: ViewCountCacheService
 ) {
     /**
      * 리뷰 엔티티를 ReviewItemResponse DTO로 변환합니다.
@@ -47,7 +49,8 @@ class SearchReviewMapper(
             review = review,
             commentCount = commentCount, // 정확한 댓글 개수 사용
             imageUrls = imageUrls,
-            likeCount = recommendCount
+            likeCount = recommendCount,
+            viewCount = reviewViewCountCacheService.getCurrentViewCount(review.reviewId!!, review.viewCount)
         )
     }
 }
