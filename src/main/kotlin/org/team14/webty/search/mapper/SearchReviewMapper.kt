@@ -21,12 +21,14 @@ class SearchReviewMapper(
      * @param review 변환할 리뷰 엔티티
      * @param recommendCount 좋아요 수
      * @param loadImages 이미지를 로드할지 여부 (기본값: false)
+     * @param overrideViewCount 조회수를 명시적으로 오버라이드할 값 (null이면 캐시에서 가져옴)
      * @return 변환된 ReviewItemResponse 객체
      */
     fun convertToReviewItemResponse(
         review: Review, 
         recommendCount: Long = 0,
-        loadImages: Boolean = false
+        loadImages: Boolean = false,
+        overrideViewCount: Int? = null
     ): ReviewItemResponse {
         // 이미지 URL 목록 (필요한 경우에만 로드)
         val imageUrls = if (loadImages) {
@@ -44,13 +46,18 @@ class SearchReviewMapper(
                 ?: 0L
         } ?: 0L
         
+        // 조회수 결정: 오버라이드 값이 있으면 그 값을 사용, 없으면 캐시에서 가져옴
+        val viewCount = overrideViewCount ?: 
+            review.reviewId?.let { reviewViewCountCacheService.getCurrentViewCount(it, review.viewCount) } ?: 
+            review.viewCount
+        
         // ReviewMapper의 toResponse 메서드를 활용
         return ReviewMapper.toResponse(
             review = review,
             commentCount = commentCount, // 정확한 댓글 개수 사용
             imageUrls = imageUrls,
             likeCount = recommendCount,
-            viewCount = reviewViewCountCacheService.getCurrentViewCount(review.reviewId!!, review.viewCount)
+            viewCount = viewCount
         )
     }
 }

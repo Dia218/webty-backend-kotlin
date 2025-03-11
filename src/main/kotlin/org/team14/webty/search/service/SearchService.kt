@@ -20,7 +20,7 @@ class SearchService(
     private val searchResponseMapper: SearchResponseMapper
 ) {
     private val log = LoggerFactory.getLogger(SearchService::class.java)
-    private val searchExecutor = SearchExecutor(searchCacheService, searchResponseMapper)
+    private val searchExecutor = SearchExecutor(searchResponseMapper)
 
     /**
      * 검색 유형과 정렬 방식에 따라 검색을 수행합니다.

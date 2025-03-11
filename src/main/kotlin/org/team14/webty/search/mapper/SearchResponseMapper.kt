@@ -1,6 +1,7 @@
 package org.team14.webty.search.mapper
 
 import org.springframework.stereotype.Component
+import org.team14.webty.review.cache.ViewCountCacheService
 import org.team14.webty.review.entity.Review
 import org.team14.webty.search.dto.SearchResponseDto
 import org.team14.webty.search.mapper.SearchReviewMapper
@@ -9,7 +10,8 @@ import org.team14.webty.search.mapper.SearchRecommendMapper
 @Component
 class SearchResponseMapper(
     private val reviewMapper: SearchReviewMapper,
-    private val recommendMapper: SearchRecommendMapper
+    private val recommendMapper: SearchRecommendMapper,
+    private val viewCountCacheService: ViewCountCacheService
 ) {
     /**
      * 리뷰 리스트와 추가 데이터로부터 검색 응답 객체를 구성합니다.
@@ -26,9 +28,20 @@ class SearchResponseMapper(
     ): SearchResponseDto {
         val likesCountsMap = recommendMapper.getLikesCounts(reviewIds)
         
+        val viewCountsMap = viewCountCacheService.getCurrentViewCounts(reviewIds)
+        
         val reviewsWithLikes = reviews.map { review ->
             val recommendCount = review.reviewId?.let { id -> likesCountsMap[id]?.toLong() } ?: 0L
-            reviewMapper.convertToReviewItemResponse(review, recommendCount)
+            
+            val latestViewCount = review.reviewId?.let { id -> 
+                viewCountsMap[id] ?: review.viewCount
+            } ?: review.viewCount
+            
+            reviewMapper.convertToReviewItemResponse(
+                review = review,
+                recommendCount = recommendCount,
+                overrideViewCount = latestViewCount
+            )
         }
         
         return SearchResponseDto(
