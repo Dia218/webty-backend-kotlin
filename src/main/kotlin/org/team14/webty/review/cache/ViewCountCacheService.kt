@@ -3,6 +3,7 @@ package org.team14.webty.review.cache
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.team14.webty.review.repository.ReviewRepository
 
 @Service
@@ -37,6 +38,7 @@ class ViewCountCacheService(
      * 주기적으로 Redis의 조회수를 DB에 반영
      * 5분마다 실행
      */
+    @Transactional
     @Scheduled(fixedRate = 300000) // 5분마다 실행
     fun syncViewCountsToDatabase() {
         val pattern = "review:viewCount:*"
