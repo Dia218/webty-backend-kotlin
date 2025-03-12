@@ -33,16 +33,16 @@
 
 ## 도메인
 
-common: 각 도메인에서 공통으로 사용하는 부분
-security: 인증 관리
-user: 계정 관리
-userActivity: 사용자 맞춤 웹툰 추천
-webtoon: 웹툰 크롤링
-review: 리뷰 게시글
-reviewComment: 댓글
-recommend: 게시글 추천
-search: 검색
-voting: 웹툰 유사도 투표
+- common: 각 도메인에서 공통으로 사용하는 부분
+- security: 인증 관리
+- user: 계정 관리
+- userActivity: 사용자 맞춤 웹툰 추천
+- webtoon: 웹툰 크롤링
+- review: 리뷰 게시글
+- reviewComment: 댓글
+- recommend: 게시글 추천
+- search: 검색
+- voting: 웹툰 유사도 투표
 
 <br>
 
